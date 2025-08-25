@@ -21,42 +21,37 @@ class ECommerceApplication {
     val paymentService: PaymentService by di
     
     fun demonstrateDIScenarios() {
-        println("🚀 Starting E-Commerce Application Demo")
+        println("Starting E-Commerce Application Demo")
         println("=" * 50)
         
         try {
-            println("\n📊 Testing User Repository (Ambiguous Scenario)")
+            println("\nTesting User Repository (Ambiguous Scenario)")
             val users = userRepository.findAll()
             println("Found ${users.size} users: ${users.map { it.name }}")
             
         } catch (e: Exception) {
-            println("❌ Ambiguous UserRepository error: ${e.message}")
+            println("Ambiguous UserRepository error: ${e.message}")
         }
         
         try {
-            println("\n📦 Testing Inventory Service")
+            println("\nTesting Inventory Service")
             val stock = inventoryService.getAvailableStock(1L)
             println("Product 1 stock: $stock")
             
         } catch (e: Exception) {
-            println("❌ Cycle dependency error: ${e.message}")
+            println("Cycle dependency error: ${e.message}")
         }
         
         try {
-            println("\n💳 Testing Payment Service (Unresolved Scenario)")
+            println("\nTesting Payment Service (Unresolved Scenario)")
             val order = createSampleOrder()
             val result = paymentService.processOrderPayment(order, "card_token_123")
             println("Payment result: $result")
             
         } catch (e: Exception) {
-            println("❌ Unresolved PaymentGateway error: ${e.message}")
+            println("Unresolved PaymentGateway error: ${e.message}")
         }
         
-        println("\n🔍 Classic DI Scenarios Summary:")
-        println("1. ✅ CYCLE: OrderService ↔ InventoryService mutual dependency")
-        println("2. ✅ AMBIGUOUS: DatabaseUserRepository & InMemoryUserRepository → UserRepository")
-        println("3. ✅ UNRESOLVED: PaymentService → PaymentGateway (no provider)")
-        println("4. ✅ DEAD: NotificationService provides EmailChannel & SmsChannel (unused)")
     }
     
     private fun createSampleOrder(): Order {
@@ -75,19 +70,11 @@ class ECommerceApplication {
 }
 
 fun main() {
-    println("🌟 Knit DI Framework Demo - Classic Scenarios")
-    println("This demo intentionally includes problematic DI scenarios:")
-    println("- Cycle dependencies")
-    println("- Ambiguous providers") 
-    println("- Unresolved dependencies")
-    println("- Dead/unused providers")
-    println()
-    
     try {
         val app = ECommerceApplication()
         app.demonstrateDIScenarios()
     } catch (e: Exception) {
-        println("🎯 Expected DI Framework Error: ${e.message}")
+        println("Expected DI Framework Error: ${e.message}")
         println("This demonstrates how Knit detects and handles DI problems!")
     }
 }
