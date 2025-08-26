@@ -96,11 +96,11 @@ class IssueDetectionIntegrationTest : BasePlatformTestCase() {
             it.componentName.contains("Repository") || it.componentName.contains("Provider")
         }
         
-        assertTrue("Should categorize business logic issues", businessLogicIssues.isNotEmpty())
-        assertTrue("Should categorize infrastructure issues", infrastructureIssues.isNotEmpty())
-        
         println("  Business Logic Issues: ${businessLogicIssues.size}")
         println("  Infrastructure Issues: ${infrastructureIssues.size}")
+        
+        assertTrue("Should categorize business logic issues", businessLogicIssues.isNotEmpty())
+        assertTrue("Should categorize infrastructure issues", infrastructureIssues.isNotEmpty())
     }
     
     @Test
@@ -394,9 +394,67 @@ class IssueDetectionIntegrationTest : BasePlatformTestCase() {
             sourceFile = "LogProvider.kt"
         )
         
+        // Add a longer cycle that should generate WARNING severity
+        // Create a 5-component cycle: A -> B -> C -> D -> E -> A
+        val componentA = KnitComponent(
+            className = "ComponentA",
+            packageName = "com.app.chain",
+            type = ComponentType.COMPONENT,
+            dependencies = listOf(
+                KnitDependency("componentB", "ComponentB", false, null, false, false, false)
+            ),
+            providers = emptyList(),
+            sourceFile = "ComponentA.kt"
+        )
+        
+        val componentB = KnitComponent(
+            className = "ComponentB",
+            packageName = "com.app.chain",
+            type = ComponentType.COMPONENT,
+            dependencies = listOf(
+                KnitDependency("componentC", "ComponentC", false, null, false, false, false)
+            ),
+            providers = emptyList(),
+            sourceFile = "ComponentB.kt"
+        )
+        
+        val componentC = KnitComponent(
+            className = "ComponentC",
+            packageName = "com.app.chain",
+            type = ComponentType.COMPONENT,
+            dependencies = listOf(
+                KnitDependency("componentD", "ComponentD", false, null, false, false, false)
+            ),
+            providers = emptyList(),
+            sourceFile = "ComponentC.kt"
+        )
+        
+        val componentD = KnitComponent(
+            className = "ComponentD",
+            packageName = "com.app.chain",
+            type = ComponentType.COMPONENT,
+            dependencies = listOf(
+                KnitDependency("componentE", "ComponentE", false, null, false, false, false)
+            ),
+            providers = emptyList(),
+            sourceFile = "ComponentD.kt"
+        )
+        
+        val componentE = KnitComponent(
+            className = "ComponentE",
+            packageName = "com.app.chain",
+            type = ComponentType.COMPONENT,
+            dependencies = listOf(
+                KnitDependency("componentA", "ComponentA", false, null, false, false, false)
+            ),
+            providers = emptyList(),
+            sourceFile = "ComponentE.kt"
+        )
+        
         components.addAll(listOf(
             userService, orderService, dbProvider1, dbProvider2, 
-            emailService, cacheProvider1, cacheProvider2, logService, logProvider
+            emailService, cacheProvider1, cacheProvider2, logService, logProvider,
+            componentA, componentB, componentC, componentD, componentE
         ))
         
         return components
@@ -412,6 +470,9 @@ class IssueDetectionIntegrationTest : BasePlatformTestCase() {
             createComponent("PaymentService", "com.shop.payment", dependencies = listOf("PaymentGateway")),
             createProviderComponent("UserRepository", "com.shop.data", provides = listOf("UserRepository")),
             createProviderComponent("OrderRepository", "com.shop.data", provides = listOf("OrderRepository")),
+            // Add ambiguous providers to create infrastructure issues
+            createProviderComponent("AmbiguousUserProvider", "com.shop.data", provides = listOf("UserRepository")), // Duplicate UserRepository
+            createProviderComponent("AmbiguousOrderProvider", "com.shop.data", provides = listOf("OrderRepository")), // Duplicate OrderRepository
             // Missing EmailService and PaymentGateway providers (unresolved dependencies)
         )
     }

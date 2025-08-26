@@ -69,27 +69,26 @@ class AdvancedIssueDetector(private val project: Project) {
                     )
                 ))
             }
+            // Also add warnings for substantial strongly connected components
+            cycleReport.stronglyConnectedComponents
+                .filter { it.size >= 3 }
+                .forEach { scc ->
+                    val sccNodes = scc.mapNotNull { dependencyGraph.findNode(it) }
+                    val sccComponentNames = sccNodes.map { "${it.packageName}.${it.label}" }
+                    
+                    issues.add(KnitIssue(
+                        type = IssueType.CIRCULAR_DEPENDENCY,
+                        severity = Severity.WARNING,
+                        message = "strongly connected component detected with ${scc.size} components",
+                        componentName = sccComponentNames.joinToString(", "),
+                        suggestedFix = "Consider restructuring these tightly coupled components",
+                        metadata = mapOf(
+                            "stronglyConnectedComponents" to scc,
+                            "componentCount" to scc.size
+                        )
+                    ))
+                }
         }
-
-        // Always add issues for strongly connected components (even if cycles couldn't be enumerated)
-        cycleReport.stronglyConnectedComponents
-            .filter { it.size >= 3 }
-            .forEach { scc ->
-                val sccNodes = scc.mapNotNull { dependencyGraph.findNode(it) }
-                val sccComponentNames = sccNodes.map { "${it.packageName}.${it.label}" }
-                
-                issues.add(KnitIssue(
-                    type = IssueType.CIRCULAR_DEPENDENCY,
-                    severity = Severity.WARNING,
-                    message = "Strongly connected component detected with ${scc.size} components",
-                    componentName = sccComponentNames.joinToString(", "),
-                    suggestedFix = "Consider restructuring these tightly coupled components",
-                    metadata = mapOf(
-                        "stronglyConnectedComponents" to scc,
-                        "componentCount" to scc.size
-                    )
-                ))
-            }
         
         return issues
     }
@@ -451,16 +450,21 @@ class AdvancedIssueDetector(private val project: Project) {
     
     private fun analyzeSingletonLifecycles(components: List<KnitComponent>): SingletonAnalysis {
         val singletonTypes = mutableMapOf<String, MutableList<String>>()
+        val allProvidedTypes = mutableMapOf<String, MutableList<String>>()
         val lifecycleMismatches = mutableListOf<LifecycleMismatch>()
         
-        // Collect singleton providers, distinguishing by qualifier
+        // Collect providers: both explicit singletons and all providers (to detect duplicate provision regardless of @Singleton)
         components.forEach { component ->
-            component.providers.filter { it.isSingleton }.forEach { provider ->
+            component.providers.forEach { provider ->
                 val baseProvidedType = provider.providesType ?: provider.returnType
                 val qualifierKey = if (provider.isNamed) provider.namedQualifier ?: "__unnamed__" else "__default__"
                 val mapKey = "$baseProvidedType@$qualifierKey"
                 val providerPath = "${component.packageName}.${component.className}.${provider.methodName}"
-                singletonTypes.getOrPut(mapKey) { mutableListOf() }.add(providerPath)
+
+                if (provider.isSingleton) {
+                    singletonTypes.getOrPut(mapKey) { mutableListOf() }.add(providerPath)
+                }
+                allProvidedTypes.getOrPut(mapKey) { mutableListOf() }.add(providerPath)
             }
         }
         
@@ -484,8 +488,12 @@ class AdvancedIssueDetector(private val project: Project) {
             }
         }
         
-        // Filter to only conflicting providers (more than one) for the same type+qualifier
-        val conflictingProviders = singletonTypes.filterValues { it.size > 1 }
+        // Conflicts: multiple singleton providers for same type+qualifier OR multiple providers of same type+qualifier (legacy duplicate singletons)
+        val conflictingProviders = mutableMapOf<String, List<String>>()
+        singletonTypes.filterValues { it.size > 1 }.forEach { (k, v) -> conflictingProviders[k] = v }
+        allProvidedTypes.filterValues { it.size > 1 }.forEach { (k, v) ->
+            if (!conflictingProviders.containsKey(k)) conflictingProviders[k] = v
+        }
         
         return SingletonAnalysis(conflictingProviders, lifecycleMismatches)
     }
