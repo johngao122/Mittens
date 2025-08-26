@@ -14,6 +14,9 @@ class KnitAnalysisService(private val project: Project) {
     private val logger = thisLogger()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     
+    // Performance metrics
+    private var lastAnalysisMetrics: AnalysisMetrics? = null
+    
     private var lastAnalysisResult: AnalysisResult? = null
     private var isAnalysisRunning = false
     
@@ -268,13 +271,66 @@ class KnitAnalysisService(private val project: Project) {
     
     private fun detectIssues(components: List<KnitComponent>, dependencyGraph: DependencyGraph): List<KnitIssue> {
         val issues = mutableListOf<KnitIssue>()
+        val startTime = System.currentTimeMillis()
         
         // Collect existing issues from components
         components.forEach { component ->
             issues.addAll(component.issues)
         }
         
-        // Detect circular dependencies
+        logger.info("Starting advanced issue detection for ${components.size} components")
+        
+        // Use the advanced issue detector for comprehensive analysis
+        val advancedDetector = project.service<AdvancedIssueDetector>()
+        
+        try {
+            // Advanced circular dependency detection with detailed paths
+            logger.debug("Detecting circular dependencies...")
+            issues.addAll(advancedDetector.detectAdvancedCircularDependencies(components, dependencyGraph))
+            
+            // Enhanced ambiguous provider detection
+            logger.debug("Detecting ambiguous providers...")
+            issues.addAll(advancedDetector.detectEnhancedAmbiguousProviders(components))
+            
+            // Improved unresolved dependency detection
+            logger.debug("Detecting unresolved dependencies...")
+            issues.addAll(advancedDetector.detectImprovedUnresolvedDependencies(components))
+            
+            // Advanced singleton violation detection
+            logger.debug("Detecting singleton violations...")
+            issues.addAll(advancedDetector.detectAdvancedSingletonViolations(components))
+            
+            // Enhanced named qualifier mismatch detection
+            logger.debug("Detecting named qualifier mismatches...")
+            issues.addAll(advancedDetector.detectEnhancedNamedQualifierMismatches(components))
+            
+        } catch (e: Exception) {
+            logger.error("Error during advanced issue detection, falling back to basic detection", e)
+            
+            // Fallback to basic detection if advanced detection fails
+            issues.addAll(basicIssueDetection(components, dependencyGraph))
+        }
+        
+        val detectionTime = System.currentTimeMillis() - startTime
+        logger.info("Issue detection completed in ${detectionTime}ms. Found ${issues.size} issues.")
+        
+        // Sort issues by severity (ERROR first, then WARNING, then INFO)
+        return issues.sortedWith(compareBy<KnitIssue> {
+            when (it.severity) {
+                Severity.ERROR -> 0
+                Severity.WARNING -> 1
+                Severity.INFO -> 2
+            }
+        }.thenBy { it.type.name })
+    }
+    
+    /**
+     * Fallback basic issue detection for error scenarios
+     */
+    private fun basicIssueDetection(components: List<KnitComponent>, dependencyGraph: DependencyGraph): List<KnitIssue> {
+        val issues = mutableListOf<KnitIssue>()
+        
+        // Basic circular dependency detection
         if (dependencyGraph.hasCycles()) {
             issues.add(KnitIssue(
                 type = IssueType.CIRCULAR_DEPENDENCY,
@@ -285,85 +341,10 @@ class KnitAnalysisService(private val project: Project) {
             ))
         }
         
-        // Enhanced ambiguous providers detection with qualifier awareness
-        val typeToProviders = mutableMapOf<String, MutableList<Pair<String, KnitProvider>>>()
-        components.forEach { component ->
-            component.providers.forEach { provider ->
-                val providedType = provider.providesType ?: provider.returnType
-                val providerKey = if (provider.isNamed) {
-                    "$providedType@${provider.namedQualifier ?: "unnamed"}"
-                } else {
-                    providedType
-                }
-                
-                typeToProviders.getOrPut(providerKey) { mutableListOf() }.add(
-                    "${component.packageName}.${component.className}.${provider.methodName}" to provider
-                )
-            }
-        }
-        
-        typeToProviders.forEach { (typeKey, providerPairs) ->
-            if (providerPairs.size > 1) {
-                val providers = providerPairs.map { it.first }
-                val actualType = typeKey.substringBefore('@')
-                val isNamedConflict = typeKey.contains('@')
-                
-                issues.add(KnitIssue(
-                    type = IssueType.AMBIGUOUS_PROVIDER,
-                    severity = Severity.ERROR,
-                    message = if (isNamedConflict) {
-                        "Multiple providers found for type: $actualType with same qualifier"
-                    } else {
-                        "Multiple providers found for type: $actualType without qualifiers"
-                    },
-                    componentName = providers.joinToString(", "),
-                    suggestedFix = if (!isNamedConflict) {
-                        "Use @Named qualifiers to distinguish between providers"
-                    } else {
-                        "Use different @Named qualifiers or remove duplicate providers"
-                    }
-                ))
-            }
-        }
-        
-        // Enhanced unresolved dependencies detection with qualifier awareness
-        components.forEach { component ->
-            component.dependencies.forEach { dependency ->
-                val provider = findProviderForType(
-                    components, 
-                    dependency.targetType,
-                    if (dependency.isNamed) dependency.namedQualifier else null
-                )
-                
-                if (provider == null) {
-                    val message = if (dependency.isNamed) {
-                        "No provider found for dependency: ${dependency.targetType} with qualifier '@Named(${dependency.namedQualifier})'"
-                    } else {
-                        "No provider found for dependency: ${dependency.targetType}"
-                    }
-                    
-                    val suggestedFix = if (dependency.isNamed) {
-                        "Create a @Provides method with @Named(${dependency.namedQualifier}) for ${dependency.targetType}"
-                    } else {
-                        "Create a @Provides method or @Component class for ${dependency.targetType}"
-                    }
-                    
-                    issues.add(KnitIssue(
-                        type = IssueType.UNRESOLVED_DEPENDENCY,
-                        severity = Severity.ERROR,
-                        message = message,
-                        componentName = "${component.packageName}.${component.className}",
-                        sourceLocation = component.sourceFile,
-                        suggestedFix = suggestedFix
-                    ))
-                }
-            }
-        }
-        
-        // Detect singleton violations
+        // Basic singleton violations
         issues.addAll(detectSingletonViolations(components))
         
-        // Detect named qualifier mismatches
+        // Basic named qualifier mismatches
         issues.addAll(detectNamedQualifierMismatches(components))
         
         return issues
@@ -477,5 +458,44 @@ class KnitAnalysisService(private val project: Project) {
     
     fun dispose() {
         coroutineScope.cancel()
+        
+        // Clear advanced detector caches
+        try {
+            project.service<AdvancedIssueDetector>().clearCaches()
+        } catch (e: Exception) {
+            logger.debug("Failed to clear advanced detector caches", e)
+        }
+    }
+}
+
+/**
+ * Performance metrics for analysis operations
+ */
+data class AnalysisMetrics(
+    val totalAnalysisTime: Long,
+    val sourceAnalysisTime: Long,
+    val bytecodeAnalysisTime: Long,
+    val issueDetectionTime: Long,
+    val graphConstructionTime: Long,
+    val componentsProcessed: Int,
+    val dependenciesAnalyzed: Int,
+    val issuesFound: Int,
+    val cyclesDetected: Int,
+    val memoryUsedMB: Long
+) {
+    fun getPerformanceSummary(): String {
+        return """
+            |Analysis Performance Summary:
+            |  Total Time: ${totalAnalysisTime}ms
+            |  Source Analysis: ${sourceAnalysisTime}ms
+            |  Bytecode Analysis: ${bytecodeAnalysisTime}ms
+            |  Issue Detection: ${issueDetectionTime}ms
+            |  Graph Construction: ${graphConstructionTime}ms
+            |  Components: $componentsProcessed
+            |  Dependencies: $dependenciesAnalyzed
+            |  Issues Found: $issuesFound
+            |  Cycles Detected: $cyclesDetected
+            |  Memory Used: ${memoryUsedMB}MB
+        """.trimMargin()
     }
 }

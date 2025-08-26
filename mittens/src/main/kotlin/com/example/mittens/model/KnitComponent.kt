@@ -48,7 +48,8 @@ data class KnitIssue(
     val message: String,
     val componentName: String,
     val sourceLocation: String? = null,
-    val suggestedFix: String? = null
+    val suggestedFix: String? = null,
+    val metadata: Map<String, Any> = emptyMap()
 )
 
 enum class IssueType {
