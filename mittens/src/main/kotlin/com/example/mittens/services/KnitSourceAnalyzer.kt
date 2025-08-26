@@ -8,6 +8,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.PsiComment
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.openapi.util.TextRange
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
@@ -118,6 +123,12 @@ class KnitSourceAnalyzer(private val project: Project) {
         // Check if it's a 'by di' property
         if (!delegateText.contains("di")) return null
         
+        // Check if the property is commented out - skip if it is
+        if (isCommentedOut(property)) {
+            logger.debug("Skipping commented 'by di' property: ${property.name} in $containingClassName")
+            return null
+        }
+        
         val propertyName = property.name ?: return null
         val typeReference = property.typeReference
         val targetType = typeReference?.text ?: "Unknown"
@@ -154,6 +165,12 @@ class KnitSourceAnalyzer(private val project: Project) {
         val annotations = method.annotationEntries
         val providesAnnotation = annotations.find { it.shortName?.asString() == "Provides" }
             ?: return null
+        
+        // Check if the @Provides annotation is commented out - skip if it is
+        if (isAnnotationCommentedOut(providesAnnotation)) {
+            logger.debug("Skipping commented @Provides annotation on method: ${method.name} in $containingClassName")
+            return null
+        }
         
         val methodName = method.name ?: return null
         val returnType = method.typeReference?.text ?: "Unit"
@@ -272,5 +289,90 @@ class KnitSourceAnalyzer(private val project: Project) {
     private fun cleanTargetType(targetType: String): String {
         // Remove nullable markers and extra whitespace
         return targetType.replace("?", "").trim()
+    }
+    
+    /**
+     * Check if a property declaration is commented out
+     */
+    private fun isCommentedOut(property: KtProperty): Boolean {
+        // Check if the property is inside a comment block
+        if (isInCommentBlock(property)) return true
+        
+        // Check if the property line is commented with //
+        if (isLineCommented(property)) return true
+        
+        return false
+    }
+    
+    /**
+     * Check if a method/annotation is commented out
+     */
+    private fun isAnnotationCommentedOut(annotation: KtAnnotationEntry): Boolean {
+        // Check if the annotation is inside a comment block
+        if (isInCommentBlock(annotation)) return true
+        
+        // Check if the annotation line is commented with //
+        if (isLineCommented(annotation)) return true
+        
+        return false
+    }
+    
+    /**
+     * Check if an element is within a multi-line comment block (/* ... */)
+     */
+    private fun isInCommentBlock(element: PsiElement): Boolean {
+        // Look for comment elements that contain this element
+        val containingFile = element.containingFile
+        val comments = PsiTreeUtil.findChildrenOfType(containingFile, PsiComment::class.java)
+        
+        for (comment in comments) {
+            if (comment.text.startsWith("/*") && comment.text.endsWith("*/")) {
+                val commentRange = comment.textRange
+                val elementRange = element.textRange
+                
+                // Check if element is within the comment range
+                if (commentRange.contains(elementRange)) {
+                    return true
+                }
+            }
+        }
+        
+        return false
+    }
+    
+    /**
+     * Check if an element's line is commented with // 
+     */
+    private fun isLineCommented(element: PsiElement): Boolean {
+        val containingFile = element.containingFile
+        val document = com.intellij.psi.PsiDocumentManager.getInstance(project).getDocument(containingFile)
+            ?: return false
+        
+        val elementOffset = element.textRange.startOffset
+        val lineNumber = document.getLineNumber(elementOffset)
+        val lineStartOffset = document.getLineStartOffset(lineNumber)
+        val lineEndOffset = document.getLineEndOffset(lineNumber)
+        val lineText = document.getText(TextRange(lineStartOffset, lineEndOffset))
+        
+        // Check if the specific element text appears after a // comment marker on the same line
+        val elementText = element.text
+        val commentIndex = lineText.indexOf("//")
+        
+        if (commentIndex == -1) {
+            // No comment on this line
+            return false
+        }
+        
+        // Check if the element appears BEFORE the comment (not commented)
+        // or AFTER the comment (commented)
+        val elementIndexInLine = lineText.indexOf(elementText)
+        if (elementIndexInLine == -1) {
+            // Element text not found in line, fall back to checking if line starts with //
+            return lineText.trimStart().startsWith("//")
+        }
+        
+        // If element appears before the comment, it's not commented
+        // If element appears after the comment, it's commented
+        return elementIndexInLine > commentIndex
     }
 }
