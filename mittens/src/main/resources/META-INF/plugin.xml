@@ -5,26 +5,65 @@
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Mittens</name>
+    <name>Knit Analysis</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="support@knitanalysis.com" url="https://github.com/knitanalysis/mittens">Knit Analysis Team</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+    Knit Dependency Injection Analysis Plugin for IntelliJ IDEA.<br>
+    <br>
+    This plugin analyzes TikTok's Knit dependency injection framework usage in your project, providing:
+    <ul>
+        <li>Interactive dependency graph visualization</li>
+        <li>Detection of circular dependencies and ambiguous providers</li>
+        <li>Issue highlighting and quick-fix suggestions</li>
+        <li>Export capabilities for CI/CD integration</li>
+    </ul>
+    <em>Supports Knit framework version 0.1.4+</em>
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+    <depends>org.jetbrains.kotlin</depends>
+    <depends>org.jetbrains.plugins.gradle</depends>
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-
+        <!-- Register services -->
+        <applicationService serviceImplementation="com.example.mittens.services.KnitSettingsService"/>
+        <projectService serviceImplementation="com.example.mittens.services.KnitAnalysisService"/>
+        <projectService serviceImplementation="com.example.mittens.services.KnitGradleService"/>
+        
+        <!-- Settings page -->
+        <applicationConfigurable 
+            parentId="tools" 
+            instance="com.example.mittens.settings.KnitAnalysisConfigurable"
+            id="com.example.mittens.settings.KnitAnalysisConfigurable"
+            displayName="Knit Analysis"/>
+            
+        <!-- Notification groups -->
+        <notificationGroup id="Knit Analysis" displayType="BALLOON"/>
     </extensions>
+    
+    <actions>
+        <!-- Knit Analysis Actions -->
+        <group id="KnitAnalysisGroup" text="Knit Analysis" description="Knit dependency injection analysis actions">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="RefactoringMenu"/>
+            
+            <action id="RunKnitAnalysisAction" 
+                    class="com.example.mittens.actions.RunKnitAnalysisAction" 
+                    text="Run Knit Analysis" 
+                    description="Analyze Knit dependency injection in the current project">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt K"/>
+            </action>
+        </group>
+    </actions>
 </idea-plugin>

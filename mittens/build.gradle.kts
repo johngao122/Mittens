@@ -9,6 +9,26 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://repo.gradle.org/gradle/libs-releases") }
+}
+
+dependencies {
+    // ASM for bytecode analysis
+    implementation("org.ow2.asm:asm:9.6")
+    implementation("org.ow2.asm:asm-commons:9.6")
+    implementation("org.ow2.asm:asm-util:9.6")
+    
+    // Gradle Tooling API for build integration
+    implementation("org.gradle:gradle-tooling-api:8.4")
+    
+    // JSON processing for export functionality
+    implementation("com.fasterxml.jackson.core:jackson-core:2.15.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
+    
+    // Testing
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("junit:junit:4.13.2")
 }
 
 // Configure Gradle IntelliJ Plugin
@@ -17,7 +37,7 @@ intellij {
     version.set("2023.2.5")
     type.set("IC") // Target IDE Platform
 
-    plugins.set(listOf(/* Plugin Dependencies */))
+    plugins.set(listOf("Kotlin", "gradle","java"))
 }
 
 tasks {
