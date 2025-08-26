@@ -40,6 +40,10 @@
         <applicationService serviceImplementation="com.example.mittens.services.KnitSettingsService"/>
         <projectService serviceImplementation="com.example.mittens.services.KnitAnalysisService"/>
         <projectService serviceImplementation="com.example.mittens.services.KnitGradleService"/>
+        <projectService serviceImplementation="com.example.mittens.services.KnitProjectDetector"/>
+        <projectService serviceImplementation="com.example.mittens.services.KnitSourceAnalyzer"/>
+        <projectService serviceImplementation="com.example.mittens.services.KnitBytecodeAnalyzer"/>
+        <projectService serviceImplementation="com.example.mittens.services.GradleTaskRunner"/>
         
         <!-- Settings page -->
         <applicationConfigurable 

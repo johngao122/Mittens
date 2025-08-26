@@ -1,7 +1,7 @@
 package com.example.mittens.actions
 
 import com.example.mittens.services.KnitAnalysisService
-import com.example.mittens.services.KnitGradleService
+import com.example.mittens.services.KnitProjectDetector
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -29,11 +29,16 @@ class RunKnitAnalysisAction : AnAction("Run Knit Analysis", "Analyze Knit depend
             return
         }
         
-        val gradleService = project.service<KnitGradleService>()
+        val projectDetector = project.service<KnitProjectDetector>()
         val analysisService = project.service<KnitAnalysisService>()
         
         // Only show action if this is a Knit project and analysis is not running
-        e.presentation.isEnabledAndVisible = gradleService.isKnitProject() && !analysisService.isAnalysisRunning()
+        val isKnitProject = try { 
+            projectDetector.detectKnitProject().isKnitProject 
+        } catch (e: Exception) { 
+            false 
+        }
+        e.presentation.isEnabledAndVisible = isKnitProject && !analysisService.isAnalysisRunning()
         
         if (analysisService.isAnalysisRunning()) {
             e.presentation.text = "Knit Analysis Running..."
@@ -46,14 +51,21 @@ class RunKnitAnalysisAction : AnAction("Run Knit Analysis", "Analyze Knit depend
         val project = e.getData(CommonDataKeys.PROJECT) ?: return
         
         val analysisService = project.service<KnitAnalysisService>()
-        val gradleService = project.service<KnitGradleService>()
+        val projectDetector = project.service<KnitProjectDetector>()
         
         if (analysisService.isAnalysisRunning()) {
             showNotification(project, "Knit analysis is already running", NotificationType.WARNING)
             return
         }
         
-        if (!gradleService.isKnitProject()) {
+        val detectionResult = try {
+            projectDetector.detectKnitProject()
+        } catch (e: Exception) {
+            showNotification(project, "Failed to detect Knit project: ${e.message}", NotificationType.ERROR)
+            return
+        }
+        
+        if (!detectionResult.isKnitProject) {
             showNotification(project, "This project does not use the Knit framework", NotificationType.ERROR)
             return
         }
@@ -62,19 +74,12 @@ class RunKnitAnalysisAction : AnAction("Run Knit Analysis", "Analyze Knit depend
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Running Knit Analysis", true) {
             override fun run(indicator: ProgressIndicator) {
                 try {
-                    indicator.text = "Initializing Knit analysis..."
+                    indicator.text = "Starting Knit analysis..."
                     indicator.fraction = 0.1
-                    
-                    indicator.text = "Detecting Knit configuration..."
-                    val knitVersion = gradleService.getKnitVersion()
-                    logger.info("Starting analysis for Knit version: $knitVersion")
-                    indicator.fraction = 0.2
-                    
-                    indicator.text = "Analyzing dependency graph..."
-                    indicator.fraction = 0.5
+                    logger.info("Starting analysis for Knit version: ${detectionResult.knitVersion ?: "Unknown"}")
                     
                     val result = runBlocking {
-                        analysisService.runAnalysis()
+                        analysisService.runAnalysis(indicator)
                     }
                     
                     indicator.text = "Analysis complete"
