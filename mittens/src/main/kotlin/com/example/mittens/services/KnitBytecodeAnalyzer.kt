@@ -124,29 +124,42 @@ class KnitBytecodeAnalyzer(private val project: Project) {
         
         // Check if field looks like a DI field (lazy initialization, specific patterns)
         val isLazyField = field.name.endsWith("\$delegate") || fieldType.contains("Lazy")
+        val isDIField = isLazyField || isDependencyInjectionField(field)
         
-        if (isLazyField) {
+        if (isDIField) {
             logger.debug("Found potential DI field: ${field.name} in $className")
             
             val propertyName = field.name.removeSuffix("\$delegate")
             val targetType = extractTargetTypeFromSignature(field.signature)
             
+            // Enhanced singleton detection from field annotations and patterns
+            val fieldAnnotations = field.visibleAnnotations ?: emptyList()
+            val isSingleton = isLazyField || hasSingletonAnnotation(fieldAnnotations) || 
+                            isSingletonFieldPattern(field.name)
+            
+            // Extract named qualifiers from field annotations
+            val (isNamed, namedQualifier) = extractNamedQualifierFromBytecode(fieldAnnotations)
+            
+            // Enhanced type detection
+            val isFactory = isFactoryTypeFromBytecode(targetType, field.signature)
+            val isLoadable = isLoadableTypeFromBytecode(targetType, field.signature)
+            
             dependencies.add(KnitDependency(
                 propertyName = propertyName,
                 targetType = targetType,
-                isNamed = false,
-                namedQualifier = null,
-                isFactory = false,
-                isLoadable = false,
-                isSingleton = isLazyField
+                isNamed = isNamed,
+                namedQualifier = namedQualifier,
+                isFactory = isFactory,
+                isLoadable = isLoadable,
+                isSingleton = isSingleton
             ))
             
             patterns.add(InjectionPattern(
                 className = className,
                 fieldName = field.name,
                 targetType = targetType,
-                isSingleton = isLazyField,
-                pattern = "Lazy field delegation"
+                isSingleton = isSingleton,
+                pattern = if (isLazyField) "Lazy field delegation" else "DI field injection"
             ))
         }
     }
@@ -169,16 +182,22 @@ class KnitBytecodeAnalyzer(private val project: Project) {
         if (hasProvides) {
             logger.debug("Found provider method: ${method.name} returning $returnType in $className")
             
+            // Extract annotation information
+            val annotations = method.visibleAnnotations ?: emptyList()
+            val (isNamed, namedQualifier) = extractNamedQualifierFromBytecode(annotations)
+            val isSingleton = hasSingletonAnnotation(annotations)
+            val (isIntoSet, isIntoList, isIntoMap) = extractCollectionAnnotations(annotations)
+            
             providers.add(KnitProvider(
                 methodName = method.name,
                 returnType = returnType,
-                providesType = null, // Would need more analysis to extract interface types
-                isNamed = false,
-                namedQualifier = null,
-                isSingleton = false,
-                isIntoSet = false,
-                isIntoList = false,
-                isIntoMap = false
+                providesType = extractProvidesTypeFromBytecode(annotations),
+                isNamed = isNamed,
+                namedQualifier = namedQualifier,
+                isSingleton = isSingleton,
+                isIntoSet = isIntoSet,
+                isIntoList = isIntoList,
+                isIntoMap = isIntoMap
             ))
         }
         
@@ -204,10 +223,14 @@ class KnitBytecodeAnalyzer(private val project: Project) {
                 val jumpInstr = instruction as JumpInsnNode
                 logger.debug("Found IFNULL pattern in ${className}.${method.name} - potential singleton check")
                 
+                // Enhanced singleton pattern detection
+                val isSingletonPattern = isEnhancedSingletonPattern(instructions, i)
+                
                 transformations.add(KnitTransformation(
                     className = className,
-                    transformationType = "Singleton Check",
-                    details = "IFNULL instruction at position $i in method ${method.name}"
+                    transformationType = if (isSingletonPattern) "Singleton Lazy Initialization" else "Conditional Check",
+                    details = "IFNULL instruction at position $i in method ${method.name}" + 
+                             if (isSingletonPattern) " (confirmed singleton pattern)" else ""
                 ))
             }
             
@@ -258,7 +281,11 @@ class KnitBytecodeAnalyzer(private val project: Project) {
         // Check for Knit annotations in runtime visible annotations
         return classNode.visibleAnnotations?.any { annotation ->
             val annotationType = Type.getType(annotation.desc).className
-            annotationType.endsWith("Component") || annotationType.endsWith("Provides")
+            annotationType.endsWith("Component") || 
+            annotationType.endsWith("Provides") ||
+            annotationType.endsWith("Singleton") ||
+            annotationType.endsWith("Named") ||
+            annotationType.endsWith("KnitViewModel")
         } ?: false
     }
     
@@ -293,5 +320,120 @@ class KnitBytecodeAnalyzer(private val project: Project) {
         } else {
             "Unknown"
         }
+    }
+    
+    /**
+     * Extract named qualifier from bytecode annotations
+     */
+    private fun extractNamedQualifierFromBytecode(annotations: List<AnnotationNode>): Pair<Boolean, String?> {
+        val namedAnnotation = annotations.find { 
+            Type.getType(it.desc).className.endsWith("Named")
+        } ?: return false to null
+        
+        // Extract value from annotation
+        val values = namedAnnotation.values
+        if (values != null && values.size >= 2) {
+            for (i in 0 until values.size step 2) {
+                val key = values[i] as String
+                val value = values[i + 1]
+                
+                if (key == "value" || key == "qualifier") {
+                    return true to value.toString()
+                }
+            }
+        }
+        
+        return true to null // @Named without parameters
+    }
+    
+    /**
+     * Check if annotation list contains @Singleton
+     */
+    private fun hasSingletonAnnotation(annotations: List<AnnotationNode>): Boolean {
+        return annotations.any { Type.getType(it.desc).className.endsWith("Singleton") }
+    }
+    
+    /**
+     * Extract collection annotations (@IntoSet, @IntoList, @IntoMap)
+     */
+    private fun extractCollectionAnnotations(annotations: List<AnnotationNode>): Triple<Boolean, Boolean, Boolean> {
+        val isIntoSet = annotations.any { Type.getType(it.desc).className.endsWith("IntoSet") }
+        val isIntoList = annotations.any { Type.getType(it.desc).className.endsWith("IntoList") }
+        val isIntoMap = annotations.any { Type.getType(it.desc).className.endsWith("IntoMap") }
+        return Triple(isIntoSet, isIntoList, isIntoMap)
+    }
+    
+    /**
+     * Extract provides type from @Provides annotation in bytecode
+     */
+    private fun extractProvidesTypeFromBytecode(annotations: List<AnnotationNode>): String? {
+        val providesAnnotation = annotations.find { 
+            Type.getType(it.desc).className.endsWith("Provides")
+        } ?: return null
+        
+        val values = providesAnnotation.values
+        if (values != null && values.size >= 2) {
+            for (i in 0 until values.size step 2) {
+                val key = values[i] as String
+                val value = values[i + 1]
+                
+                if (key == "value") {
+                    return (value as? Type)?.className
+                }
+            }
+        }
+        
+        return null
+    }
+    
+    /**
+     * Check if field is a dependency injection field based on naming patterns
+     */
+    private fun isDependencyInjectionField(field: FieldNode): Boolean {
+        return field.name.contains("\$di") || 
+               field.name.contains("_injected") ||
+               field.name.endsWith("\$delegate")
+    }
+    
+    /**
+     * Check if field name indicates singleton pattern
+     */
+    private fun isSingletonFieldPattern(fieldName: String): Boolean {
+        return fieldName.contains("singleton") || 
+               fieldName.contains("\$instance") ||
+               fieldName.contains("_single")
+    }
+    
+    /**
+     * Enhanced singleton pattern detection by analyzing instruction sequence
+     */
+    private fun isEnhancedSingletonPattern(instructions: InsnList, ifnullIndex: Int): Boolean {
+        // Look for typical singleton pattern: IFNULL -> initialization -> PUTFIELD/PUTSTATIC
+        if (ifnullIndex + 3 >= instructions.size()) return false
+        
+        val nextInstr = instructions[ifnullIndex + 1]
+        val afterNext = instructions[ifnullIndex + 2]
+        
+        // Look for NEW instruction after IFNULL (creating instance)
+        return nextInstr.opcode == Opcodes.NEW || 
+               afterNext.opcode == Opcodes.PUTFIELD ||
+               afterNext.opcode == Opcodes.PUTSTATIC
+    }
+    
+    /**
+     * Enhanced factory type detection from bytecode
+     */
+    private fun isFactoryTypeFromBytecode(targetType: String, signature: String?): Boolean {
+        return targetType.contains("Factory") || 
+               signature?.contains("Factory") == true ||
+               targetType.contains("Function")
+    }
+    
+    /**
+     * Enhanced loadable type detection from bytecode
+     */
+    private fun isLoadableTypeFromBytecode(targetType: String, signature: String?): Boolean {
+        return targetType.contains("Loadable") || 
+               signature?.contains("Loadable") == true
     }
 }

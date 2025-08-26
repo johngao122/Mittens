@@ -207,8 +207,12 @@ class KnitAnalysisService(private val project: Project) {
             val consumerNodeId = "${component.packageName}.${component.className}"
             
             component.dependencies.forEach { dependency ->
-                // Find provider for this dependency type
-                val providerComponent = findProviderForType(components, dependency.targetType)
+                // Find provider for this dependency type with qualifier awareness
+                val providerComponent = findProviderForType(
+                    components, 
+                    dependency.targetType,
+                    if (dependency.isNamed) dependency.namedQualifier else null
+                )
                 if (providerComponent != null) {
                     val providerNodeId = "${providerComponent.packageName}.${providerComponent.className}"
                     
@@ -219,9 +223,14 @@ class KnitAnalysisService(private val project: Project) {
                             dependency.isSingleton -> EdgeType.SINGLETON
                             dependency.isFactory -> EdgeType.FACTORY
                             dependency.isNamed -> EdgeType.NAMED
+                            dependency.isLoadable -> EdgeType.DEPENDENCY // Could add LOADABLE type later
                             else -> EdgeType.DEPENDENCY
                         },
-                        label = dependency.propertyName
+                        label = if (dependency.isNamed && dependency.namedQualifier != null) {
+                            "${dependency.propertyName} (@Named(${dependency.namedQualifier}))"
+                        } else {
+                            dependency.propertyName
+                        }
                     ))
                 }
             }
@@ -230,18 +239,30 @@ class KnitAnalysisService(private val project: Project) {
         return DependencyGraph(nodes, edges)
     }
     
-    private fun findProviderForType(components: List<KnitComponent>, targetType: String): KnitComponent? {
-        // Simple type matching - look for components that provide the target type
+    private fun findProviderForType(components: List<KnitComponent>, targetType: String, namedQualifier: String? = null): KnitComponent? {
+        // Enhanced type matching with named qualifier support
         return components.find { component ->
             // Check if component class matches target type
-            component.className == targetType.substringAfterLast('.') ||
-            "${component.packageName}.${component.className}" == targetType ||
+            val classMatches = component.className == targetType.substringAfterLast('.') ||
+                              "${component.packageName}.${component.className}" == targetType
+            
             // Check if component has providers for this type
-            component.providers.any { provider ->
-                provider.returnType == targetType || 
-                provider.providesType == targetType ||
-                provider.returnType.substringAfterLast('.') == targetType.substringAfterLast('.')
+            val providerMatches = component.providers.any { provider ->
+                val typeMatches = provider.returnType == targetType || 
+                                 provider.providesType == targetType ||
+                                 provider.returnType.substringAfterLast('.') == targetType.substringAfterLast('.')
+                
+                // Check named qualifier matching
+                val qualifierMatches = if (namedQualifier != null) {
+                    provider.isNamed && provider.namedQualifier == namedQualifier
+                } else {
+                    !provider.isNamed // If no qualifier specified, match only non-named providers
+                }
+                
+                typeMatches && qualifierMatches
             }
+            
+            classMatches || providerMatches
         }
     }
     
@@ -264,42 +285,189 @@ class KnitAnalysisService(private val project: Project) {
             ))
         }
         
-        // Detect ambiguous providers
-        val typeToProviders = mutableMapOf<String, MutableList<String>>()
+        // Enhanced ambiguous providers detection with qualifier awareness
+        val typeToProviders = mutableMapOf<String, MutableList<Pair<String, KnitProvider>>>()
         components.forEach { component ->
             component.providers.forEach { provider ->
                 val providedType = provider.providesType ?: provider.returnType
-                typeToProviders.getOrPut(providedType) { mutableListOf() }.add(
-                    "${component.packageName}.${component.className}.${provider.methodName}"
+                val providerKey = if (provider.isNamed) {
+                    "$providedType@${provider.namedQualifier ?: "unnamed"}"
+                } else {
+                    providedType
+                }
+                
+                typeToProviders.getOrPut(providerKey) { mutableListOf() }.add(
+                    "${component.packageName}.${component.className}.${provider.methodName}" to provider
                 )
             }
         }
         
-        typeToProviders.forEach { (type, providers) ->
-            if (providers.size > 1) {
+        typeToProviders.forEach { (typeKey, providerPairs) ->
+            if (providerPairs.size > 1) {
+                val providers = providerPairs.map { it.first }
+                val actualType = typeKey.substringBefore('@')
+                val isNamedConflict = typeKey.contains('@')
+                
                 issues.add(KnitIssue(
                     type = IssueType.AMBIGUOUS_PROVIDER,
                     severity = Severity.ERROR,
-                    message = "Multiple providers found for type: $type",
+                    message = if (isNamedConflict) {
+                        "Multiple providers found for type: $actualType with same qualifier"
+                    } else {
+                        "Multiple providers found for type: $actualType without qualifiers"
+                    },
                     componentName = providers.joinToString(", "),
-                    suggestedFix = "Use @Named qualifiers to distinguish between providers"
+                    suggestedFix = if (!isNamedConflict) {
+                        "Use @Named qualifiers to distinguish between providers"
+                    } else {
+                        "Use different @Named qualifiers or remove duplicate providers"
+                    }
                 ))
             }
         }
         
-        // Detect unresolved dependencies
+        // Enhanced unresolved dependencies detection with qualifier awareness
         components.forEach { component ->
             component.dependencies.forEach { dependency ->
-                val provider = findProviderForType(components, dependency.targetType)
+                val provider = findProviderForType(
+                    components, 
+                    dependency.targetType,
+                    if (dependency.isNamed) dependency.namedQualifier else null
+                )
+                
                 if (provider == null) {
+                    val message = if (dependency.isNamed) {
+                        "No provider found for dependency: ${dependency.targetType} with qualifier '@Named(${dependency.namedQualifier})'"
+                    } else {
+                        "No provider found for dependency: ${dependency.targetType}"
+                    }
+                    
+                    val suggestedFix = if (dependency.isNamed) {
+                        "Create a @Provides method with @Named(${dependency.namedQualifier}) for ${dependency.targetType}"
+                    } else {
+                        "Create a @Provides method or @Component class for ${dependency.targetType}"
+                    }
+                    
                     issues.add(KnitIssue(
                         type = IssueType.UNRESOLVED_DEPENDENCY,
                         severity = Severity.ERROR,
-                        message = "No provider found for dependency: ${dependency.targetType}",
+                        message = message,
                         componentName = "${component.packageName}.${component.className}",
                         sourceLocation = component.sourceFile,
-                        suggestedFix = "Create a @Provides method or @Component class for ${dependency.targetType}"
+                        suggestedFix = suggestedFix
                     ))
+                }
+            }
+        }
+        
+        // Detect singleton violations
+        issues.addAll(detectSingletonViolations(components))
+        
+        // Detect named qualifier mismatches
+        issues.addAll(detectNamedQualifierMismatches(components))
+        
+        return issues
+    }
+    
+    /**
+     * Detect singleton violations - multiple singleton instances of the same type
+     */
+    private fun detectSingletonViolations(components: List<KnitComponent>): List<KnitIssue> {
+        val issues = mutableListOf<KnitIssue>()
+        val singletonTypes = mutableMapOf<String, MutableList<String>>()
+        
+        // Collect all singleton providers
+        components.forEach { component ->
+            component.providers.filter { it.isSingleton }.forEach { provider ->
+                val providedType = provider.providesType ?: provider.returnType
+                val providerPath = "${component.packageName}.${component.className}.${provider.methodName}"
+                
+                singletonTypes.getOrPut(providedType) { mutableListOf() }.add(providerPath)
+            }
+            
+            // Also check for singleton dependencies that might create multiple instances
+            component.dependencies.filter { it.isSingleton }.forEach { dependency ->
+                val dependencyType = dependency.targetType
+                val dependencyPath = "${component.packageName}.${component.className}.${dependency.propertyName}"
+                
+                // Check if there are multiple non-singleton providers for this singleton dependency
+                val nonSingletonProviders = components.flatMap { comp ->
+                    comp.providers.filter { prov ->
+                        (prov.providesType ?: prov.returnType) == dependencyType && !prov.isSingleton
+                    }.map { "${comp.packageName}.${comp.className}.${it.methodName}" }
+                }
+                
+                if (nonSingletonProviders.isNotEmpty()) {
+                    issues.add(KnitIssue(
+                        type = IssueType.SINGLETON_VIOLATION,
+                        severity = Severity.WARNING,
+                        message = "Singleton dependency '${dependency.targetType}' is provided by non-singleton providers",
+                        componentName = "${component.packageName}.${component.className}",
+                        sourceLocation = component.sourceFile,
+                        suggestedFix = "Mark providers as @Singleton: ${nonSingletonProviders.joinToString()}"
+                    ))
+                }
+            }
+        }
+        
+        // Check for multiple singleton providers of same type
+        singletonTypes.forEach { (type, providers) ->
+            if (providers.size > 1) {
+                issues.add(KnitIssue(
+                    type = IssueType.SINGLETON_VIOLATION,
+                    severity = Severity.ERROR,
+                    message = "Multiple singleton providers found for type: $type",
+                    componentName = providers.joinToString(", "),
+                    suggestedFix = "Remove duplicate singleton providers or use different types/qualifiers"
+                ))
+            }
+        }
+        
+        return issues
+    }
+    
+    /**
+     * Detect named qualifier mismatches between providers and consumers
+     */
+    private fun detectNamedQualifierMismatches(components: List<KnitComponent>): List<KnitIssue> {
+        val issues = mutableListOf<KnitIssue>()
+        
+        // Build map of available providers with their qualifiers
+        val availableProviders = mutableMapOf<String, MutableSet<String?>>()
+        components.forEach { component ->
+            component.providers.forEach { provider ->
+                val providedType = provider.providesType ?: provider.returnType
+                availableProviders.getOrPut(providedType) { mutableSetOf() }.add(
+                    if (provider.isNamed) provider.namedQualifier else null
+                )
+            }
+        }
+        
+        // Check each dependency for qualifier mismatches
+        components.forEach { component ->
+            component.dependencies.filter { it.isNamed }.forEach { dependency ->
+                val targetType = dependency.targetType
+                val requestedQualifier = dependency.namedQualifier
+                val availableQualifiers = availableProviders[targetType]
+                
+                if (availableQualifiers != null) {
+                    // Check if the requested qualifier exists
+                    if (requestedQualifier !in availableQualifiers) {
+                        val availableQualifiersList = availableQualifiers.filterNotNull()
+                        
+                        issues.add(KnitIssue(
+                            type = IssueType.NAMED_QUALIFIER_MISMATCH,
+                            severity = Severity.ERROR,
+                            message = "Named qualifier '@Named($requestedQualifier)' not found for type: $targetType",
+                            componentName = "${component.packageName}.${component.className}",
+                            sourceLocation = component.sourceFile,
+                            suggestedFix = if (availableQualifiersList.isNotEmpty()) {
+                                "Available qualifiers: ${availableQualifiersList.joinToString()}"
+                            } else {
+                                "Create a provider with @Named($requestedQualifier) for $targetType"
+                            }
+                        ))
+                    }
                 }
             }
         }

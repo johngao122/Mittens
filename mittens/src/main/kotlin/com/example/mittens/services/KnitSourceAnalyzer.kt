@@ -76,9 +76,11 @@ class KnitSourceAnalyzer(private val project: Project) {
         val classAnnotations = ktClass.annotationEntries
         val hasComponent = classAnnotations.any { it.shortName?.asString() == "Component" }
         val hasProvides = classAnnotations.any { it.shortName?.asString() == "Provides" }
+        val hasKnitViewModel = classAnnotations.any { it.shortName?.asString() == "KnitViewModel" }
         
         // Determine component type
         val componentType = when {
+            hasKnitViewModel -> ComponentType.COMPONENT // KnitViewModel is a special type of component
             hasComponent && (dependencies.isNotEmpty() || providers.isNotEmpty()) -> ComponentType.COMPOSITE
             hasComponent -> ComponentType.COMPONENT
             hasProvides || providers.isNotEmpty() -> ComponentType.PROVIDER
@@ -122,15 +124,29 @@ class KnitSourceAnalyzer(private val project: Project) {
         
         logger.debug("Found 'by di' property: $propertyName: $targetType in $containingClassName")
         
-        // TODO: Parse named qualifiers, factory types, etc. in Phase 3
+        // Parse annotations on the property
+        val annotations = property.annotationEntries
+        val namedAnnotation = annotations.find { it.shortName?.asString() == "Named" }
+        val singletonAnnotation = annotations.find { it.shortName?.asString() == "Singleton" }
+        
+        // Extract named qualifier (string-based or class-based)
+        val (isNamed, namedQualifier) = extractNamedQualifier(namedAnnotation)
+        
+        // Enhanced factory and function type detection
+        val isFactory = isFactoryType(targetType)
+        val isLoadable = isLoadableType(targetType)
+        
+        // Singleton detection from annotations or delegate patterns
+        val isSingleton = singletonAnnotation != null || isSingletonDelegate(delegateText)
+        
         return KnitDependency(
             propertyName = propertyName,
-            targetType = targetType,
-            isNamed = false, // TODO: Implement in Phase 3
-            namedQualifier = null,
-            isFactory = targetType.startsWith("Factory<") || targetType.contains("() ->"),
-            isLoadable = targetType.startsWith("Loadable<"),
-            isSingleton = false // TODO: Detect in Phase 3
+            targetType = cleanTargetType(targetType),
+            isNamed = isNamed,
+            namedQualifier = namedQualifier,
+            isFactory = isFactory,
+            isLoadable = isLoadable,
+            isSingleton = isSingleton
         )
     }
     
@@ -147,6 +163,14 @@ class KnitSourceAnalyzer(private val project: Project) {
         
         logger.debug("Found @Provides method: $methodName(): $returnType in $containingClassName")
         
+        // Parse named qualifier from @Named annotation
+        val namedAnnotation = annotations.find { it.shortName?.asString() == "Named" }
+        val (isNamed, namedQualifier) = extractNamedQualifier(namedAnnotation)
+        
+        // Parse singleton annotation
+        val singletonAnnotation = annotations.find { it.shortName?.asString() == "Singleton" }
+        val isSingleton = singletonAnnotation != null
+        
         // Check for collection annotations
         val hasIntoSet = annotations.any { it.shortName?.asString() == "IntoSet" }
         val hasIntoList = annotations.any { it.shortName?.asString() == "IntoList" }
@@ -156,9 +180,9 @@ class KnitSourceAnalyzer(private val project: Project) {
             methodName = methodName,
             returnType = returnType,
             providesType = providesType,
-            isNamed = false, // TODO: Implement in Phase 3
-            namedQualifier = null,
-            isSingleton = false, // TODO: Detect in Phase 3  
+            isNamed = isNamed,
+            namedQualifier = namedQualifier,
+            isSingleton = isSingleton,
             isIntoSet = hasIntoSet,
             isIntoList = hasIntoList,
             isIntoMap = hasIntoMap
@@ -176,5 +200,77 @@ class KnitSourceAnalyzer(private val project: Project) {
             }
         }
         return null
+    }
+    
+    /**
+     * Extract named qualifier from @Named annotation
+     * Supports both string-based @Named("qualifier") and class-based @Named(qualifier = SomeClass::class)
+     */
+    private fun extractNamedQualifier(namedAnnotation: KtAnnotationEntry?): Pair<Boolean, String?> {
+        if (namedAnnotation == null) return false to null
+        
+        val valueArguments = namedAnnotation.valueArguments
+        if (valueArguments.isEmpty()) return true to null // @Named without parameters
+        
+        val firstArg = valueArguments.first()
+        val expression = firstArg.getArgumentExpression()?.text
+        
+        return when {
+            expression == null -> true to null
+            expression.startsWith("\"") && expression.endsWith("\"") -> {
+                // String-based: @Named("qualifier")
+                true to expression.removeSurrounding("\"")
+            }
+            expression.endsWith("::class") -> {
+                // Class-based: @Named(qualifier = SomeClass::class)
+                true to expression.removeSuffix("::class")
+            }
+            else -> {
+                // Handle named parameter: @Named(qualifier = "value")
+                val namedParam = valueArguments.find { it.getArgumentName()?.asName?.asString() == "qualifier" }
+                val paramExpression = namedParam?.getArgumentExpression()?.text
+                when {
+                    paramExpression?.startsWith("\"") == true && paramExpression.endsWith("\"") -> {
+                        true to paramExpression.removeSurrounding("\"")
+                    }
+                    paramExpression?.endsWith("::class") == true -> {
+                        true to paramExpression.removeSuffix("::class")
+                    }
+                    else -> true to expression
+                }
+            }
+        }
+    }
+    
+    /**
+     * Enhanced factory type detection
+     */
+    private fun isFactoryType(targetType: String): Boolean {
+        return targetType.startsWith("Factory<") || 
+               targetType.contains("() ->") ||
+               targetType.matches(Regex(".*\\(\\)\\s*->\\s*.*")) // Enhanced lambda detection
+    }
+    
+    /**
+     * Enhanced loadable type detection
+     */
+    private fun isLoadableType(targetType: String): Boolean {
+        return targetType.startsWith("Loadable<")
+    }
+    
+    /**
+     * Detect singleton patterns in delegate expressions
+     */
+    private fun isSingletonDelegate(delegateText: String): Boolean {
+        // Look for singleton patterns in di delegate like "by di.singleton"
+        return delegateText.contains("singleton") || delegateText.contains("single")
+    }
+    
+    /**
+     * Clean target type by removing generic noise for better matching
+     */
+    private fun cleanTargetType(targetType: String): String {
+        // Remove nullable markers and extra whitespace
+        return targetType.replace("?", "").trim()
     }
 }
