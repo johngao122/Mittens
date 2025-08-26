@@ -36,6 +36,11 @@ class GradleTaskRunner(private val project: Project) {
             val connector = GradleConnector.newConnector()
             connector.forProjectDirectory(projectDir)
             
+            // Set class loader to avoid SLF4J conflicts
+            val currentThread = Thread.currentThread()
+            val originalClassLoader = currentThread.contextClassLoader
+            currentThread.contextClassLoader = this::class.java.classLoader
+            
             val connection: ProjectConnection = connector.connect()
             
             try {
@@ -53,6 +58,8 @@ class GradleTaskRunner(private val project: Project) {
                 
             } finally {
                 connection.close()
+                // Restore original class loader
+                currentThread.contextClassLoader = originalClassLoader
             }
             
         } catch (e: Exception) {

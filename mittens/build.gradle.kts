@@ -18,8 +18,12 @@ dependencies {
     implementation("org.ow2.asm:asm-commons:9.6")
     implementation("org.ow2.asm:asm-util:9.6")
     
-    // Gradle Tooling API for build integration
-    implementation("org.gradle:gradle-tooling-api:8.4")
+    // Gradle Tooling API for build integration (exclude SLF4J to avoid conflicts with IntelliJ)
+    implementation("org.gradle:gradle-tooling-api:8.4") {
+        exclude(group = "org.slf4j", module = "slf4j-api")
+        exclude(group = "org.slf4j", module = "slf4j-simple")
+        exclude(group = "org.slf4j", module = "slf4j-nop")
+    }
     
     // JSON processing for export functionality
     implementation("com.fasterxml.jackson.core:jackson-core:2.15.2")
