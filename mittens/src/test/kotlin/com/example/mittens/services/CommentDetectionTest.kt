@@ -5,11 +5,11 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.junit.Test
 
 /**
- * Core tests for Phase 1 implementation: Comment Detection for False Positive Elimination
+ * Core tests for Comment Detection for False Positive Elimination
  * These tests validate the specific scenarios mentioned in ANALYSIS_ACCURACY_INVESTIGATION.md
  */
 @TestDataPath("\$CONTENT_ROOT/testData")
-class Phase1CommentDetectionTest : BasePlatformTestCase() {
+class CommentDetectionTest : BasePlatformTestCase() {
     
     private lateinit var sourceAnalyzer: KnitSourceAnalyzer
     
@@ -19,8 +19,8 @@ class Phase1CommentDetectionTest : BasePlatformTestCase() {
     }
     
     @Test
-    fun testPhase1Requirement_CommentedDependencyIgnored() {
-        // Phase 1 Requirement: Commented 'by di' dependencies should be ignored
+    fun testCommentedDependencyIgnored() {
+        // Commented 'by di' dependencies should be ignored
         // This addresses the PaymentGateway false positive in the investigation
         
         val paymentServiceContent = """
@@ -46,12 +46,12 @@ class Phase1CommentDetectionTest : BasePlatformTestCase() {
         assertEquals("PaymentService should have 0 dependencies (commented PaymentGateway ignored)", 
                     0, paymentService!!.dependencies.size)
         
-        println("✅ Phase 1: Commented dependency properly ignored in PaymentService")
+        println("✅ Commented dependency properly ignored in PaymentService")
     }
     
     @Test  
-    fun testPhase1Requirement_CommentedProviderIgnored() {
-        // Phase 1 Requirement: Commented @Provides annotations should be ignored
+    fun testCommentedProviderIgnored() {
+        // Commented @Provides annotations should be ignored
         // This addresses the InMemoryUserRepository false positive in the investigation
         
         val inMemoryRepoContent = """
@@ -74,15 +74,15 @@ class Phase1CommentDetectionTest : BasePlatformTestCase() {
         if (inMemoryRepo != null) {
             assertEquals("InMemoryUserRepository should have 0 providers (commented @Provides ignored)", 
                         0, inMemoryRepo.providers.size)
-            println("✅ Phase 1: Commented provider properly ignored in InMemoryUserRepository")
+            println("✅ Commented provider properly ignored in InMemoryUserRepository")
         } else {
-            println("✅ Phase 1: InMemoryUserRepository not detected as component (no active annotations)")
+            println("✅ InMemoryUserRepository not detected as component (no active annotations)")
         }
     }
     
     @Test
-    fun testPhase1Requirement_ActiveCodeStillDetected() {
-        // Phase 1 Requirement: Active (non-commented) code should still be detected
+    fun testActiveCodeStillDetected() {
+        // Active (non-commented) code should still be detected
         // This ensures we don't break existing functionality
         
         val activeServiceContent = """
@@ -120,12 +120,12 @@ class Phase1CommentDetectionTest : BasePlatformTestCase() {
         assertEquals("ActiveProvider should have 1 provider", 1, activeProvider!!.providers.size)
         assertEquals("Provider should return RealService", "RealService", activeProvider.providers.first().returnType)
         
-        println("✅ Phase 1: Active dependencies and providers properly detected")
+        println("✅ Active dependencies and providers properly detected")
     }
     
     @Test
-    fun testPhase1Requirement_InvestigationScenarios() {
-        // Phase 1 Requirement: Validate the specific scenarios from ANALYSIS_ACCURACY_INVESTIGATION.md
+    fun testInvestigationScenarios() {
+        // Validate the specific scenarios from ANALYSIS_ACCURACY_INVESTIGATION.md
         // Before: 7 reported issues (6 false positives + 1 real)
         // After: Should eliminate false positives from commented code
         
@@ -163,13 +163,13 @@ class Phase1CommentDetectionTest : BasePlatformTestCase() {
         assertEquals("OrderService dependency should be InventoryService", "InventoryService", orderService.dependencies.first().targetType)
         assertEquals("InventoryService dependency should be OrderService", "OrderService", inventoryService.dependencies.first().targetType)
         
-        println("✅ Phase 1: Real circular dependency properly detected (not eliminated)")
-        println("✅ Phase 1: Comment detection doesn't affect valid dependency detection")
+        println("✅ Real circular dependency properly detected (not eliminated)")
+        println("✅ Comment detection doesn't affect valid dependency detection")
     }
     
     @Test
-    fun testPhase1Requirement_AccuracyImprovement() {
-        // Phase 1 Requirement: Demonstrate accuracy improvement
+    fun testAccuracyImprovement() {
+        // Demonstrate accuracy improvement
         // This test combines scenarios to show before/after behavior
         
         val mixedScenarioContent = """
@@ -217,7 +217,7 @@ class Phase1CommentDetectionTest : BasePlatformTestCase() {
         assertEquals("Active provider should return ActiveService", "ActiveService",
                     providerWithCommentedMethods.providers.first().returnType)
         
-        println("✅ Phase 1: Mixed scenario - only active code detected, commented code ignored")
-        println("✅ Phase 1: False positive elimination demonstrated")
+        println("✅ Mixed scenario - only active code detected, commented code ignored")
+        println("✅ False positive elimination demonstrated")
     }
 }

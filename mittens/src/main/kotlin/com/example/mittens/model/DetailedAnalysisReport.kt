@@ -1,40 +1,46 @@
 package com.example.mittens.model
 
 class DetailedAnalysisReport(val summary: AnalysisSummary) {
-    
+
     fun generateNotificationMessage(): String {
         val healthScore = DetailedAnalysisReport.generateHealthScore(summary)
         val healthEmoji = DetailedAnalysisReport.getHealthEmoji(healthScore)
-        
+
         return buildString {
-            // Header with summary and health score
+
             appendLine("Knit Analysis Complete! ✓ $healthEmoji Health Score: $healthScore/100")
-            appendLine("Components: ${summary.totalComponents} • Dependencies: ${summary.totalDependencies} • Analysis: ${formatTime(summary.analysisTime)}")
-            
+            appendLine(
+                "Components: ${summary.totalComponents} • Dependencies: ${summary.totalDependencies} • Analysis: ${
+                    formatTime(
+                        summary.analysisTime
+                    )
+                }"
+            )
+
             if (summary.totalIssues > 0) {
                 appendLine()
                 appendLine("ISSUES FOUND (${summary.totalIssues} total):")
-                
-                // Severity breakdown
+
+
                 if (summary.errorCount > 0) {
                     append("🔴 Errors (${summary.errorCount}): ")
                     append(formatIssueBreakdown(summary.issueBreakdown, Severity.ERROR))
                     appendLine()
                 }
-                
+
                 if (summary.warningCount > 0) {
                     append("🟡 Warnings (${summary.warningCount}): ")
                     append(formatIssueBreakdown(summary.issueBreakdown, Severity.WARNING))
                     appendLine()
                 }
-                
+
                 if (summary.infoCount > 0) {
                     append("ℹ️ Info (${summary.infoCount}): ")
                     append(formatIssueBreakdown(summary.issueBreakdown, Severity.INFO))
                     appendLine()
                 }
-                
-                // Top issues preview
+
+
                 if (summary.topIssues.isNotEmpty()) {
                     appendLine()
                     appendLine("Top Issues:")
@@ -51,15 +57,15 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
                 appendLine()
                 appendLine("✨ No issues found! Your Knit dependency injection is clean.")
             }
-            
-            // Performance and scan info
+
+
             appendLine()
             if (summary.filesScanned > 0) {
                 appendLine("📊 Scanned ${summary.filesScanned} files • ${summary.componentsWithIssues} components with issues")
             }
         }.trim()
     }
-    
+
     fun generateExpandedDetails(): String {
         return buildString {
             appendLine("=== Knit Analysis Detailed Report ===")
@@ -67,7 +73,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             appendLine("Analysis Time: ${formatTime(summary.analysisTime)}")
             appendLine("Health Score: ${generateHealthScore(summary)}/100 ${getHealthEmoji(generateHealthScore(summary))}")
             appendLine()
-            
+
             appendLine("=== Project Scan Summary ===")
             appendLine("Files Scanned: ${summary.filesScanned}")
             appendLine("Components Found: ${summary.totalComponents}")
@@ -75,24 +81,24 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             appendLine("Components with Issues: ${summary.componentsWithIssues}")
             appendLine("Circular Dependencies: ${if (summary.hasCycles) "Yes ⚠️" else "No ✓"}")
             appendLine()
-            
+
             if (summary.totalIssues > 0) {
                 appendLine("=== Issue Breakdown by Type ===")
                 summary.issueBreakdown.toList().sortedByDescending { it.second }.forEach { (type, count) ->
                     appendLine("${formatIssueTypeIcon(type)} ${formatIssueType(type)}: $count")
                 }
                 appendLine()
-                
+
                 appendLine("=== Issue Breakdown by Severity ===")
                 appendLine("🔴 Critical Errors: ${summary.errorCount}")
-                appendLine("🟡 Warnings: ${summary.warningCount}") 
+                appendLine("🟡 Warnings: ${summary.warningCount}")
                 appendLine("ℹ️ Information: ${summary.infoCount}")
                 appendLine()
-                
+
                 appendLine("=== Detailed Issue Analysis ===")
                 val groupedIssues = summary.topIssues.groupBy { it.severity }
-                
-                // Show errors first
+
+
                 groupedIssues[Severity.ERROR]?.let { errors ->
                     appendLine("🔴 CRITICAL ERRORS (${errors.size}):")
                     appendLine("${"=".repeat(60)}")
@@ -107,8 +113,8 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
                         appendLine()
                     }
                 }
-                
-                // Then warnings
+
+
                 groupedIssues[Severity.WARNING]?.let { warnings ->
                     appendLine("🟡 WARNINGS (${warnings.size}):")
                     appendLine("${"=".repeat(40)}")
@@ -123,8 +129,8 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
                         appendLine()
                     }
                 }
-                
-                // Finally info
+
+
                 groupedIssues[Severity.INFO]?.let { infos ->
                     appendLine("ℹ️ INFORMATION (${infos.size}):")
                     appendLine("${"=".repeat(30)}")
@@ -145,16 +151,16 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
                 appendLine("No issues were found during the analysis.")
                 appendLine()
             }
-            
+
             appendLine("=== Resolution Guide ===")
             appendIssueResolutionGuide()
-            
+
             appendLine()
             appendLine("=== Best Practices Recommendations ===")
             appendBestPracticesGuide()
         }
     }
-    
+
     private fun StringBuilder.appendIssueResolutionGuide() {
         appendLine("🔄 Circular Dependencies:")
         appendLine("   • Extract interfaces to break direct dependencies")
@@ -162,28 +168,28 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
         appendLine("   • Consider architectural redesign with layered approach")
         appendLine("   • Implement mediator or event-driven patterns")
         appendLine()
-        
+
         appendLine("❓ Unresolved Dependencies:")
         appendLine("   • Add @Provides annotation to provider classes/methods")
         appendLine("   • Check import statements and class visibility")
         appendLine("   • Verify @Named qualifiers match exactly (case-sensitive)")
         appendLine("   • Ensure return types match dependency types")
         appendLine()
-        
+
         appendLine("🔁 Singleton Violations:")
         appendLine("   • Use @Singleton annotation consistently")
         appendLine("   • Avoid multiple providers for the same type")
         appendLine("   • Consider component scope appropriateness")
         appendLine("   • Review lifecycle management requirements")
         appendLine()
-        
+
         appendLine("🏷️ Named Qualifier Issues:")
         appendLine("   • Double-check qualifier names for typos")
         appendLine("   • Ensure @Named annotations match between providers and consumers")
         appendLine("   • Consider using type-safe qualifiers with annotation classes")
         appendLine("   • Verify qualifier uniqueness within scope")
         appendLine()
-        
+
         appendLine("🎯 Ambiguous Providers:")
         appendLine("   • Use @Named qualifiers to distinguish providers")
         appendLine("   • Remove duplicate or unnecessary providers")
@@ -191,7 +197,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
         appendLine("   • Review provider scope and specificity")
         appendLine()
     }
-    
+
     private fun StringBuilder.appendBestPracticesGuide() {
         appendLine("🏗️ Architecture:")
         appendLine("   • Keep dependency graphs shallow and well-layered")
@@ -199,21 +205,21 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
         appendLine("   • Separate concerns into distinct components")
         appendLine("   • Avoid deep injection chains")
         appendLine()
-        
+
         appendLine("🔧 Implementation:")
         appendLine("   • Prefer constructor injection over property injection")
         appendLine("   • Use @Provides methods for complex object creation")
         appendLine("   • Keep provider methods simple and focused")
         appendLine("   • Document complex dependency relationships")
         appendLine()
-        
+
         appendLine("🧪 Testing:")
         appendLine("   • Design components for easy testing and mocking")
         appendLine("   • Use test-specific configurations for DI")
         appendLine("   • Verify injection works in integration tests")
         appendLine("   • Test error scenarios and edge cases")
         appendLine()
-        
+
         appendLine("⚡ Performance:")
         appendLine("   • Use singletons judiciously for heavy objects")
         appendLine("   • Avoid creating unnecessary object graphs")
@@ -221,19 +227,19 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
         appendLine("   • Profile and monitor injection performance")
         appendLine()
     }
-    
+
     fun generateCompactSummary(): String {
         return buildString {
             val healthScore = generateHealthScore(summary)
             val healthEmoji = getHealthEmoji(healthScore)
-            
+
             appendLine("Knit Analysis Results $healthEmoji $healthScore/100")
             appendLine("${summary.totalComponents} components, ${summary.totalDependencies} dependencies")
-            
+
             if (summary.totalIssues > 0) {
                 val issueText = mutableListOf<String>()
                 if (summary.errorCount > 0) issueText.add("${summary.errorCount} errors")
-                if (summary.warningCount > 0) issueText.add("${summary.warningCount} warnings") 
+                if (summary.warningCount > 0) issueText.add("${summary.warningCount} warnings")
                 if (summary.infoCount > 0) issueText.add("${summary.infoCount} info")
                 appendLine("Issues: ${issueText.joinToString(", ")}")
             } else {
@@ -241,7 +247,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             }
         }.trim()
     }
-    
+
     private fun formatTime(millis: Long): String {
         return when {
             millis < 1000 -> "${millis}ms"
@@ -249,22 +255,22 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             else -> "${millis / 60000}m ${(millis % 60000) / 1000}s"
         }
     }
-    
+
     private fun formatIssueBreakdown(breakdown: Map<IssueType, Int>, targetSeverity: Severity): String {
-        // This is a simplified version - we'd need issue severity mapping for full accuracy
+
         val relevantIssues = breakdown.entries.sortedByDescending { it.value }
         return relevantIssues.take(3).joinToString(", ") { (type, count) ->
             "${formatIssueTypeShort(type)} ($count)"
         }
     }
-    
+
     private fun formatTopIssue(issue: IssuePreview): String {
         val componentPart = if (issue.componentName.isNotBlank()) {
             " in ${issue.componentName.substringAfterLast(".")}"
         } else ""
         return "${issue.message}$componentPart"
     }
-    
+
     private fun formatIssueType(type: IssueType): String {
         return when (type) {
             IssueType.CIRCULAR_DEPENDENCY -> "Circular Dependencies"
@@ -275,7 +281,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             IssueType.MISSING_COMPONENT_ANNOTATION -> "Missing Annotations"
         }
     }
-    
+
     private fun formatIssueTypeShort(type: IssueType): String {
         return when (type) {
             IssueType.CIRCULAR_DEPENDENCY -> "Circular"
@@ -286,7 +292,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             IssueType.MISSING_COMPONENT_ANNOTATION -> "Annotations"
         }
     }
-    
+
     private fun getSeverityIcon(severity: Severity): String {
         return when (severity) {
             Severity.ERROR -> "🔴"
@@ -294,7 +300,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             Severity.INFO -> "ℹ️"
         }
     }
-    
+
     private fun formatIssueTypeIcon(type: IssueType): String {
         return when (type) {
             IssueType.CIRCULAR_DEPENDENCY -> "🔄"
@@ -305,7 +311,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             IssueType.MISSING_COMPONENT_ANNOTATION -> "📝"
         }
     }
-    
+
     private fun getIssueImpactDescription(type: IssueType): String {
         return when (type) {
             IssueType.CIRCULAR_DEPENDENCY -> "Prevents compilation, can cause runtime stack overflow"
@@ -316,7 +322,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             IssueType.MISSING_COMPONENT_ANNOTATION -> "Component not registered, injection will fail"
         }
     }
-    
+
     companion object {
         fun formatIssueForQuickInfo(issue: IssuePreview): String {
             val severity = when (issue.severity) {
@@ -324,7 +330,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
                 Severity.WARNING -> "WARNING"
                 Severity.INFO -> "INFO"
             }
-            
+
             val typeDescription = when (issue.type) {
                 IssueType.CIRCULAR_DEPENDENCY -> "Components depend on each other in a cycle"
                 IssueType.AMBIGUOUS_PROVIDER -> "Multiple providers found for the same dependency"
@@ -333,26 +339,27 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
                 IssueType.NAMED_QUALIFIER_MISMATCH -> "Named qualifier doesn't match any provider"
                 IssueType.MISSING_COMPONENT_ANNOTATION -> "Component missing required annotation"
             }
-            
+
             return "[$severity] $typeDescription: ${issue.message}"
         }
-        
+
         fun generateHealthScore(summary: AnalysisSummary): Int {
             if (summary.totalComponents == 0) return 100
-            
+
             val errorPenalty = summary.errorCount * 10
             val warningPenalty = summary.warningCount * 5
             val infoPenalty = summary.infoCount * 2
-            
+
             val cyclePenalty = if (summary.hasCycles) 15 else 0
-            val componentHealthRatio = (summary.totalComponents - summary.componentsWithIssues) / summary.totalComponents.toDouble()
-            
+            val componentHealthRatio =
+                (summary.totalComponents - summary.componentsWithIssues) / summary.totalComponents.toDouble()
+
             val baseScore = (componentHealthRatio * 100).toInt()
             val penalties = errorPenalty + warningPenalty + infoPenalty + cyclePenalty
-            
+
             return (baseScore - penalties).coerceIn(0, 100)
         }
-        
+
         fun getHealthEmoji(score: Int): String {
             return when {
                 score >= 90 -> "🟢"

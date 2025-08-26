@@ -14,10 +14,10 @@ data class KnitComponent(
 }
 
 enum class ComponentType {
-    COMPONENT,       // @Component annotated
-    PROVIDER,        // @Provides annotated
-    CONSUMER,        // Has 'by di' properties
-    COMPOSITE        // Has both providers and consumers
+    COMPONENT,
+    PROVIDER,
+    CONSUMER,
+    COMPOSITE
 }
 
 data class KnitDependency(
@@ -33,7 +33,7 @@ data class KnitDependency(
 data class KnitProvider(
     val methodName: String,
     val returnType: String,
-    val providesType: String? = null, // For interface injection @Provides(Interface::class)
+    val providesType: String? = null,
     val isNamed: Boolean = false,
     val namedQualifier: String? = null,
     val isSingleton: Boolean = false,

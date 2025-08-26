@@ -21,121 +21,121 @@ class KnitAnalysisReportDialog(
     private val report: DetailedAnalysisReport,
     private val summary: AnalysisSummary
 ) : DialogWrapper(project) {
-    
+
     private lateinit var reportTextArea: JBTextArea
     private lateinit var exportButton: JButton
     private lateinit var copyButton: JButton
-    
+
     init {
         title = "Knit Analysis - Detailed Report"
         init()
     }
-    
+
     override fun createCenterPanel(): JComponent {
         val mainPanel = JPanel(BorderLayout())
         mainPanel.preferredSize = Dimension(900, 600)
-        
-        // Create header panel with summary info
+
+
         val headerPanel = createHeaderPanel()
         mainPanel.add(headerPanel, BorderLayout.NORTH)
-        
-        // Create main content area
+
+
         val contentPanel = createContentPanel()
         mainPanel.add(contentPanel, BorderLayout.CENTER)
-        
-        // Create action buttons panel
+
+
         val actionPanel = createActionPanel()
         mainPanel.add(actionPanel, BorderLayout.SOUTH)
-        
+
         return mainPanel
     }
-    
+
     private fun createHeaderPanel(): JComponent {
         val headerPanel = JPanel(BorderLayout())
         headerPanel.border = JBUI.Borders.empty(10)
-        
+
         val healthScore = DetailedAnalysisReport.generateHealthScore(summary)
         val healthEmoji = DetailedAnalysisReport.getHealthEmoji(healthScore)
-        
+
         val titleLabel = JLabel("Knit Analysis Results $healthEmoji Health Score: $healthScore/100")
         titleLabel.font = titleLabel.font.deriveFont(Font.BOLD, 16f)
-        
+
         val summaryText = buildString {
             append("Components: ${summary.totalComponents} • ")
             append("Dependencies: ${summary.totalDependencies} • ")
             append("Issues: ${summary.totalIssues} • ")
             append("Analysis Time: ${formatTime(summary.analysisTime)}")
         }
-        
+
         val summaryLabel = JLabel(summaryText)
         summaryLabel.font = summaryLabel.font.deriveFont(Font.PLAIN, 12f)
-        
+
         val issuesSummaryPanel = createIssuesSummaryPanel()
-        
+
         val topPanel = JPanel(BorderLayout())
         topPanel.add(titleLabel, BorderLayout.NORTH)
         topPanel.add(summaryLabel, BorderLayout.CENTER)
-        
+
         headerPanel.add(topPanel, BorderLayout.NORTH)
         headerPanel.add(issuesSummaryPanel, BorderLayout.CENTER)
-        
+
         return headerPanel
     }
-    
+
     private fun createIssuesSummaryPanel(): JComponent {
         val panel = JPanel(FlowLayout(FlowLayout.LEFT))
-        
+
         if (summary.errorCount > 0) {
             val errorLabel = JLabel("🔴 ${summary.errorCount} Errors")
             errorLabel.foreground = Color.RED.darker()
             panel.add(errorLabel)
         }
-        
+
         if (summary.warningCount > 0) {
             val warningLabel = JLabel("🟡 ${summary.warningCount} Warnings")
             warningLabel.foreground = Color.ORANGE.darker()
             panel.add(warningLabel)
         }
-        
+
         if (summary.infoCount > 0) {
             val infoLabel = JLabel("ℹ️ ${summary.infoCount} Info")
             infoLabel.foreground = Color.BLUE.darker()
             panel.add(infoLabel)
         }
-        
+
         if (summary.totalIssues == 0) {
             val successLabel = JLabel("✨ No Issues Found!")
             successLabel.foreground = Color.GREEN.darker()
             successLabel.font = successLabel.font.deriveFont(Font.BOLD)
             panel.add(successLabel)
         }
-        
+
         return panel
     }
-    
+
     private fun createContentPanel(): JComponent {
         val tabbedPane = JTabbedPane()
-        
-        // Overview Tab
+
+
         val overviewContent = createOverviewTab()
         tabbedPane.addTab("Overview", overviewContent)
-        
-        // Issues Tab (if there are issues)
+
+
         if (summary.totalIssues > 0) {
             val issuesContent = createIssuesTab()
             tabbedPane.addTab("Issues Details", issuesContent)
         }
-        
-        // Raw Report Tab
+
+
         val rawReportContent = createRawReportTab()
         tabbedPane.addTab("Full Report", rawReportContent)
-        
+
         return tabbedPane
     }
-    
+
     private fun createOverviewTab(): JComponent {
         val panel = JPanel(BorderLayout())
-        
+
         val overviewText = buildString {
             appendLine("=== Analysis Overview ===")
             appendLine()
@@ -146,14 +146,14 @@ class KnitAnalysisReportDialog(
             appendLine("• Components with Issues: ${summary.componentsWithIssues}")
             appendLine("• Circular Dependencies: ${if (summary.hasCycles) "Yes ⚠️" else "No ✓"}")
             appendLine()
-            
+
             if (summary.totalIssues > 0) {
                 appendLine("=== Issue Breakdown ===")
                 summary.issueBreakdown.forEach { (type, count) ->
                     appendLine("• ${formatIssueType(type)}: $count")
                 }
                 appendLine()
-                
+
                 if (summary.topIssues.isNotEmpty()) {
                     appendLine("=== Top Priority Issues ===")
                     summary.topIssues.forEachIndexed { index, issue ->
@@ -167,7 +167,7 @@ class KnitAnalysisReportDialog(
                     }
                 }
             }
-            
+
             appendLine("=== Recommendations ===")
             if (summary.hasCycles) {
                 appendLine("🔄 Break circular dependencies by introducing interfaces or mediator patterns")
@@ -182,27 +182,27 @@ class KnitAnalysisReportDialog(
                 appendLine("✨ Excellent! Your Knit dependency injection setup is clean and well-structured.")
             }
         }
-        
+
         val textArea = JBTextArea(overviewText)
         textArea.isEditable = false
         textArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
-        
+
         val scrollPane = JBScrollPane(textArea)
         panel.add(scrollPane, BorderLayout.CENTER)
-        
+
         return panel
     }
-    
+
     private fun createIssuesTab(): JComponent {
         val panel = JPanel(BorderLayout())
-        
+
         val issuesText = buildString {
             appendLine("=== Detailed Issue Analysis ===")
             appendLine()
-            
+
             val groupedIssues = summary.topIssues.groupBy { it.severity }
-            
-            // Show errors first
+
+
             groupedIssues[Severity.ERROR]?.let { errors ->
                 appendLine("🔴 CRITICAL ERRORS (${errors.size}):")
                 appendLine("=" * 50)
@@ -217,8 +217,8 @@ class KnitAnalysisReportDialog(
                 }
                 appendLine()
             }
-            
-            // Then warnings
+
+
             groupedIssues[Severity.WARNING]?.let { warnings ->
                 appendLine("🟡 WARNINGS (${warnings.size}):")
                 appendLine("=" * 30)
@@ -233,8 +233,8 @@ class KnitAnalysisReportDialog(
                 }
                 appendLine()
             }
-            
-            // Finally info
+
+
             groupedIssues[Severity.INFO]?.let { infos ->
                 appendLine("ℹ️ INFORMATION (${infos.size}):")
                 appendLine("=" * 25)
@@ -248,7 +248,7 @@ class KnitAnalysisReportDialog(
                     appendLine()
                 }
             }
-            
+
             appendLine("=== Quick Fix Guide ===")
             appendLine("🔄 Circular Dependencies:")
             appendLine("   • Extract interfaces to break direct dependencies")
@@ -265,62 +265,62 @@ class KnitAnalysisReportDialog(
             appendLine("   • Avoid multiple providers for same type")
             appendLine("   • Consider component scope appropriateness")
         }
-        
+
         val textArea = JBTextArea(issuesText)
         textArea.isEditable = false
         textArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
-        
+
         val scrollPane = JBScrollPane(textArea)
         panel.add(scrollPane, BorderLayout.CENTER)
-        
+
         return panel
     }
-    
+
     private fun createRawReportTab(): JComponent {
         val panel = JPanel(BorderLayout())
-        
+
         reportTextArea = JBTextArea(report.generateExpandedDetails())
         reportTextArea.isEditable = false
         reportTextArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
-        
+
         val scrollPane = JBScrollPane(reportTextArea)
         panel.add(scrollPane, BorderLayout.CENTER)
-        
+
         return panel
     }
-    
+
     private fun createActionPanel(): JComponent {
         val panel = JPanel(FlowLayout(FlowLayout.RIGHT))
-        
+
         copyButton = JButton("Copy to Clipboard")
         copyButton.addActionListener { copyReportToClipboard() }
-        
+
         exportButton = JButton("Export Report")
         exportButton.addActionListener { exportReportToFile() }
-        
+
         panel.add(copyButton)
         panel.add(exportButton)
-        
+
         return panel
     }
-    
+
     private fun copyReportToClipboard() {
         val reportContent = report.generateExpandedDetails()
         val stringSelection = StringSelection(reportContent)
         Toolkit.getDefaultToolkit().systemClipboard.setContents(stringSelection, null)
-        
+
         Messages.showInfoMessage(
             project,
             "Report copied to clipboard successfully!",
             "Copy Successful"
         )
     }
-    
+
     private fun exportReportToFile() {
         val fileChooser = JFileChooser()
         fileChooser.dialogTitle = "Export Knit Analysis Report"
         fileChooser.selectedFile = File("knit-analysis-report.txt")
-        
+
         val result = fileChooser.showSaveDialog(contentPane)
         if (result == JFileChooser.APPROVE_OPTION) {
             try {
@@ -333,7 +333,7 @@ class KnitAnalysisReportDialog(
                     appendLine()
                     append(report.generateExpandedDetails())
                 }
-                
+
                 file.writeText(reportContent)
                 Messages.showInfoMessage(
                     project,
@@ -349,7 +349,7 @@ class KnitAnalysisReportDialog(
             }
         }
     }
-    
+
     private fun formatTime(millis: Long): String {
         return when {
             millis < 1000 -> "${millis}ms"
@@ -357,7 +357,7 @@ class KnitAnalysisReportDialog(
             else -> "${millis / 60000}m ${(millis % 60000) / 1000}s"
         }
     }
-    
+
     private fun formatIssueType(type: com.example.mittens.model.IssueType): String {
         return when (type) {
             com.example.mittens.model.IssueType.CIRCULAR_DEPENDENCY -> "Circular Dependencies"
@@ -368,11 +368,11 @@ class KnitAnalysisReportDialog(
             com.example.mittens.model.IssueType.MISSING_COMPONENT_ANNOTATION -> "Missing Annotations"
         }
     }
-    
+
     override fun createActions(): Array<Action> {
         return arrayOf(okAction)
     }
-    
+
     override fun getOKAction(): Action {
         val okAction = super.getOKAction()
         okAction.putValue(Action.NAME, "Close")

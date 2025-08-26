@@ -8,12 +8,12 @@ import com.intellij.ui.dsl.builder.*
 import javax.swing.JComponent
 
 class KnitAnalysisConfigurable : Configurable {
-    
+
     private var component: DialogPanel? = null
     private val settingsService = KnitSettingsService.getInstance()
-    
+
     override fun getDisplayName(): String = "Knit Analysis"
-    
+
     override fun createComponent(): JComponent? {
         component = panel {
             group("Analysis Settings") {
@@ -25,7 +25,7 @@ class KnitAnalysisConfigurable : Configurable {
                         )
                         .comment("Automatically run Knit analysis when project builds complete")
                 }
-                
+
                 row {
                     checkBox("Show graph on startup")
                         .bindSelected(
@@ -34,7 +34,7 @@ class KnitAnalysisConfigurable : Configurable {
                         )
                         .comment("Open the dependency graph tool window when analysis completes")
                 }
-                
+
                 row("Max nodes in graph:") {
                     intTextField()
                         .bindIntText(
@@ -44,7 +44,7 @@ class KnitAnalysisConfigurable : Configurable {
                         .columns(COLUMNS_SHORT)
                         .comment("Limit graph visualization to prevent performance issues")
                 }.layout(RowLayout.LABEL_ALIGNED)
-                
+
                 row {
                     checkBox("Enable detailed logging")
                         .bindSelected(
@@ -54,14 +54,14 @@ class KnitAnalysisConfigurable : Configurable {
                         .comment("Enable verbose logging for debugging purposes")
                 }
             }
-            
+
             group("Graph Visualization") {
                 row {
                     text("Graph visualization settings will be added in Phase 5")
                         .applyToComponent { isEnabled = false }
                 }
             }
-            
+
             group("Export Options") {
                 row {
                     text("Export configuration will be added in Phase 7")
@@ -69,23 +69,23 @@ class KnitAnalysisConfigurable : Configurable {
                 }
             }
         }
-        
+
         return component
     }
-    
+
     override fun isModified(): Boolean {
         return component?.isModified() ?: false
     }
-    
+
     @Throws(ConfigurationException::class)
     override fun apply() {
         component?.apply()
     }
-    
+
     override fun reset() {
         component?.reset()
     }
-    
+
     override fun disposeUIResources() {
         component = null
     }

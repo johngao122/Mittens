@@ -12,19 +12,19 @@ data class AnalysisResult(
     fun getIssuesByType(): Map<IssueType, List<KnitIssue>> {
         return issues.groupBy { it.type }
     }
-    
+
     fun getIssuesBySeverity(): Map<Severity, List<KnitIssue>> {
         return issues.groupBy { it.severity }
     }
-    
+
     fun hasErrors(): Boolean = issues.any { it.severity == Severity.ERROR }
-    
+
     fun hasWarnings(): Boolean = issues.any { it.severity == Severity.WARNING }
-    
+
     fun getSummary(): AnalysisSummary {
         val issuesByType = getIssuesByType()
         val issuesBySeverity = getIssuesBySeverity()
-        
+
         return AnalysisSummary(
             totalComponents = components.size,
             totalDependencies = dependencyGraph.edges.size,
@@ -42,11 +42,11 @@ data class AnalysisResult(
             }
         )
     }
-    
+
     private fun getTopIssues(): List<IssuePreview> {
         return issues
-            .sortedWith(compareBy<KnitIssue> { 
-                when(it.severity) {
+            .sortedWith(compareBy<KnitIssue> {
+                when (it.severity) {
                     Severity.ERROR -> 0
                     Severity.WARNING -> 1
                     Severity.INFO -> 2
@@ -59,7 +59,9 @@ data class AnalysisResult(
                     severity = issue.severity,
                     message = issue.message.take(80) + if (issue.message.length > 80) "..." else "",
                     componentName = issue.componentName,
-                    suggestedFix = issue.suggestedFix?.take(60) + if ((issue.suggestedFix?.length ?: 0) > 60) "..." else ""
+                    suggestedFix = issue.suggestedFix?.take(60) + if ((issue.suggestedFix?.length
+                            ?: 0) > 60
+                    ) "..." else ""
                 )
             }
     }
