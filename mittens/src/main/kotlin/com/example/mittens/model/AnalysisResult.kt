@@ -22,6 +22,9 @@ data class AnalysisResult(
     fun hasWarnings(): Boolean = issues.any { it.severity == Severity.WARNING }
     
     fun getSummary(): AnalysisSummary {
+        val issuesByType = getIssuesByType()
+        val issuesBySeverity = getIssuesBySeverity()
+        
         return AnalysisSummary(
             totalComponents = components.size,
             totalDependencies = dependencyGraph.edges.size,
@@ -30,8 +33,35 @@ data class AnalysisResult(
             warningCount = issues.count { it.severity == Severity.WARNING },
             infoCount = issues.count { it.severity == Severity.INFO },
             hasCycles = dependencyGraph.hasCycles(),
-            analysisTime = metadata.analysisTimeMs
+            analysisTime = metadata.analysisTimeMs,
+            issueBreakdown = issuesByType.mapValues { it.value.size },
+            topIssues = getTopIssues(),
+            filesScanned = metadata.sourceFilesScanned + metadata.bytecodeFilesScanned,
+            componentsWithIssues = components.count { component ->
+                issues.any { it.componentName.contains(component.className) }
+            }
         )
+    }
+    
+    private fun getTopIssues(): List<IssuePreview> {
+        return issues
+            .sortedWith(compareBy<KnitIssue> { 
+                when(it.severity) {
+                    Severity.ERROR -> 0
+                    Severity.WARNING -> 1
+                    Severity.INFO -> 2
+                }
+            }.thenBy { it.type })
+            .take(3)
+            .map { issue ->
+                IssuePreview(
+                    type = issue.type,
+                    severity = issue.severity,
+                    message = issue.message.take(80) + if (issue.message.length > 80) "..." else "",
+                    componentName = issue.componentName,
+                    suggestedFix = issue.suggestedFix?.take(60) + if ((issue.suggestedFix?.length ?: 0) > 60) "..." else ""
+                )
+            }
     }
 }
 
@@ -50,5 +80,17 @@ data class AnalysisSummary(
     val warningCount: Int,
     val infoCount: Int,
     val hasCycles: Boolean,
-    val analysisTime: Long
+    val analysisTime: Long,
+    val issueBreakdown: Map<IssueType, Int> = emptyMap(),
+    val topIssues: List<IssuePreview> = emptyList(),
+    val filesScanned: Int = 0,
+    val componentsWithIssues: Int = 0
+)
+
+data class IssuePreview(
+    val type: IssueType,
+    val severity: Severity,
+    val message: String,
+    val componentName: String,
+    val suggestedFix: String? = null
 )

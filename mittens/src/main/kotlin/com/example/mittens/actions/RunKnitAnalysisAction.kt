@@ -1,7 +1,10 @@
 package com.example.mittens.actions
 
+import com.example.mittens.model.DetailedAnalysisReport
 import com.example.mittens.services.KnitAnalysisService
 import com.example.mittens.services.KnitProjectDetector
+import com.example.mittens.ui.KnitAnalysisReportDialog
+import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -14,6 +17,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import kotlinx.coroutines.runBlocking
 
 class RunKnitAnalysisAction : AnAction("Run Knit Analysis", "Analyze Knit dependency injection in the current project", null) {
@@ -85,17 +89,10 @@ class RunKnitAnalysisAction : AnAction("Run Knit Analysis", "Analyze Knit depend
                     indicator.text = "Analysis complete"
                     indicator.fraction = 1.0
                     
-                    // Show results notification
+                    // Show enhanced results notification
                     val summary = result.getSummary()
-                    val message = buildString {
-                        append("Analysis completed successfully!\n")
-                        append("Components: ${summary.totalComponents}\n")
-                        append("Dependencies: ${summary.totalDependencies}\n")
-                        append("Issues found: ${summary.totalIssues}")
-                        if (summary.errorCount > 0) {
-                            append(" (${summary.errorCount} errors)")
-                        }
-                    }
+                    val report = DetailedAnalysisReport(summary)
+                    val message = report.generateNotificationMessage()
                     
                     val notificationType = when {
                         summary.errorCount > 0 -> NotificationType.ERROR
@@ -103,7 +100,7 @@ class RunKnitAnalysisAction : AnAction("Run Knit Analysis", "Analyze Knit depend
                         else -> NotificationType.INFORMATION
                     }
                     
-                    showNotification(project, message, notificationType)
+                    showEnhancedNotification(project, message, report, notificationType)
                     
                 } catch (e: Exception) {
                     logger.error("Knit analysis failed", e)
@@ -122,5 +119,62 @@ class RunKnitAnalysisAction : AnAction("Run Knit Analysis", "Analyze Knit depend
             .getNotificationGroup("Knit Analysis")
             .createNotification(message, type)
             .notify(project)
+    }
+    
+    private fun showEnhancedNotification(project: Project, message: String, report: DetailedAnalysisReport, type: NotificationType) {
+        val notification = NotificationGroupManager.getInstance()
+            .getNotificationGroup("Knit Analysis")
+            .createNotification(message, type)
+        
+        // Add interactive actions
+        notification.addAction(NotificationAction.createSimple("View Full Report") {
+            val dialog = KnitAnalysisReportDialog(project, report, report.summary)
+            dialog.show()
+        })
+        
+        if (type == NotificationType.ERROR || type == NotificationType.WARNING) {
+            notification.addAction(NotificationAction.createSimple("Analysis Tips") {
+                Messages.showInfoMessage(
+                    project,
+                    generateAnalysisTips(),
+                    "Knit Analysis - Tips & Best Practices"
+                )
+            })
+        }
+        
+        // Future: Add export action
+        // notification.addAction(NotificationAction.createSimple("Export Report") {
+        //     // Implementation for exporting report to file
+        // })
+        
+        notification.notify(project)
+    }
+    
+    private fun generateAnalysisTips(): String {
+        return """
+            |Knit Dependency Injection Best Practices:
+            |
+            |🔄 Circular Dependencies:
+            |  • Use interfaces to break tight coupling
+            |  • Consider using a mediator pattern
+            |  • Review your component architecture
+            |
+            |❓ Unresolved Dependencies:
+            |  • Ensure all required providers are annotated with @Provides
+            |  • Check that provider return types match dependency types
+            |  • Verify named qualifiers match exactly
+            |
+            |🔁 Singleton Violations:
+            |  • Use @Singleton annotation consistently
+            |  • Avoid multiple singleton providers for the same type
+            |  • Consider component-level vs global singletons
+            |
+            |🏷️ Named Qualifier Issues:
+            |  • Double-check qualifier names for typos
+            |  • Ensure @Named annotations match between providers and consumers
+            |  • Consider using type-safe qualifiers with classes
+            |
+            |For more help, check the Knit documentation or plugin settings.
+        """.trimMargin()
     }
 }
