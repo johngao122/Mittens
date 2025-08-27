@@ -203,7 +203,6 @@ class IssueValidator(private val project: Project) {
      */
     private fun validateSingletonViolation(issue: KnitIssue, components: List<KnitComponent>): KnitIssue {
         val singletonType = issue.metadata["conflictingType"] as? String ?: issue.componentName
-        val providerCount = issue.metadata["providerCount"] as? Int ?: 0
 
         val actualSingletonProviders = components.flatMap { component ->
             component.providers.filter { provider ->
@@ -305,15 +304,13 @@ class IssueValidator(private val project: Project) {
     }
 
     private fun extractDependencyTypeFromIssue(issue: KnitIssue): String {
-        return issue.metadata["dependencyType"] as? String 
+        return issue.metadata["dependencyType"] as? String
             ?: issue.message.substringAfter("for ").substringBefore(" ")
-            ?: ""
     }
 
     private fun extractProviderTypeFromIssue(issue: KnitIssue): String {
-        return issue.metadata["conflictingType"] as? String 
+        return issue.metadata["conflictingType"] as? String
             ?: issue.message.substringAfter("for type: ").substringBefore(" ")
-            ?: ""
     }
 
     private fun findComponentByName(componentName: String, components: List<KnitComponent>): KnitComponent? {
@@ -381,8 +378,24 @@ class IssueValidator(private val project: Project) {
     }
 
     private fun calculateCircularDependencyConfidence(components: List<KnitComponent>): Double {
-        val totalDependencies = components.sumOf { it.dependencies.size }
-        return min(0.95, max(0.6, 0.5 + (totalDependencies * 0.1)))
+        // Count internal dependency edges among the involved components (including self-loops)
+        val componentNames = components.map { it.className }.toSet()
+        var internalEdgeCount = 0
+
+        components.forEach { component ->
+            component.dependencies.forEach { dependency ->
+                val targetSimpleName = dependency.targetType.substringAfterLast('.')
+                if (targetSimpleName == component.className || componentNames.contains(targetSimpleName)) {
+                    internalEdgeCount += 1
+                }
+            }
+        }
+
+        // Heuristic: base high confidence for multi-node cycles, slightly lower for self-loops
+        val base = if (components.size >= 2) 0.8 else 0.7
+        val score = base + (0.1 * internalEdgeCount)
+        // Clamp into a sensible high-confidence band for real cycles
+        return min(0.98, max(0.85, score))
     }
 
     private fun checkForCommentedDependency(component: KnitComponent, dependencyType: String): Boolean {

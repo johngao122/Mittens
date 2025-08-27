@@ -131,7 +131,7 @@ class KnitSourceAnalyzer(private val project: Project) {
             hasComponent -> ComponentType.COMPONENT
             hasProvides || providers.isNotEmpty() -> ComponentType.PROVIDER
             dependencies.isNotEmpty() -> ComponentType.CONSUMER
-            else -> return null // Not a Knit component
+            else -> ComponentType.COMPONENT // Include plain classes to support presence-only detection (no DI usage)
         }
 
         // Check for missing @Component annotation when using 'by di' (do not warn if @Provides is present)
