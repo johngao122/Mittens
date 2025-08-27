@@ -55,8 +55,8 @@ class IssueValidator(private val project: Project) {
         val validationTime = System.currentTimeMillis() - startTime
         logger.info("Issue validation completed in ${validationTime}ms")
 
-        // Filter out low-confidence issues below the configured threshold
-        // BUT keep validated false positives for accuracy metrics even if they have low confidence
+        
+        
         val filtered = validatedIssues.filter { issue ->
             issue.confidenceScore >= settings.minimumConfidenceThreshold ||
             issue.validationStatus == ValidationStatus.VALIDATED_FALSE_POSITIVE
@@ -74,7 +74,7 @@ class IssueValidator(private val project: Project) {
     private fun validateCircularDependency(issue: KnitIssue, components: List<KnitComponent>): KnitIssue {
         val componentNames = extractComponentNamesFromIssue(issue)
         
-        // Check for malformed data (empty component names)
+        
         if (componentNames.isEmpty() || componentNames.any { it.isBlank() }) {
             return issue.copy(
                 validationStatus = ValidationStatus.VALIDATION_FAILED,
@@ -82,10 +82,10 @@ class IssueValidator(private val project: Project) {
             )
         }
         
-        // Allow self-referencing cycles (single component that depends on itself)
-        // Do not early-exit solely based on component count
+        
+        
 
-        // Find components involved in the circular dependency
+        
         val involvedComponents = components.filter { component ->
             componentNames.any { name -> 
                 component.className == name || "${component.packageName}.${component.className}" == name 
@@ -99,7 +99,7 @@ class IssueValidator(private val project: Project) {
             )
         }
 
-        // Check for actual dependency relationships between components
+        
         val hasCycle = detectCycleBetweenComponents(involvedComponents)
         val confidenceScore = if (hasCycle) {
             calculateCircularDependencyConfidence(involvedComponents)
@@ -127,7 +127,7 @@ class IssueValidator(private val project: Project) {
             )
         }
 
-        // Check if there are any providers for this dependency type
+        
         val hasProvider = components.any { component ->
             component.providers.any { provider ->
                 provider.returnType == dependencyType ||
@@ -137,13 +137,13 @@ class IssueValidator(private val project: Project) {
             }
         }
 
-        // Also check source code for commented out dependencies
+        
         val isCommentedDependency = checkForCommentedDependency(consumerComponent, dependencyType)
 
         val confidenceScore = when {
-            isCommentedDependency -> 0.1 // Very likely false positive
-            !hasProvider -> 0.9 // High confidence - truly unresolved
-            else -> 0.2 // Low confidence - likely resolved via nested/simple-name match or bytecode
+            isCommentedDependency -> 0.1 
+            !hasProvider -> 0.9 
+            else -> 0.2 
         }
 
         val validationStatus = when {
@@ -183,16 +183,16 @@ class IssueValidator(private val project: Project) {
             }
         }
 
-        // Filter out commented providers by checking source files
+        
         val validProviders = activeProviders.filter { (component, provider) ->
             !isProviderCommented(component, provider)
         }
 
         val hasActualAmbiguity = validProviders.size > 1
         val confidenceScore = when {
-            validProviders.isEmpty() -> 0.1 // No providers found
-            validProviders.size == 1 -> 0.15 // Only one provider, false positive
-            validProviders.size > 1 -> 0.95 // Multiple providers, true ambiguity
+            validProviders.isEmpty() -> 0.1 
+            validProviders.size == 1 -> 0.15 
+            validProviders.size > 1 -> 0.95 
             else -> 0.5
         }
 
@@ -241,7 +241,7 @@ class IssueValidator(private val project: Project) {
             )
         }
 
-        // Find the specific dependency in the consumer
+        
         val dependency = consumerComponent.dependencies.find { dep ->
             dep.targetType == dependencyType
         }
@@ -253,7 +253,7 @@ class IssueValidator(private val project: Project) {
             )
         }
 
-        // Check for matching providers
+        
         val matchingProviders = components.flatMap { component ->
             component.providers.filter { provider ->
                 val typeMatches = provider.returnType == dependencyType || provider.providesType == dependencyType
@@ -285,7 +285,7 @@ class IssueValidator(private val project: Project) {
             )
         }
 
-        // Check if component actually has dependencies that would require annotation
+        
         val hasDependencies = component.dependencies.isNotEmpty()
         val hasProviders = component.providers.isNotEmpty()
         
@@ -298,7 +298,7 @@ class IssueValidator(private val project: Project) {
         )
     }
 
-    // Helper methods
+    
 
     private fun extractComponentNamesFromIssue(issue: KnitIssue): List<String> {
         if (issue.componentName.isBlank()) {
@@ -326,14 +326,14 @@ class IssueValidator(private val project: Project) {
     }
 
     private fun detectCycleBetweenComponents(components: List<KnitComponent>): Boolean {
-        // Build adjacency list from dependencies
+        
         val adjacencyList = mutableMapOf<String, MutableList<String>>()
 
         components.forEach { component ->
             val componentKey = component.className
             adjacencyList.putIfAbsent(componentKey, mutableListOf())
 
-            // Self-reference edge if component depends on itself explicitly
+            
             val hasSelfRef = component.dependencies.any { dep ->
                 dep.targetType.substringAfterLast('.') == component.className
             }
@@ -350,7 +350,7 @@ class IssueValidator(private val project: Project) {
             }
         }
 
-        // Use DFS to detect cycles, including self-loops
+        
         return hasCycleInGraph(adjacencyList, components.map { it.className })
     }
 
@@ -382,7 +382,7 @@ class IssueValidator(private val project: Project) {
     }
 
     private fun calculateCircularDependencyConfidence(components: List<KnitComponent>): Double {
-        // Count internal dependency edges among the involved components (including self-loops)
+        
         val componentNames = components.map { it.className }.toSet()
         var internalEdgeCount = 0
 
@@ -395,10 +395,10 @@ class IssueValidator(private val project: Project) {
             }
         }
 
-        // Heuristic: base high confidence for multi-node cycles, slightly lower for self-loops
+        
         val base = if (components.size >= 2) 0.8 else 0.7
         val score = base + (0.1 * internalEdgeCount)
-        // Clamp into a sensible high-confidence band for real cycles
+        
         return min(0.98, max(0.85, score))
     }
 
@@ -408,7 +408,7 @@ class IssueValidator(private val project: Project) {
 
         try {
             val content = sourceFile.readText()
-            val dependencyPattern = Regex("//.*private\\s+val\\s+\\w+\\s*:\\s*$dependencyType\\s+by\\s+di")
+            val dependencyPattern = Regex("
             return dependencyPattern.containsMatchIn(content)
         } catch (e: Exception) {
             logger.debug("Could not read source file ${component.sourceFile}", e)
@@ -422,7 +422,7 @@ class IssueValidator(private val project: Project) {
 
         try {
             val content = sourceFile.readText()
-            val providerPattern = Regex("//.*@Provides.*${provider.methodName}")
+            val providerPattern = Regex("
             return providerPattern.containsMatchIn(content)
         } catch (e: Exception) {
             logger.debug("Could not read source file ${component.sourceFile}", e)

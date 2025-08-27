@@ -107,7 +107,7 @@ data class AnalysisSummary(
         return if (accuracyMetrics.totalValidatedIssues > 0) {
             (accuracyMetrics.truePositives.toDouble() / accuracyMetrics.totalValidatedIssues) * 100.0
         } else {
-            100.0 // No issues means 100% accuracy
+            100.0 
         }
     }
     

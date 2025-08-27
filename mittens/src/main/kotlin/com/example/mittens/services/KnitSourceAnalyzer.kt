@@ -59,7 +59,7 @@ class KnitSourceAnalyzer(private val project: Project) {
         val providers = mutableListOf<KnitProvider>()
         val issues = mutableListOf<KnitIssue>()
 
-        // Analyze properties for 'by di' dependencies
+        
         val properties = ktClass.collectDescendantsOfType<KtProperty>()
         for (property in properties) {
             val dependency = analyzeProperty(property, className)
@@ -68,7 +68,7 @@ class KnitSourceAnalyzer(private val project: Project) {
             }
         }
 
-        // Analyze methods for @Provides
+        
         val methods = ktClass.collectDescendantsOfType<KtNamedFunction>()
         for (method in methods) {
             val provider = analyzeMethod(method, className)
@@ -77,11 +77,11 @@ class KnitSourceAnalyzer(private val project: Project) {
             }
         }
 
-        // Check class-level annotations
+        
         val classAnnotations = ktClass.annotationEntries
         
-        // Handle class-level @Provides annotations
-        // Only process class-level @Provides if there are no method-level providers
+        
+        
         val classLevelProvidesAnnotation = classAnnotations.find { it.shortName?.asString() == "Provides" }
         if (classLevelProvidesAnnotation != null && !isAnnotationCommentedOut(classLevelProvidesAnnotation) && providers.isEmpty()) {
             val providesType = extractProvidesType(classLevelProvidesAnnotation)
@@ -101,7 +101,7 @@ class KnitSourceAnalyzer(private val project: Project) {
                     )
                 )
             } else {
-                // Fallback: class-level @Provides without explicit type means the class provides itself
+                
                 logger.info("Found class-level @Provides annotation on $className (fallback to self-providing)")
                 providers.add(
                     KnitProvider(
@@ -119,22 +119,22 @@ class KnitSourceAnalyzer(private val project: Project) {
             }
         }
 
-        // Check other class-level annotations for component type determination
+        
         val hasComponent = classAnnotations.any { it.shortName?.asString() == "Component" }
         val hasProvides = classAnnotations.any { it.shortName?.asString() == "Provides" }
         val hasKnitViewModel = classAnnotations.any { it.shortName?.asString() == "KnitViewModel" }
 
-        // Determine component type
+        
         val componentType = when {
-            hasKnitViewModel -> ComponentType.COMPONENT // KnitViewModel is a special type of component
+            hasKnitViewModel -> ComponentType.COMPONENT 
             hasComponent && (dependencies.isNotEmpty() || providers.isNotEmpty()) -> ComponentType.COMPOSITE
             hasComponent -> ComponentType.COMPONENT
             hasProvides || providers.isNotEmpty() -> ComponentType.PROVIDER
             dependencies.isNotEmpty() -> ComponentType.CONSUMER
-            else -> ComponentType.COMPONENT // Include plain classes to support presence-only detection (no DI usage)
+            else -> ComponentType.COMPONENT 
         }
 
-        // Check for missing @Component annotation when using 'by di' (do not warn if @Provides is present)
+        
         if (dependencies.isNotEmpty() && !hasComponent && !hasProvides) {
             issues.add(
                 KnitIssue(
@@ -163,10 +163,10 @@ class KnitSourceAnalyzer(private val project: Project) {
         val delegate = property.delegate ?: return null
         val delegateText = delegate.text
 
-        // Check if it's a 'by di' property
+        
         if (!delegateText.contains("di")) return null
 
-        // Check if the property is commented out - skip if it is
+        
         if (isCommentedOut(property)) {
             logger.debug("Skipping commented 'by di' property: ${property.name} in $containingClassName")
             return null
@@ -178,19 +178,19 @@ class KnitSourceAnalyzer(private val project: Project) {
 
         logger.debug("Found 'by di' property: $propertyName: $targetType in $containingClassName")
 
-        // Parse annotations on the property
+        
         val annotations = property.annotationEntries
         val namedAnnotation = annotations.find { it.shortName?.asString() == "Named" }
         val singletonAnnotation = annotations.find { it.shortName?.asString() == "Singleton" }
 
-        // Extract named qualifier (string-based or class-based)
+        
         val (isNamed, namedQualifier) = extractNamedQualifier(namedAnnotation)
 
-        // Enhanced factory and function type detection
+        
         val isFactory = isFactoryType(targetType)
         val isLoadable = isLoadableType(targetType)
 
-        // Singleton detection from annotations or delegate patterns
+        
         val isSingleton = singletonAnnotation != null || isSingletonDelegate(delegateText)
 
         return KnitDependency(
@@ -270,7 +270,7 @@ class KnitSourceAnalyzer(private val project: Project) {
         if (namedAnnotation == null) return false to null
 
         val valueArguments = namedAnnotation.valueArguments
-        if (valueArguments.isEmpty()) return true to null // @Named without parameters
+        if (valueArguments.isEmpty()) return true to null 
 
         val firstArg = valueArguments.first()
         val expression = firstArg.getArgumentExpression()?.text
@@ -278,17 +278,17 @@ class KnitSourceAnalyzer(private val project: Project) {
         return when {
             expression == null -> true to null
             expression.startsWith("\"") && expression.endsWith("\"") -> {
-                // String-based: @Named("qualifier")
+                
                 true to expression.removeSurrounding("\"")
             }
 
             expression.endsWith("::class") -> {
-                // Class-based: @Named(qualifier = SomeClass::class)
+                
                 true to expression.removeSuffix("::class")
             }
 
             else -> {
-                // Handle named parameter: @Named(qualifier = "value")
+                
                 val namedParam = valueArguments.find { it.getArgumentName()?.asName?.asString() == "qualifier" }
                 val paramExpression = namedParam?.getArgumentExpression()?.text
                 when {
@@ -388,7 +388,7 @@ class KnitSourceAnalyzer(private val project: Project) {
     }
 
     /**
-     * Check if an element's line is commented with //
+     * Check if an element's line is commented with 
      */
     private fun isLineCommented(element: PsiElement): Boolean {
         val containingFile = element.containingFile
@@ -401,7 +401,7 @@ class KnitSourceAnalyzer(private val project: Project) {
         val lineEndOffset = document.getLineEndOffset(lineNumber)
         val lineText = document.getText(TextRange(lineStartOffset, lineEndOffset))
 
-        val commentIndex = lineText.indexOf("//")
+        val commentIndex = lineText.indexOf("
 
         if (commentIndex == -1) {
 

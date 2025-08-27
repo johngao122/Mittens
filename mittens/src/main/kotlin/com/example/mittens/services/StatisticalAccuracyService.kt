@@ -27,7 +27,7 @@ class StatisticalAccuracyService {
         val falsePositives = validatedIssues.count { it.validationStatus == ValidationStatus.VALIDATED_FALSE_POSITIVE }
         val totalValidated = validatedIssues.size
         
-        // Estimate false negatives based on expected issues
+        
         val falseNegatives = maxOf(0, expectedIssues - truePositives)
 
         val averageConfidence = if (validatedIssues.isNotEmpty()) {
@@ -169,28 +169,28 @@ class StatisticalAccuracyService {
      * Estimates expected number of issues based on project characteristics
      */
     fun estimateExpectedIssues(components: List<KnitComponent>): Int {
-        // Simple heuristic based on project size and complexity
+        
         val totalDependencies = components.sumOf { it.dependencies.size }
         val totalProviders = components.sumOf { it.providers.size }
         val componentCount = components.size
 
-        // Rough estimates based on typical patterns:
-        // - 1-3% of dependencies typically have issues
-        // - Larger projects tend to have more complexity issues
-        // - Projects with many providers may have ambiguity issues
+        
+        
+        
+        
 
         val dependencyIssueRate = when {
-            componentCount > 100 -> 0.03 // 3% for large projects
-            componentCount > 50 -> 0.02  // 2% for medium projects
-            else -> 0.01                 // 1% for small projects
+            componentCount > 100 -> 0.03 
+            componentCount > 50 -> 0.02  
+            else -> 0.01                 
         }
 
-        val providerIssueRate = 0.02 // 2% of providers may have issues
+        val providerIssueRate = 0.02 
 
         val estimatedDependencyIssues = (totalDependencies * dependencyIssueRate).toInt()
         val estimatedProviderIssues = (totalProviders * providerIssueRate).toInt()
 
-        // Add complexity factor for circular dependencies
+        
         val complexityFactor = when {
             componentCount > 100 -> 3
             componentCount > 50 -> 2

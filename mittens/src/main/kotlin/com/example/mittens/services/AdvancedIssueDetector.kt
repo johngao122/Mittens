@@ -726,9 +726,9 @@ class AdvancedIssueDetector(private val project: Project) {
         return true
     }
 
-    // ================================
-    // EXCLUSION-AWARE DETECTION METHODS
-    // ================================
+    
+    
+    
 
     /**
      * Detect unresolved dependencies with component exclusion support
