@@ -408,7 +408,7 @@ class IssueValidator(private val project: Project) {
 
         try {
             val content = sourceFile.readText()
-            val dependencyPattern = Regex("
+            val dependencyPattern = Regex("//.*@Inject.*$dependencyType", RegexOption.MULTILINE)
             return dependencyPattern.containsMatchIn(content)
         } catch (e: Exception) {
             logger.debug("Could not read source file ${component.sourceFile}", e)
@@ -422,7 +422,7 @@ class IssueValidator(private val project: Project) {
 
         try {
             val content = sourceFile.readText()
-            val providerPattern = Regex("
+            val providerPattern = Regex("//.*${provider.methodName}", RegexOption.MULTILINE)
             return providerPattern.containsMatchIn(content)
         } catch (e: Exception) {
             logger.debug("Could not read source file ${component.sourceFile}", e)

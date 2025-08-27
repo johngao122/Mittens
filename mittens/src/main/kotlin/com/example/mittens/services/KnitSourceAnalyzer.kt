@@ -401,16 +401,13 @@ class KnitSourceAnalyzer(private val project: Project) {
         val lineEndOffset = document.getLineEndOffset(lineNumber)
         val lineText = document.getText(TextRange(lineStartOffset, lineEndOffset))
 
-        val commentIndex = lineText.indexOf("
+        val commentIndex = lineText.indexOf("//")
 
         if (commentIndex == -1) {
-
             return false
         }
 
-
         val elementPositionInLine = elementOffset - lineStartOffset
-
 
         return elementPositionInLine > commentIndex
     }

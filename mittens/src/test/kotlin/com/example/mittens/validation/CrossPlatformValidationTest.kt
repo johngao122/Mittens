@@ -563,7 +563,7 @@ class CrossPlatformValidationTest : LightJavaCodeInsightFixtureTestCase() {
         
         modules.forEach { module ->
             layers.forEach { layer ->
-                val className = "${module.capitalize()}${layer.capitalize()}"
+                val className = "${module.replaceFirstChar { it.uppercase() }}${layer.replaceFirstChar { it.uppercase() }}"
                 val packageName = "com.enterprise.ecommerce.$module.$layer"
                 
                 val component = when (layer) {
@@ -903,7 +903,7 @@ class CrossPlatformValidationTest : LightJavaCodeInsightFixtureTestCase() {
             packageName = packageName,
             type = ComponentType.COMPONENT,
             dependencies = listOf(
-                KnitDependency("${module}Service", "com.enterprise.ecommerce.$module.service.${module.capitalize()}Service", false)
+                KnitDependency("${module}Service", "com.enterprise.ecommerce.$module.service.${module.replaceFirstChar { it.uppercase() }}Service", false)
             ),
             providers = emptyList(),
             sourceFile = "$className.kt"
@@ -916,7 +916,7 @@ class CrossPlatformValidationTest : LightJavaCodeInsightFixtureTestCase() {
             packageName = packageName,
             type = ComponentType.COMPONENT,
             dependencies = listOf(
-                KnitDependency("${module}Repository", "com.enterprise.ecommerce.$module.repository.${module.capitalize()}Repository", false)
+                KnitDependency("${module}Repository", "com.enterprise.ecommerce.$module.repository.${module.replaceFirstChar { it.uppercase() }}Repository", false)
             ),
             providers = emptyList(),
             sourceFile = "$className.kt"
@@ -930,13 +930,13 @@ class CrossPlatformValidationTest : LightJavaCodeInsightFixtureTestCase() {
             type = ComponentType.PROVIDER,
             dependencies = emptyList(),
             providers = listOf(
-                KnitProvider("provide${module.capitalize()}Data", "com.enterprise.ecommerce.$module.entity.${module.capitalize()}Entity", null, false, null, false)
+                KnitProvider("provide${module.replaceFirstChar { it.uppercase() }}Data", "com.enterprise.ecommerce.$module.entity.${module.replaceFirstChar { it.uppercase() }}Entity", null, false, null, false)
             ),
             sourceFile = "$className.kt"
         )
     }
     
-    private fun createEnterpriseEntity(className: String, packageName: String, module: String): KnitComponent {
+    private fun createEnterpriseEntity(className: String, packageName: String, @Suppress("UNUSED_PARAMETER") module: String): KnitComponent {
         return KnitComponent(
             className = className,
             packageName = packageName,
