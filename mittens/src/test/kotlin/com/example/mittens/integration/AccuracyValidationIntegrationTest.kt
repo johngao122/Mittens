@@ -252,6 +252,15 @@ class AccuracyValidationIntegrationTest : LightJavaCodeInsightFixtureTestCase() 
                     )
                 ),
                 sourceFile = "UserRepositoryProvider.kt"
+            ),
+            // Empty component that doesn't need annotation (false positive test case)
+            KnitComponent(
+                className = "EmptyComponent",
+                packageName = "com.test",
+                type = ComponentType.COMPONENT,
+                dependencies = emptyList(),
+                providers = emptyList(),
+                sourceFile = "EmptyComponent.kt"
             )
         )
     }
@@ -265,7 +274,7 @@ class AccuracyValidationIntegrationTest : LightJavaCodeInsightFixtureTestCase() 
                 message = "Circular dependency: OrderService ↔ InventoryService",
                 componentName = "OrderService, InventoryService"
             ),
-            // False positive - resolved dependency flagged as unresolved
+            // False positive - resolved dependency flagged as unresolved (UserRepository IS provided)
             KnitIssue(
                 type = IssueType.UNRESOLVED_DEPENDENCY,
                 severity = Severity.ERROR,
@@ -273,12 +282,20 @@ class AccuracyValidationIntegrationTest : LightJavaCodeInsightFixtureTestCase() 
                 componentName = "UserService",
                 metadata = mapOf("dependencyType" to "UserRepository")
             ),
-            // True positive - actually missing annotation
+            // False positive - non-existent dependency flagged as unresolved
+            KnitIssue(
+                type = IssueType.UNRESOLVED_DEPENDENCY,
+                severity = Severity.ERROR,
+                message = "No provider found for NonExistentService",
+                componentName = "UserService",
+                metadata = mapOf("dependencyType" to "NonExistentService")
+            ),
+            // False positive - component with no dependencies or providers doesn't need annotation
             KnitIssue(
                 type = IssueType.MISSING_COMPONENT_ANNOTATION,
                 severity = Severity.WARNING,
                 message = "Component missing @Component annotation",
-                componentName = "OrderService"
+                componentName = "EmptyComponent"
             )
         )
     }

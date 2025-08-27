@@ -114,7 +114,7 @@ class StatisticalAccuracyService {
             appendLine()
             appendLine("📈 Quality Indicators:")
             appendLine("   False Positive Rate: ${String.format("%.1f", falsePositiveRate)}%")
-            if (statisticalError > 0) {
+            if (accuracyMetrics.expectedIssues > 0) {
                 appendLine("   Statistical Error: ${String.format("%.1f", statisticalError)}%")
             }
             

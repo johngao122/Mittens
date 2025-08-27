@@ -63,6 +63,15 @@ class IssueValidator(private val project: Project) {
      */
     private fun validateCircularDependency(issue: KnitIssue, components: List<KnitComponent>): KnitIssue {
         val componentNames = extractComponentNamesFromIssue(issue)
+        
+        // Check for malformed data (empty component names)
+        if (componentNames.isEmpty() || componentNames.any { it.isBlank() }) {
+            return issue.copy(
+                validationStatus = ValidationStatus.VALIDATION_FAILED,
+                confidenceScore = 0.5
+            )
+        }
+        
         if (componentNames.size < 2) {
             return issue.copy(
                 validationStatus = ValidationStatus.VALIDATED_FALSE_POSITIVE,
@@ -287,7 +296,10 @@ class IssueValidator(private val project: Project) {
     // Helper methods
 
     private fun extractComponentNamesFromIssue(issue: KnitIssue): List<String> {
-        return issue.componentName.split(", ", " -> ", " ↔ ").map { it.trim() }
+        if (issue.componentName.isBlank()) {
+            return emptyList()
+        }
+        return issue.componentName.split(", ", " -> ", " ↔ ").map { it.trim() }.filter { it.isNotBlank() }
     }
 
     private fun extractDependencyTypeFromIssue(issue: KnitIssue): String {

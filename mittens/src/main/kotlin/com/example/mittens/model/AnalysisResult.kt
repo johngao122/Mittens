@@ -71,7 +71,9 @@ data class AnalysisResult(
                     componentName = issue.componentName,
                     suggestedFix = issue.suggestedFix?.take(60) + if ((issue.suggestedFix?.length
                             ?: 0) > 60
-                    ) "..." else ""
+                    ) "..." else "",
+                    confidenceScore = issue.confidenceScore,
+                    validationStatus = issue.validationStatus
                 )
             }
     }
