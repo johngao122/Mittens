@@ -56,7 +56,11 @@ class IssueValidator(private val project: Project) {
         logger.info("Issue validation completed in ${validationTime}ms")
 
         // Filter out low-confidence issues below the configured threshold
-        val filtered = validatedIssues.filter { it.confidenceScore >= settings.minimumConfidenceThreshold }
+        // BUT keep validated false positives for accuracy metrics even if they have low confidence
+        val filtered = validatedIssues.filter { issue ->
+            issue.confidenceScore >= settings.minimumConfidenceThreshold ||
+            issue.validationStatus == ValidationStatus.VALIDATED_FALSE_POSITIVE
+        }
         if (filtered.size != validatedIssues.size) {
             logger.debug("Filtered out ${validatedIssues.size - filtered.size} low-confidence issues (< ${settings.minimumConfidenceThreshold})")
         }
