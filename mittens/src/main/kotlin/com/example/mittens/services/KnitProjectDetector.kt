@@ -64,43 +64,45 @@ class KnitProjectDetector(private val project: Project) {
     }
 
     private fun analyzeBuildFiles(): BuildAnalysisResult {
-        val scope = GlobalSearchScope.projectScope(project)
-        val buildFiles = buildList {
-            addAll(FilenameIndex.getVirtualFilesByName(project, "build.gradle.kts", scope))
-            addAll(FilenameIndex.getVirtualFilesByName(project, "build.gradle", scope))
+        return runReadAction {
+            val scope = GlobalSearchScope.projectScope(project)
+            val buildFiles = buildList {
+                addAll(FilenameIndex.getVirtualFilesByName(project, "build.gradle.kts", scope))
+                addAll(FilenameIndex.getVirtualFilesByName(project, "build.gradle", scope))
+            }
+            var hasKnitPlugin = false
+            var hasKnitDependency = false
+            var knitVersion: String? = null
+
+            for (vf in buildFiles) {
+                val content = String(vf.contentsToByteArray())
+
+                if (content.contains("id(\"io.github.tiktok.knit.plugin\")") ||
+                    content.contains("io.github.tiktok.knit.plugin") ||
+                    content.contains("knit-plugin")
+                ) {
+                    hasKnitPlugin = true
+                    logger.info("Found Knit plugin in: ${vf.path}")
+                }
+
+                if (content.contains("io.github.tiktok:knit") || content.contains("io.github.tiktok.knit:knit")) {
+                    hasKnitDependency = true
+                    logger.info("Found Knit dependency in: ${vf.path}")
+                }
+
+                if (knitVersion == null) {
+                    val version = listOf(
+                        Regex("""io\\.github\\.tiktok:knit[^:]*:([^"']+)"""),
+                        Regex("""io\\.github\\.tiktok\\.knit:knit[^:]*:([^"']+)""")
+                    ).asSequence()
+                        .mapNotNull { it.find(content)?.groupValues?.get(1) }
+                        .firstOrNull()
+                    if (version != null) knitVersion = version
+                }
+            }
+
+            BuildAnalysisResult(hasKnitPlugin, hasKnitDependency, knitVersion)
         }
-        var hasKnitPlugin = false
-        var hasKnitDependency = false
-        var knitVersion: String? = null
-
-        for (vf in buildFiles) {
-            val content = String(vf.contentsToByteArray())
-
-            if (content.contains("id(\"io.github.tiktok.knit.plugin\")") ||
-                content.contains("io.github.tiktok.knit.plugin") ||
-                content.contains("knit-plugin")
-            ) {
-                hasKnitPlugin = true
-                logger.info("Found Knit plugin in: ${vf.path}")
-            }
-
-            if (content.contains("io.github.tiktok:knit") || content.contains("io.github.tiktok.knit:knit")) {
-                hasKnitDependency = true
-                logger.info("Found Knit dependency in: ${vf.path}")
-            }
-
-            if (knitVersion == null) {
-                val version = listOf(
-                    Regex("""io\\.github\\.tiktok:knit[^:]*:([^"']+)"""),
-                    Regex("""io\\.github\\.tiktok\\.knit:knit[^:]*:([^"']+)""")
-                ).asSequence()
-                    .mapNotNull { it.find(content)?.groupValues?.get(1) }
-                    .firstOrNull()
-                if (version != null) knitVersion = version
-            }
-        }
-
-        return BuildAnalysisResult(hasKnitPlugin, hasKnitDependency, knitVersion)
     }
 
     private fun analyzeSourceFiles(): SourceAnalysisResult {
