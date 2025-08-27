@@ -1,7 +1,7 @@
 package com.example.mittens.performance
 
 import com.example.mittens.model.*
-import com.example.mittens.services.AdvancedIssueDetector
+import com.example.mittens.services.*
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.junit.Test
 import kotlin.random.Random
@@ -751,4 +751,305 @@ class PerformanceBenchmarkTest : BasePlatformTestCase() {
         Thread.sleep(50) // Give GC time to work
         return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024
     }
+    
+    // Phase 5 Performance Enhancement: Accuracy Validation Timing Tests
+    
+    /**
+     * Test performance impact of Phase 4 accuracy validation system
+     * Validates that accuracy validation adds minimal overhead to analysis pipeline
+     */
+    @Test
+    fun testAccuracyValidationPerformance() {
+        val componentCount = 500
+        val components = createLargeComponentGraph(componentCount)
+        
+        // Create services for accuracy testing
+        val issueValidator = IssueValidator(project)
+        val statisticalService = StatisticalAccuracyService()
+        
+        // Test detection without validation (baseline)
+        val baselineStartTime = System.currentTimeMillis()
+        val detectedIssues = advancedDetector.detectAdvancedCircularDependencies(components, createDependencyGraph(components))
+        val baselineTime = System.currentTimeMillis() - baselineStartTime
+        
+        // Test detection with accuracy validation
+        val validationSettings = IssueValidator.ValidationSettings(
+            validationEnabled = true,
+            minimumConfidenceThreshold = 0.3
+        )
+        
+        val validationStartTime = System.currentTimeMillis()
+        val validatedIssues = issueValidator.validateIssues(detectedIssues, components, validationSettings)
+        val validationTime = System.currentTimeMillis() - validationStartTime
+        
+        // Test accuracy metrics calculation
+        val metricsStartTime = System.currentTimeMillis()
+        val accuracyMetrics = statisticalService.calculateAccuracyMetrics(
+            allIssues = validatedIssues,
+            validatedIssues = validatedIssues.filter { it.validationStatus != ValidationStatus.NOT_VALIDATED },
+            expectedIssues = statisticalService.estimateExpectedIssues(components)
+        )
+        val metricsTime = System.currentTimeMillis() - metricsStartTime
+        
+        val totalValidationOverhead = validationTime + metricsTime
+        val validationOverheadPercentage = (totalValidationOverhead.toDouble() / baselineTime) * 100
+        
+        // Performance assertions for Phase 5 requirements
+        assertTrue("Validation should add <200ms overhead (was ${totalValidationOverhead}ms)", 
+                  totalValidationOverhead < 200)
+        assertTrue("Validation overhead should be <20% of baseline (was ${String.format("%.1f", validationOverheadPercentage)}%)", 
+                  validationOverheadPercentage < 20.0)
+        assertTrue("Issue validation should complete within 150ms", validationTime < 150)
+        assertTrue("Metrics calculation should complete within 50ms", metricsTime < 50)
+        
+        println("✅ Phase 5 Accuracy Validation Performance:")
+        println("  - Component count: $componentCount")
+        println("  - Baseline detection: ${baselineTime}ms")
+        println("  - Issue validation: ${validationTime}ms")
+        println("  - Metrics calculation: ${metricsTime}ms")
+        println("  - Total validation overhead: ${totalValidationOverhead}ms (${String.format("%.1f", validationOverheadPercentage)}%)")
+        println("  - Issues detected: ${detectedIssues.size}")
+        println("  - Issues validated: ${validatedIssues.size}")
+        println("  - Accuracy: ${String.format("%.1f", accuracyMetrics.getPrecision() * 100)}%")
+    }
+    
+    /**
+     * Test memory efficiency of accuracy validation system
+     */
+    @Test
+    fun testAccuracyValidationMemoryEfficiency() {
+        val componentCount = 1000
+        val components = createLargeComponentGraph(componentCount)
+        val detectedIssues = advancedDetector.detectAdvancedCircularDependencies(components, createDependencyGraph(components))
+        
+        val initialMemory = getCurrentMemoryUsage()
+        
+        // Create validation services
+        val issueValidator = IssueValidator(project)
+        val statisticalService = StatisticalAccuracyService()
+        
+        val afterCreationMemory = getCurrentMemoryUsage()
+        
+        // Perform validation
+        val validatedIssues = issueValidator.validateIssues(detectedIssues, components)
+        val accuracyMetrics = statisticalService.calculateAccuracyMetrics(
+            allIssues = validatedIssues,
+            validatedIssues = validatedIssues,
+            expectedIssues = components.size / 10 // Rough estimate
+        )
+        
+        val afterValidationMemory = getCurrentMemoryUsage()
+        
+        // Clear references and force GC
+        System.gc()
+        Thread.sleep(100)
+        val afterCleanupMemory = getCurrentMemoryUsage()
+        
+        val serviceCreationOverhead = afterCreationMemory - initialMemory
+        val validationOverhead = afterValidationMemory - afterCreationMemory
+        val memoryLeak = afterCleanupMemory - initialMemory
+        
+        // Memory efficiency assertions for Phase 5 requirements
+        assertTrue("Service creation should use <10MB (was ${serviceCreationOverhead}MB)", 
+                  serviceCreationOverhead < 10)
+        assertTrue("Validation should add <50MB overhead (was ${validationOverhead}MB)", 
+                  validationOverhead < 50)
+        assertTrue("Memory leak should be <5MB (was ${memoryLeak}MB)", 
+                  memoryLeak < 5)
+        
+        println("✅ Phase 5 Accuracy Validation Memory Efficiency:")
+        println("  - Component count: $componentCount")
+        println("  - Initial memory: ${initialMemory}MB")
+        println("  - Service creation overhead: ${serviceCreationOverhead}MB")
+        println("  - Validation overhead: ${validationOverhead}MB")
+        println("  - After cleanup: ${afterCleanupMemory}MB")
+        println("  - Memory leak: ${memoryLeak}MB")
+        println("  - Issues validated: ${validatedIssues.size}")
+        println("  - Average confidence: ${String.format("%.2f", accuracyMetrics.averageConfidenceScore)}")
+    }
+    
+    /**
+     * Test scalability of accuracy validation with increasing component counts
+     */
+    @Test
+    fun testAccuracyValidationScalability() {
+        val componentCounts = listOf(100, 500, 1000, 2000)
+        val results = mutableListOf<ScalabilityResult>()
+        
+        val issueValidator = IssueValidator(project)
+        val statisticalService = StatisticalAccuracyService()
+        
+        for (componentCount in componentCounts) {
+            val components = createLargeComponentGraph(componentCount, cycleFrequency = 0.05)
+            val detectedIssues = advancedDetector.detectAdvancedCircularDependencies(
+                components, 
+                createDependencyGraph(components)
+            )
+            
+            val startTime = System.currentTimeMillis()
+            val validatedIssues = issueValidator.validateIssues(detectedIssues, components)
+            val accuracyMetrics = statisticalService.calculateAccuracyMetrics(
+                allIssues = validatedIssues,
+                validatedIssues = validatedIssues,
+                expectedIssues = componentCount / 20
+            )
+            val totalTime = System.currentTimeMillis() - startTime
+            
+            results.add(ScalabilityResult(
+                componentCount = componentCount,
+                validationTime = totalTime,
+                issueCount = detectedIssues.size,
+                validatedCount = validatedIssues.size,
+                precision = accuracyMetrics.getPrecision()
+            ))
+        }
+        
+        // Analyze scalability - validation time should scale sub-linearly
+        val timeGrowthRates = results.zipWithNext { current, next ->
+            val componentRatio = next.componentCount.toDouble() / current.componentCount
+            val timeRatio = next.validationTime.toDouble() / current.validationTime
+            timeRatio / componentRatio // Should be < 1.5 for good scalability
+        }
+        
+        val averageGrowthRate = timeGrowthRates.average()
+        
+        // Scalability assertions
+        assertTrue("Validation should scale sub-linearly (growth rate: ${String.format("%.2f", averageGrowthRate)})", 
+                  averageGrowthRate < 1.5)
+        
+        // Performance requirements for largest test
+        val largestResult = results.last()
+        assertTrue("Validation of ${largestResult.componentCount} components should complete within 500ms", 
+                  largestResult.validationTime < 500)
+        
+        println("✅ Phase 5 Accuracy Validation Scalability:")
+        results.forEach { result ->
+            println("  - ${result.componentCount} components: ${result.validationTime}ms, " +
+                   "${result.issueCount} issues, precision: ${String.format("%.1f", result.precision * 100)}%")
+        }
+        println("  - Average growth rate: ${String.format("%.2f", averageGrowthRate)}")
+        println("  - Scalability: ${if (averageGrowthRate < 1.5) "GOOD" else "NEEDS IMPROVEMENT"}")
+    }
+    
+    /**
+     * Test performance of accuracy validation with different confidence thresholds
+     */
+    @Test
+    fun testAccuracyValidationWithDifferentThresholds() {
+        val componentCount = 800
+        val components = createLargeComponentGraph(componentCount)
+        val detectedIssues = advancedDetector.detectAdvancedCircularDependencies(components, createDependencyGraph(components))
+        
+        val issueValidator = IssueValidator(project)
+        val statisticalService = StatisticalAccuracyService()
+        val thresholds = listOf(0.1, 0.3, 0.5, 0.7, 0.9)
+        
+        println("✅ Phase 5 Accuracy Validation - Confidence Threshold Performance:")
+        
+        for (threshold in thresholds) {
+            val validationSettings = IssueValidator.ValidationSettings(
+                validationEnabled = true,
+                minimumConfidenceThreshold = threshold
+            )
+            
+            val startTime = System.currentTimeMillis()
+            val validatedIssues = issueValidator.validateIssues(detectedIssues, components, validationSettings)
+            val accuracyMetrics = statisticalService.calculateAccuracyMetrics(
+                allIssues = validatedIssues,
+                validatedIssues = validatedIssues.filter { it.validationStatus != ValidationStatus.NOT_VALIDATED },
+                expectedIssues = componentCount / 20
+            )
+            val validationTime = System.currentTimeMillis() - startTime
+            
+            val truePositives = validatedIssues.count { it.validationStatus == ValidationStatus.VALIDATED_TRUE_POSITIVE }
+            val falsePositives = validatedIssues.count { it.validationStatus == ValidationStatus.VALIDATED_FALSE_POSITIVE }
+            
+            // Performance should remain consistent regardless of threshold
+            assertTrue("Validation with threshold $threshold should complete within 200ms", validationTime < 200)
+            
+            println("    Threshold ${String.format("%.1f", threshold)}: ${validationTime}ms, " +
+                   "TP: $truePositives, FP: $falsePositives, " +
+                   "precision: ${String.format("%.1f", accuracyMetrics.getPrecision() * 100)}%")
+        }
+    }
+    
+    /**
+     * Comprehensive performance test for the complete Phase 4 accuracy pipeline
+     */
+    @Test
+    fun testCompleteAccuracyPipelinePerformance() {
+        val componentCount = 600
+        val components = createLargeComponentGraph(componentCount)
+        val graph = createDependencyGraph(components)
+        
+        // Simulate complete analysis pipeline with accuracy validation
+        val pipelineStartTime = System.currentTimeMillis()
+        
+        // Step 1: Issue detection (baseline)
+        val detectionStartTime = System.currentTimeMillis()
+        val circularIssues = advancedDetector.detectAdvancedCircularDependencies(components, graph)
+        val ambiguousIssues = advancedDetector.detectEnhancedAmbiguousProviders(components)
+        val unresolvedIssues = advancedDetector.detectImprovedUnresolvedDependencies(components)
+        val allIssues = circularIssues + ambiguousIssues + unresolvedIssues
+        val detectionTime = System.currentTimeMillis() - detectionStartTime
+        
+        // Step 2: Issue validation
+        val validationStartTime = System.currentTimeMillis()
+        val issueValidator = IssueValidator(project)
+        val validatedIssues = issueValidator.validateIssues(allIssues, components)
+        val validationTime = System.currentTimeMillis() - validationStartTime
+        
+        // Step 3: Accuracy metrics calculation
+        val metricsStartTime = System.currentTimeMillis()
+        val statisticalService = StatisticalAccuracyService()
+        val expectedIssues = statisticalService.estimateExpectedIssues(components)
+        val accuracyMetrics = statisticalService.calculateAccuracyMetrics(
+            allIssues = validatedIssues,
+            validatedIssues = validatedIssues,
+            expectedIssues = expectedIssues
+        )
+        val metricsTime = System.currentTimeMillis() - metricsStartTime
+        
+        // Step 4: Accuracy report generation
+        val reportStartTime = System.currentTimeMillis()
+        val accuracyReport = statisticalService.generateAccuracyReport(accuracyMetrics, validatedIssues.size)
+        val reportTime = System.currentTimeMillis() - reportStartTime
+        
+        val totalPipelineTime = System.currentTimeMillis() - pipelineStartTime
+        val accuracyPipelineTime = validationTime + metricsTime + reportTime
+        val accuracyOverheadPercentage = (accuracyPipelineTime.toDouble() / detectionTime) * 100
+        
+        // Comprehensive pipeline performance assertions
+        assertTrue("Complete accuracy pipeline should complete within 800ms (was ${totalPipelineTime}ms)", 
+                  totalPipelineTime < 800)
+        assertTrue("Accuracy pipeline overhead should be <25% of detection time (was ${String.format("%.1f", accuracyOverheadPercentage)}%)", 
+                  accuracyOverheadPercentage < 25.0)
+        assertTrue("Issue validation should complete within 150ms", validationTime < 150)
+        assertTrue("Metrics calculation should complete within 50ms", metricsTime < 50)
+        assertTrue("Report generation should complete within 30ms", reportTime < 30)
+        
+        println("✅ Phase 5 Complete Accuracy Pipeline Performance:")
+        println("  - Component count: $componentCount")
+        println("  - Issue detection: ${detectionTime}ms")
+        println("  - Issue validation: ${validationTime}ms")
+        println("  - Metrics calculation: ${metricsTime}ms")
+        println("  - Report generation: ${reportTime}ms")
+        println("  - Total pipeline: ${totalPipelineTime}ms")
+        println("  - Accuracy overhead: ${accuracyPipelineTime}ms (${String.format("%.1f", accuracyOverheadPercentage)}%)")
+        println("  - Issues detected: ${allIssues.size}")
+        println("  - Issues validated: ${validatedIssues.size}")
+        println("  - True positives: ${accuracyMetrics.truePositives}")
+        println("  - False positives: ${accuracyMetrics.falsePositives}")
+        println("  - Precision: ${String.format("%.1f", accuracyMetrics.getPrecision() * 100)}%")
+        println("  - Performance: ${if (accuracyOverheadPercentage < 25) "MEETS REQUIREMENTS" else "NEEDS OPTIMIZATION"}")
+    }
+    
+    // Data class for scalability testing
+    private data class ScalabilityResult(
+        val componentCount: Int,
+        val validationTime: Long,
+        val issueCount: Int,
+        val validatedCount: Int,
+        val precision: Double
+    )
 }
