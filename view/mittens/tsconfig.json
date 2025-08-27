@@ -5,13 +5,15 @@
 
     "module": "node18",
     "moduleResolution": "node16",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
 
     "strict": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
 
     "esModuleInterop": true,
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
-  "exclude": ["dist/"],
+  "exclude": ["dist/"]
 }
