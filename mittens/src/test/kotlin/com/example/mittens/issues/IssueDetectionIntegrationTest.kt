@@ -502,8 +502,11 @@ class IssueDetectionIntegrationTest : BasePlatformTestCase() {
                 dependencies = listOf("LegacyDataAccess")),
             createComponent("LegacyDataAccess", "com.legacy.data", 
                 dependencies = listOf("LegacyUserManager")), // Creates cycles
-            createProviderComponent("GlobalSingletonProvider", "com.legacy.infra", 
-                provides = listOf("LegacyDataAccess", "LegacyDataAccess")), // Duplicate singletons
+            // Use two distinct provider components to realistically represent duplicate providers
+            createProviderComponent("GlobalSingletonProvider1", "com.legacy.infra", 
+                provides = listOf("LegacyDataAccess")),
+            createProviderComponent("GlobalSingletonProvider2", "com.legacy.infra", 
+                provides = listOf("LegacyDataAccess")),
         )
     }
     

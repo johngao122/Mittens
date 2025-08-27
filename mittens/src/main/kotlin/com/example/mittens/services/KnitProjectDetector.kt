@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.idea.KotlinFileType
@@ -14,8 +15,10 @@ import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
+import kotlin.ExperimentalStdlibApi
 
 @Service
+@OptIn(ExperimentalStdlibApi::class)
 class KnitProjectDetector(private val project: Project) {
 
     private val logger = thisLogger()
@@ -61,36 +64,39 @@ class KnitProjectDetector(private val project: Project) {
     }
 
     private fun analyzeBuildFiles(): BuildAnalysisResult {
-        val buildFiles = listOf("build.gradle.kts", "build.gradle")
+        val scope = GlobalSearchScope.projectScope(project)
+        val buildFiles = buildList {
+            addAll(FilenameIndex.getVirtualFilesByName(project, "build.gradle.kts", scope))
+            addAll(FilenameIndex.getVirtualFilesByName(project, "build.gradle", scope))
+        }
         var hasKnitPlugin = false
         var hasKnitDependency = false
         var knitVersion: String? = null
 
-        for (buildFileName in buildFiles) {
-            val buildFile = project.projectFile?.parent?.findChild(buildFileName)
-            if (buildFile != null && buildFile.exists()) {
-                val content = String(buildFile.contentsToByteArray())
+        for (vf in buildFiles) {
+            val content = String(vf.contentsToByteArray())
 
+            if (content.contains("id(\"io.github.tiktok.knit.plugin\")") ||
+                content.contains("io.github.tiktok.knit.plugin") ||
+                content.contains("knit-plugin")
+            ) {
+                hasKnitPlugin = true
+                logger.info("Found Knit plugin in: ${vf.path}")
+            }
 
-                if (content.contains("io.github.tiktok.knit.plugin") ||
-                    content.contains("knit-plugin")
-                ) {
-                    hasKnitPlugin = true
-                    logger.info("Found Knit plugin in: $buildFileName")
-                }
+            if (content.contains("io.github.tiktok:knit") || content.contains("io.github.tiktok.knit:knit")) {
+                hasKnitDependency = true
+                logger.info("Found Knit dependency in: ${vf.path}")
+            }
 
-
-                if (content.contains("io.github.tiktok.knit:knit")) {
-                    hasKnitDependency = true
-                    logger.info("Found Knit dependency in: $buildFileName")
-                }
-
-
-                val versionRegex = Regex("""io\.github\.tiktok\.knit:knit[^:]*:([^"']+)""")
-                val match = versionRegex.find(content)
-                knitVersion = match?.groupValues?.get(1)?.also { version ->
-                    logger.info("Detected Knit version: $version")
-                }
+            if (knitVersion == null) {
+                val version = listOf(
+                    Regex("""io\\.github\\.tiktok:knit[^:]*:([^"']+)"""),
+                    Regex("""io\\.github\\.tiktok\\.knit:knit[^:]*:([^"']+)""")
+                ).asSequence()
+                    .mapNotNull { it.find(content)?.groupValues?.get(1) }
+                    .firstOrNull()
+                if (version != null) knitVersion = version
             }
         }
 

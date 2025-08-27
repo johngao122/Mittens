@@ -4,9 +4,13 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
 import java.io.File
+import kotlin.ExperimentalStdlibApi
 
 @Service
+@OptIn(ExperimentalStdlibApi::class)
 class KnitGradleService(private val project: Project) {
 
     private val logger = thisLogger()
@@ -16,16 +20,22 @@ class KnitGradleService(private val project: Project) {
     }
 
     fun findKnitGradleConfiguration(): VirtualFile? {
-        val buildFiles = listOf("build.gradle.kts", "build.gradle")
-
-        for (buildFileName in buildFiles) {
-            val buildFile = project.projectFile?.parent?.findChild(buildFileName)
-            if (buildFile != null && buildFile.exists()) {
-                val content = String(buildFile.contentsToByteArray())
-                if (content.contains("io.github.tiktok.knit") || content.contains("knit-plugin")) {
-                    logger.info("Found Knit configuration in: $buildFileName")
-                    return buildFile
-                }
+        val scope = GlobalSearchScope.projectScope(project)
+        val candidates = buildList {
+            addAll(FilenameIndex.getVirtualFilesByName(project, "build.gradle.kts", scope))
+            addAll(FilenameIndex.getVirtualFilesByName(project, "build.gradle", scope))
+        }
+        for (vf in candidates) {
+            val content = String(vf.contentsToByteArray())
+            if (
+                content.contains("id(\"io.github.tiktok.knit.plugin\")") ||
+                content.contains("io.github.tiktok.knit.plugin") ||
+                content.contains("knit-plugin") ||
+                content.contains("io.github.tiktok:knit") ||
+                content.contains("io.github.tiktok.knit:knit")
+            ) {
+                logger.info("Found Knit configuration in: ${vf.path}")
+                return vf
             }
         }
 
@@ -36,11 +46,16 @@ class KnitGradleService(private val project: Project) {
         val buildFile = findKnitGradleConfiguration() ?: return null
         val content = String(buildFile.contentsToByteArray())
 
-        val versionRegex = Regex("""io\.github\.tiktok\.knit:knit[^:]*:([^"']+)""")
-        val match = versionRegex.find(content)
+        val versionRegexes = listOf(
+            Regex("""io\\.github\\.tiktok\\.knit:knit[^:]*:([^"']+)"""),
+            Regex("""io\\.github\\.tiktok:knit[^:]*:([^"']+)""")
+        )
+        val version = versionRegexes.asSequence()
+            .mapNotNull { it.find(content)?.groupValues?.get(1) }
+            .firstOrNull()
 
-        return match?.groupValues?.get(1)?.also { version ->
-            logger.info("Detected Knit version: $version")
+        return version?.also { v ->
+            logger.info("Detected Knit version: $v")
         }
     }
 

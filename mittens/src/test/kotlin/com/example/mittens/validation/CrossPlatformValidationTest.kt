@@ -187,10 +187,10 @@ class CrossPlatformValidationTest : LightJavaCodeInsightFixtureTestCase() {
             }
         """.trimIndent()
         
-        myFixture.configureByText("domain/service/OrderDomainService.kt", domainServiceContent)
-        myFixture.configureByText("domain/validator/OrderValidator.kt", domainValidatorContent) 
-        myFixture.configureByText("infrastructure/repository/OrderRepository.kt", infrastructureRepositoryContent)
-        myFixture.configureByText("application/controller/OrderController.kt", applicationControllerContent)
+        myFixture.addFileToProject("domain/service/OrderDomainService.kt", domainServiceContent)
+        myFixture.addFileToProject("domain/validator/OrderValidator.kt", domainValidatorContent)
+        myFixture.addFileToProject("infrastructure/repository/OrderRepository.kt", infrastructureRepositoryContent)
+        myFixture.addFileToProject("application/controller/OrderController.kt", applicationControllerContent)
         
         val components = sourceAnalyzer.analyzeProject()
         val nestedComponents = components.filter { it.packageName.startsWith("com.example.nested") }
@@ -336,12 +336,12 @@ class CrossPlatformValidationTest : LightJavaCodeInsightFixtureTestCase() {
             }
         """.trimIndent()
         
-        myFixture.configureByText("user/domain/UserAggregate.kt", userAggregateContent)
-        myFixture.configureByText("user/infrastructure/UserRepositoryImpl.kt", userRepositoryContent)
-        myFixture.configureByText("user/application/UserApplicationService.kt", userApplicationServiceContent)
-        myFixture.configureByText("order/domain/OrderAggregate.kt", orderAggregateContent)
-        myFixture.configureByText("order/infrastructure/OrderRepositoryImpl.kt", orderRepositoryContent)
-        myFixture.configureByText("shared/events/DomainEventPublisher.kt", sharedEventsContent)
+        myFixture.addFileToProject("user/domain/UserAggregate.kt", userAggregateContent)
+        myFixture.addFileToProject("user/infrastructure/UserRepositoryImpl.kt", userRepositoryContent)
+        myFixture.addFileToProject("user/application/UserApplicationService.kt", userApplicationServiceContent)
+        myFixture.addFileToProject("order/domain/OrderAggregate.kt", orderAggregateContent)
+        myFixture.addFileToProject("order/infrastructure/OrderRepositoryImpl.kt", orderRepositoryContent)
+        myFixture.addFileToProject("shared/events/DomainEventPublisher.kt", sharedEventsContent)
         
         val components = sourceAnalyzer.analyzeProject()
         val dddComponents = components.filter { it.packageName.startsWith("com.example.ddd") }
@@ -843,8 +843,8 @@ class CrossPlatformValidationTest : LightJavaCodeInsightFixtureTestCase() {
         """.trimIndent()
         
         myFixture.configureByText("ComprehensiveFlat.kt", comprehensiveContent)
-        myFixture.configureByText("nested/deep/structure/DeepNested.kt", nestedContent)
-        myFixture.configureByText("advanced/Advanced.kt", mixedAdvancedContent)
+        myFixture.addFileToProject("nested/deep/structure/DeepNested.kt", nestedContent)
+        myFixture.addFileToProject("advanced/Advanced.kt", mixedAdvancedContent)
         
         val allComponents = sourceAnalyzer.analyzeProject()
         val comprehensiveComponents = allComponents.filter { 
@@ -930,7 +930,7 @@ class CrossPlatformValidationTest : LightJavaCodeInsightFixtureTestCase() {
             type = ComponentType.PROVIDER,
             dependencies = emptyList(),
             providers = listOf(
-                KnitProvider("provide${module.capitalize()}Data", "com.enterprise.ecommerce.$module.entity.${module.capitalize()}Entity", false, false, false)
+                KnitProvider("provide${module.capitalize()}Data", "com.enterprise.ecommerce.$module.entity.${module.capitalize()}Entity", null, false, null, false)
             ),
             sourceFile = "$className.kt"
         )

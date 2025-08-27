@@ -55,7 +55,13 @@ class IssueValidator(private val project: Project) {
         val validationTime = System.currentTimeMillis() - startTime
         logger.info("Issue validation completed in ${validationTime}ms")
 
-        return validatedIssues
+        // Filter out low-confidence issues below the configured threshold
+        val filtered = validatedIssues.filter { it.confidenceScore >= settings.minimumConfidenceThreshold }
+        if (filtered.size != validatedIssues.size) {
+            logger.debug("Filtered out ${validatedIssues.size - filtered.size} low-confidence issues (< ${settings.minimumConfidenceThreshold})")
+        }
+
+        return filtered
     }
 
     /**
@@ -72,12 +78,8 @@ class IssueValidator(private val project: Project) {
             )
         }
         
-        if (componentNames.size < 2) {
-            return issue.copy(
-                validationStatus = ValidationStatus.VALIDATED_FALSE_POSITIVE,
-                confidenceScore = 0.2
-            )
-        }
+        // Allow self-referencing cycles (single component that depends on itself)
+        // Do not early-exit solely based on component count
 
         // Find components involved in the circular dependency
         val involvedComponents = components.filter { component ->
@@ -89,7 +91,7 @@ class IssueValidator(private val project: Project) {
         if (involvedComponents.size < componentNames.size) {
             return issue.copy(
                 validationStatus = ValidationStatus.VALIDATED_FALSE_POSITIVE,
-                confidenceScore = 0.3
+                confidenceScore = 0.2
             )
         }
 
@@ -137,13 +139,13 @@ class IssueValidator(private val project: Project) {
         val confidenceScore = when {
             isCommentedDependency -> 0.1 // Very likely false positive
             !hasProvider -> 0.9 // High confidence - truly unresolved
-            else -> 0.4 // Medium confidence - might be resolved in ways we can't detect
+            else -> 0.2 // Low confidence - likely resolved via nested/simple-name match or bytecode
         }
 
         val validationStatus = when {
             isCommentedDependency -> ValidationStatus.VALIDATED_FALSE_POSITIVE
             !hasProvider -> ValidationStatus.VALIDATED_TRUE_POSITIVE
-            else -> ValidationStatus.VALIDATED_TRUE_POSITIVE
+            else -> ValidationStatus.VALIDATED_FALSE_POSITIVE
         }
 
         return issue.copy(
@@ -259,7 +261,7 @@ class IssueValidator(private val project: Project) {
         }
 
         val hasActualMismatch = matchingProviders.isEmpty()
-        val confidenceScore = if (hasActualMismatch) 0.8 else 0.3
+        val confidenceScore = if (hasActualMismatch) 0.8 else 0.25
 
         return issue.copy(
             validationStatus = if (hasActualMismatch) ValidationStatus.VALIDATED_TRUE_POSITIVE else ValidationStatus.VALIDATED_FALSE_POSITIVE,
@@ -285,7 +287,7 @@ class IssueValidator(private val project: Project) {
         val hasProviders = component.providers.isNotEmpty()
         
         val needsAnnotation = hasDependencies || hasProviders
-        val confidenceScore = if (needsAnnotation) 0.7 else 0.3
+        val confidenceScore = if (needsAnnotation) 0.7 else 0.25
 
         return issue.copy(
             validationStatus = if (needsAnnotation) ValidationStatus.VALIDATED_TRUE_POSITIVE else ValidationStatus.VALIDATED_FALSE_POSITIVE,
@@ -323,24 +325,31 @@ class IssueValidator(private val project: Project) {
     }
 
     private fun detectCycleBetweenComponents(components: List<KnitComponent>): Boolean {
-        if (components.size < 2) return false
-
         // Build adjacency list from dependencies
         val adjacencyList = mutableMapOf<String, MutableList<String>>()
-        
+
         components.forEach { component ->
             val componentKey = component.className
             adjacencyList.putIfAbsent(componentKey, mutableListOf())
-            
+
+            // Self-reference edge if component depends on itself explicitly
+            val hasSelfRef = component.dependencies.any { dep ->
+                dep.targetType.substringAfterLast('.') == component.className
+            }
+            if (hasSelfRef) {
+                adjacencyList[componentKey]!!.add(componentKey)
+            }
+
             component.dependencies.forEach { dependency ->
-                val targetComponent = components.find { it.className == dependency.targetType.substringAfterLast('.') }
-                if (targetComponent != null) {
+                val targetName = dependency.targetType.substringAfterLast('.')
+                val targetComponent = components.find { it.className == targetName }
+                if (targetComponent != null && targetComponent.className != component.className) {
                     adjacencyList[componentKey]!!.add(targetComponent.className)
                 }
             }
         }
 
-        // Use DFS to detect cycles
+        // Use DFS to detect cycles, including self-loops
         return hasCycleInGraph(adjacencyList, components.map { it.className })
     }
 

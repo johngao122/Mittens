@@ -199,10 +199,10 @@ class BuildIntegrationAccuracyTest : LightJavaCodeInsightFixtureTestCase() {
         """.trimIndent()
         
         myFixture.configureByText("build.gradle.kts", rootBuildContent)
-        myFixture.configureByText("core/build.gradle.kts", moduleBuildContent)
-        myFixture.configureByText("api/build.gradle.kts", moduleBuildContent)
-        myFixture.configureByText("core/src/main/kotlin/CoreService.kt", coreServiceContent)
-        myFixture.configureByText("api/src/main/kotlin/ApiService.kt", apiServiceContent)
+        myFixture.addFileToProject("core/build.gradle.kts", moduleBuildContent)
+        myFixture.addFileToProject("api/build.gradle.kts", moduleBuildContent)
+        myFixture.addFileToProject("core/src/main/kotlin/CoreService.kt", coreServiceContent)
+        myFixture.addFileToProject("api/src/main/kotlin/ApiService.kt", apiServiceContent)
         
         val sourceAnalyzer = KnitSourceAnalyzer(project)
         val components = sourceAnalyzer.analyzeProject()

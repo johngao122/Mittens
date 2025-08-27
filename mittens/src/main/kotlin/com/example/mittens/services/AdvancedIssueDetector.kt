@@ -128,7 +128,10 @@ class AdvancedIssueDetector(private val project: Project) {
                 val providerId = "${component.packageName}.${component.className}.${provider.methodName}"
 
                 logger.debug("Phase 2: Processing active provider $providerId for type $providedType")
-                baseTypeToProviders.getOrPut(providedType) { mutableListOf() }.add(providerId to provider)
+                val bucket = baseTypeToProviders.getOrPut(providedType) { mutableListOf() }
+                if (bucket.none { (id, _) -> id == providerId }) {
+                    bucket.add(providerId to provider)
+                }
             }
         }
 
@@ -383,7 +386,10 @@ class AdvancedIssueDetector(private val project: Project) {
 
                 logger.debug("Phase 2: Indexing active provider - $providerId for type $providedType")
 
-                typeToProviders.getOrPut(providerKey) { mutableListOf() }.add(providerId to provider)
+                val bucket = typeToProviders.getOrPut(providerKey) { mutableListOf() }
+                if (bucket.none { (id, _) -> id == providerId }) {
+                    bucket.add(providerId to provider)
+                }
             }
 
 
@@ -533,9 +539,11 @@ class AdvancedIssueDetector(private val project: Project) {
                 val providerPath = "${component.packageName}.${component.className}.${provider.methodName}"
 
                 if (provider.isSingleton) {
-                    singletonTypes.getOrPut(mapKey) { mutableListOf() }.add(providerPath)
+                    val bucket = singletonTypes.getOrPut(mapKey) { mutableListOf() }
+                    if (!bucket.contains(providerPath)) bucket.add(providerPath)
                 }
-                allProvidedTypes.getOrPut(mapKey) { mutableListOf() }.add(providerPath)
+                val allBucket = allProvidedTypes.getOrPut(mapKey) { mutableListOf() }
+                if (!allBucket.contains(providerPath)) allBucket.add(providerPath)
             }
         }
 

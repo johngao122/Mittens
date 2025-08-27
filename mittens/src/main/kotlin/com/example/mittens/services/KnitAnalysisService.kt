@@ -240,7 +240,7 @@ class KnitAnalysisService(private val project: Project) {
         return mergedMap.values.toList()
     }
 
-    private fun buildDependencyGraph(components: List<KnitComponent>): DependencyGraph {
+    internal fun buildDependencyGraph(components: List<KnitComponent>): DependencyGraph {
         val nodes = mutableListOf<GraphNode>()
         val edges = mutableListOf<GraphEdge>()
 
@@ -418,7 +418,7 @@ class KnitAnalysisService(private val project: Project) {
         return finalIssues
     }
 
-    private fun detectIssues(components: List<KnitComponent>, dependencyGraph: DependencyGraph): List<KnitIssue> {
+    internal fun detectIssues(components: List<KnitComponent>, dependencyGraph: DependencyGraph): List<KnitIssue> {
         val issues = mutableListOf<KnitIssue>()
         val startTime = System.currentTimeMillis()
 

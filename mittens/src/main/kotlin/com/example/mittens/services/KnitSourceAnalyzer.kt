@@ -79,6 +79,47 @@ class KnitSourceAnalyzer(private val project: Project) {
 
         // Check class-level annotations
         val classAnnotations = ktClass.annotationEntries
+        
+        // Handle class-level @Provides annotations
+        // Only process class-level @Provides if there are no method-level providers
+        val classLevelProvidesAnnotation = classAnnotations.find { it.shortName?.asString() == "Provides" }
+        if (classLevelProvidesAnnotation != null && !isAnnotationCommentedOut(classLevelProvidesAnnotation) && providers.isEmpty()) {
+            val providesType = extractProvidesType(classLevelProvidesAnnotation)
+            if (providesType != null) {
+                logger.info("Found class-level @Provides annotation on $className providing $providesType")
+                providers.add(
+                    KnitProvider(
+                        methodName = "provide$className",
+                        returnType = providesType,
+                        providesType = providesType,
+                        isNamed = false,
+                        namedQualifier = null,
+                        isSingleton = false,
+                        isIntoSet = false,
+                        isIntoList = false,
+                        isIntoMap = false
+                    )
+                )
+            } else {
+                // Fallback: class-level @Provides without explicit type means the class provides itself
+                logger.info("Found class-level @Provides annotation on $className (fallback to self-providing)")
+                providers.add(
+                    KnitProvider(
+                        methodName = "provide$className",
+                        returnType = className,
+                        providesType = className,
+                        isNamed = false,
+                        namedQualifier = null,
+                        isSingleton = false,
+                        isIntoSet = false,
+                        isIntoList = false,
+                        isIntoMap = false
+                    )
+                )
+            }
+        }
+
+        // Check other class-level annotations for component type determination
         val hasComponent = classAnnotations.any { it.shortName?.asString() == "Component" }
         val hasProvides = classAnnotations.any { it.shortName?.asString() == "Provides" }
         val hasKnitViewModel = classAnnotations.any { it.shortName?.asString() == "KnitViewModel" }
@@ -93,8 +134,8 @@ class KnitSourceAnalyzer(private val project: Project) {
             else -> return null // Not a Knit component
         }
 
-        // Check for missing @Component annotation when using 'by di'
-        if (dependencies.isNotEmpty() && !hasComponent) {
+        // Check for missing @Component annotation when using 'by di' (do not warn if @Provides is present)
+        if (dependencies.isNotEmpty() && !hasComponent && !hasProvides) {
             issues.add(
                 KnitIssue(
                     type = IssueType.MISSING_COMPONENT_ANNOTATION,
@@ -180,7 +221,7 @@ class KnitSourceAnalyzer(private val project: Project) {
 
         val providesType = extractProvidesType(providesAnnotation)
 
-        logger.debug("Found @Provides method: $methodName(): $returnType in $containingClassName")
+        logger.info("Found @Provides method: $methodName(): $returnType in $containingClassName")
 
 
         val namedAnnotation = annotations.find { it.shortName?.asString() == "Named" }
