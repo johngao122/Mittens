@@ -210,4 +210,97 @@ class AnalysisResultTest {
         assertEquals("Analysis time should be 1500", 1500, summary.analysisTime)
         assertTrue("Should detect cycles", summary.hasCycles)
     }
+    
+    @Test
+    fun testAnalysisResultWithAccuracyMetrics() {
+        val issues = listOf(
+            KnitIssue(
+                type = IssueType.CIRCULAR_DEPENDENCY, 
+                severity = Severity.ERROR, 
+                message = "Circular dependency", 
+                componentName = "Component1",
+                confidenceScore = 0.9,
+                validationStatus = ValidationStatus.VALIDATED_TRUE_POSITIVE
+            ),
+            KnitIssue(
+                type = IssueType.UNRESOLVED_DEPENDENCY, 
+                severity = Severity.WARNING, 
+                message = "False positive", 
+                componentName = "Component2",
+                confidenceScore = 0.2,
+                validationStatus = ValidationStatus.VALIDATED_FALSE_POSITIVE
+            )
+        )
+        
+        val accuracyMetrics = AccuracyMetrics(
+            totalValidatedIssues = 2,
+            truePositives = 1,
+            falsePositives = 1,
+            falseNegatives = 0,
+            expectedIssues = 1,
+            validationEnabled = true,
+            averageConfidenceScore = 0.55
+        )
+        
+        val result = AnalysisResult(
+            components = emptyList(),
+            dependencyGraph = DependencyGraph(emptyList(), emptyList()),
+            issues = issues,
+            timestamp = System.currentTimeMillis(),
+            projectName = "TestProject",
+            accuracyMetrics = accuracyMetrics
+        )
+        
+        assertEquals("Should have accuracy metrics", accuracyMetrics, result.accuracyMetrics)
+        assertEquals("Should have 1 validated true positive", 1, result.getValidatedIssues().size)
+        assertEquals("Should have 1 false positive", 1, result.getFalsePositives().size)
+        
+        val summary = result.getSummary()
+        assertEquals("Summary should include accuracy metrics", accuracyMetrics, summary.accuracyMetrics)
+        assertEquals(50.0, summary.getAccuracyPercentage(), 0.1) // 1 TP / 2 total = 50%
+        assertEquals(50.0, summary.getFalsePositiveRate(), 0.1) // 1 FP / 2 total = 50%
+        assertEquals(100.0, summary.getStatisticalError(), 0.1) // |2-1|/1 = 100%
+    }
+    
+    @Test
+    fun testAnalysisResultDefaultAccuracyMetrics() {
+        val result = AnalysisResult(
+            components = emptyList(),
+            dependencyGraph = DependencyGraph(emptyList(), emptyList()),
+            issues = emptyList(),
+            timestamp = System.currentTimeMillis(),
+            projectName = "TestProject"
+        )
+        
+        assertNotNull("Should have default accuracy metrics", result.accuracyMetrics)
+        assertFalse("Validation should be disabled by default", result.accuracyMetrics.validationEnabled)
+        assertEquals("Should have empty validation details", 0, result.accuracyMetrics.issueValidationDetails.size)
+    }
+    
+    @Test
+    fun testIssuePreviewWithValidation() {
+        val issue = KnitIssue(
+            type = IssueType.AMBIGUOUS_PROVIDER,
+            severity = Severity.WARNING,
+            message = "This is a test issue with validation data",
+            componentName = "TestComponent",
+            confidenceScore = 0.75,
+            validationStatus = ValidationStatus.VALIDATED_TRUE_POSITIVE
+        )
+        
+        val result = AnalysisResult(
+            components = emptyList(),
+            dependencyGraph = DependencyGraph(emptyList(), emptyList()),
+            issues = listOf(issue),
+            timestamp = System.currentTimeMillis(),
+            projectName = "TestProject"
+        )
+        
+        val summary = result.getSummary()
+        assertEquals("Should have 1 top issue", 1, summary.topIssues.size)
+        
+        val topIssue = summary.topIssues[0]
+        assertEquals("Should preserve confidence score", 0.75, topIssue.confidenceScore, 0.001)
+        assertEquals("Should preserve validation status", ValidationStatus.VALIDATED_TRUE_POSITIVE, topIssue.validationStatus)
+    }
 }

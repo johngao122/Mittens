@@ -14,6 +14,48 @@ class KnitAnalysisService(private val project: Project) {
     private val logger = thisLogger()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    /**
+     * Priority order for issue detection - higher priority issues exclude components from lower priority detection
+     */
+    private enum class IssuePriority(val issueType: IssueType) {
+        CRITICAL_CIRCULAR(IssueType.CIRCULAR_DEPENDENCY),
+        HIGH_UNRESOLVED(IssueType.UNRESOLVED_DEPENDENCY),
+        MEDIUM_AMBIGUOUS(IssueType.AMBIGUOUS_PROVIDER),
+        LOW_SINGLETON(IssueType.SINGLETON_VIOLATION),
+        LOW_QUALIFIER(IssueType.NAMED_QUALIFIER_MISMATCH),
+        INFO_ANNOTATION(IssueType.MISSING_COMPONENT_ANNOTATION);
+
+        companion object {
+            fun getPriority(issueType: IssueType): IssuePriority? {
+                return values().find { it.issueType == issueType }
+            }
+        }
+    }
+
+    /**
+     * Data class to track which components should be excluded from detection
+     */
+    private data class ComponentExclusionSet(
+        val excludedComponents: Set<String> = emptySet(),
+        val componentPairs: Set<Pair<String, String>> = emptySet()
+    ) {
+        fun shouldExcludeComponent(componentName: String): Boolean {
+            return componentName in excludedComponents
+        }
+
+        fun shouldExcludeComponentPair(comp1: String, comp2: String): Boolean {
+            return Pair(comp1, comp2) in componentPairs || Pair(comp2, comp1) in componentPairs
+        }
+
+        fun addExcludedComponent(componentName: String): ComponentExclusionSet {
+            return copy(excludedComponents = excludedComponents + componentName)
+        }
+
+        fun addExcludedComponentPair(comp1: String, comp2: String): ComponentExclusionSet {
+            return copy(componentPairs = componentPairs + Pair(comp1, comp2))
+        }
+    }
+
 
     private var lastAnalysisMetrics: AnalysisMetrics? = null
 
@@ -84,30 +126,63 @@ class KnitAnalysisService(private val project: Project) {
 
                 val mergedComponents = mergeAnalysisResults(sourceComponents, bytecodeResult.detectedComponents)
                 val dependencyGraph = buildDependencyGraph(mergedComponents)
-                val issues = detectIssues(mergedComponents, dependencyGraph)
+                val detectedIssues = detectIssues(mergedComponents, dependencyGraph)
 
-                val analysisTime = System.currentTimeMillis() - startTime
+                progressIndicator?.text = "Validating issues for accuracy..."
+                progressIndicator?.fraction = 0.95
+
+                // Issue validation and accuracy metrics calculation
+                val validationStartTime = System.currentTimeMillis()
+                val settingsService = project.service<KnitSettingsService>()
+                val validationSettings = IssueValidator.ValidationSettings(
+                    validationEnabled = settingsService.isValidationEnabled(),
+                    minimumConfidenceThreshold = settingsService.getConfidenceThreshold()
+                )
+
+                val issueValidator = project.service<IssueValidator>()
+                val validatedIssues = issueValidator.validateIssues(detectedIssues, mergedComponents, validationSettings)
+                
+                val statisticalService = project.service<StatisticalAccuracyService>()
+                val expectedIssues = statisticalService.estimateExpectedIssues(mergedComponents)
+                val accuracyMetrics = statisticalService.calculateAccuracyMetrics(
+                    allIssues = validatedIssues,
+                    validatedIssues = validatedIssues.filter { it.validationStatus != ValidationStatus.NOT_VALIDATED },
+                    expectedIssues = expectedIssues
+                )
+
+                val validationTime = System.currentTimeMillis() - validationStartTime
+                val totalAnalysisTime = System.currentTimeMillis() - startTime
 
                 val result = AnalysisResult(
                     components = mergedComponents,
                     dependencyGraph = dependencyGraph,
-                    issues = issues,
+                    issues = validatedIssues,
                     timestamp = System.currentTimeMillis(),
                     projectName = project.name,
                     knitVersion = detectionResult.knitVersion,
                     metadata = AnalysisMetadata(
-                        analysisTimeMs = analysisTime,
+                        analysisTimeMs = totalAnalysisTime,
                         bytecodeFilesScanned = bytecodeResult.detectedComponents.size,
-                        sourceFilesScanned = sourceComponents.size
-                    )
+                        sourceFilesScanned = sourceComponents.size,
+                        validationTimeMs = validationTime,
+                        deduplicationTimeMs = 0 // This is calculated in detectIssues method
+                    ),
+                    accuracyMetrics = accuracyMetrics
                 )
 
                 lastAnalysisResult = result
                 logger.info(
-                    "Knit analysis completed successfully in ${analysisTime}ms - " +
+                    "Knit analysis completed successfully in ${totalAnalysisTime}ms - " +
                             "Found ${result.components.size} components, ${result.dependencyGraph.edges.size} dependencies, " +
-                            "${result.issues.size} issues"
+                            "${result.issues.size} issues (${result.accuracyMetrics.truePositives} validated, " +
+                            "${result.accuracyMetrics.falsePositives} false positives, " +
+                            "${String.format("%.1f", result.getSummary().getAccuracyPercentage())}% accuracy)"
                 )
+                
+                if (settingsService.isDetailedLoggingEnabled()) {
+                    val accuracyReport = statisticalService.generateAccuracyReport(accuracyMetrics, validatedIssues.size)
+                    logger.info("Accuracy Report:\n$accuracyReport")
+                }
 
                 progressIndicator?.text = "Analysis complete"
                 progressIndicator?.fraction = 1.0
@@ -283,6 +358,66 @@ class KnitAnalysisService(private val project: Project) {
         }
     }
 
+    /**
+     * Deduplicates issues by component and type, keeping highest priority issues
+     */
+    private fun deduplicateIssues(issues: List<KnitIssue>): List<KnitIssue> {
+        // Group issues by component name
+        val issuesByComponent = issues.groupBy { it.componentName }
+        val deduplicatedIssues = mutableListOf<KnitIssue>()
+
+        issuesByComponent.forEach { (componentName, componentIssues) ->
+            if (componentIssues.isEmpty()) return@forEach
+
+            // Group by issue type to find duplicates
+            val issuesByType = componentIssues.groupBy { it.type }
+            
+            // For each issue type, keep only one instance (prefer ERROR severity)
+            issuesByType.forEach { (issueType, typeIssues) ->
+                val selectedIssue = typeIssues.minByOrNull { issue ->
+                    when (issue.severity) {
+                        Severity.ERROR -> 0
+                        Severity.WARNING -> 1  
+                        Severity.INFO -> 2
+                    }
+                } ?: typeIssues.first()
+                
+                deduplicatedIssues.add(selectedIssue)
+            }
+        }
+
+        // Now apply priority-based deduplication: components with higher priority issues 
+        // should not appear in lower priority issue categories
+        val componentsByPriority = mutableMapOf<String, IssuePriority>()
+        val finalIssues = mutableListOf<KnitIssue>()
+
+        // First pass: identify highest priority issue per component
+        deduplicatedIssues.forEach { issue ->
+            val componentName = issue.componentName
+            val currentPriority = IssuePriority.getPriority(issue.type)
+            
+            if (currentPriority != null) {
+                val existingPriority = componentsByPriority[componentName]
+                if (existingPriority == null || currentPriority.ordinal < existingPriority.ordinal) {
+                    componentsByPriority[componentName] = currentPriority
+                }
+            }
+        }
+
+        // Second pass: only keep issues that match the component's highest priority
+        deduplicatedIssues.forEach { issue ->
+            val componentName = issue.componentName
+            val issuePriority = IssuePriority.getPriority(issue.type)
+            val componentMaxPriority = componentsByPriority[componentName]
+            
+            if (issuePriority == componentMaxPriority || componentMaxPriority == null) {
+                finalIssues.add(issue)
+            }
+        }
+
+        return finalIssues
+    }
+
     private fun detectIssues(components: List<KnitComponent>, dependencyGraph: DependencyGraph): List<KnitIssue> {
         val issues = mutableListOf<KnitIssue>()
         val startTime = System.currentTimeMillis()
@@ -298,38 +433,83 @@ class KnitAnalysisService(private val project: Project) {
         val advancedDetector = project.service<AdvancedIssueDetector>()
 
         try {
+            // Priority-based coordinated detection with component exclusion
+            var exclusionSet = ComponentExclusionSet()
 
-            logger.debug("Detecting circular dependencies...")
-            issues.addAll(advancedDetector.detectAdvancedCircularDependencies(components, dependencyGraph))
+            // Phase 1: CRITICAL - Circular Dependencies (highest priority)
+            logger.debug("Phase 1: Detecting circular dependencies...")
+            val circularIssues = advancedDetector.detectAdvancedCircularDependencies(components, dependencyGraph)
+            issues.addAll(circularIssues)
+            
+            // Track components involved in circular dependencies for exclusion
+            circularIssues.forEach { issue ->
+                if (issue.type == IssueType.CIRCULAR_DEPENDENCY) {
+                    // Extract component names from circular dependency metadata or component names
+                    val componentNames = issue.componentName.split(", ")
+                    componentNames.forEach { compName ->
+                        exclusionSet = exclusionSet.addExcludedComponent(compName.trim())
+                    }
+                }
+            }
+            logger.debug("Phase 1: Found ${circularIssues.size} circular dependency issues. Excluded ${exclusionSet.excludedComponents.size} components from further analysis.")
 
+            // Phase 2: HIGH - Unresolved Dependencies
+            logger.debug("Phase 2: Detecting unresolved dependencies (excluding ${exclusionSet.excludedComponents.size} circular dependency components)...")
+            val unresolvedIssues = advancedDetector.detectImprovedUnresolvedDependencies(components, exclusionSet.excludedComponents)
+            issues.addAll(unresolvedIssues)
+            
+            // Track components with unresolved dependencies
+            unresolvedIssues.forEach { issue ->
+                if (issue.type == IssueType.UNRESOLVED_DEPENDENCY) {
+                    exclusionSet = exclusionSet.addExcludedComponent(issue.componentName)
+                }
+            }
+            logger.debug("Phase 2: Found ${unresolvedIssues.size} unresolved dependency issues. Total excluded components: ${exclusionSet.excludedComponents.size}")
 
-            logger.debug("Detecting ambiguous providers...")
-            issues.addAll(advancedDetector.detectEnhancedAmbiguousProviders(components))
+            // Phase 3: MEDIUM - Ambiguous Providers
+            logger.debug("Phase 3: Detecting ambiguous providers (excluding ${exclusionSet.excludedComponents.size} components)...")
+            val ambiguousIssues = advancedDetector.detectEnhancedAmbiguousProviders(components, exclusionSet.excludedComponents)
+            issues.addAll(ambiguousIssues)
+            
+            // Track components with ambiguous providers
+            ambiguousIssues.forEach { issue ->
+                if (issue.type == IssueType.AMBIGUOUS_PROVIDER) {
+                    // Ambiguous provider issues may involve multiple components
+                    val componentNames = issue.componentName.split(", ")
+                    componentNames.forEach { compName ->
+                        exclusionSet = exclusionSet.addExcludedComponent(compName.trim())
+                    }
+                }
+            }
+            logger.debug("Phase 3: Found ${ambiguousIssues.size} ambiguous provider issues. Total excluded components: ${exclusionSet.excludedComponents.size}")
 
+            // Phase 4: LOW - Singleton Violations
+            logger.debug("Phase 4: Detecting singleton violations (excluding ${exclusionSet.excludedComponents.size} components)...")
+            val singletonIssues = advancedDetector.detectAdvancedSingletonViolations(components, exclusionSet.excludedComponents)
+            issues.addAll(singletonIssues)
+            logger.debug("Phase 4: Found ${singletonIssues.size} singleton violation issues.")
 
-            logger.debug("Detecting unresolved dependencies...")
-            issues.addAll(advancedDetector.detectImprovedUnresolvedDependencies(components))
+            // Phase 5: LOW - Named Qualifier Mismatches
+            logger.debug("Phase 5: Detecting named qualifier mismatches (excluding ${exclusionSet.excludedComponents.size} components)...")
+            val qualifierIssues = advancedDetector.detectEnhancedNamedQualifierMismatches(components, exclusionSet.excludedComponents)
+            issues.addAll(qualifierIssues)
+            logger.debug("Phase 5: Found ${qualifierIssues.size} qualifier mismatch issues.")
 
-
-            logger.debug("Detecting singleton violations...")
-            issues.addAll(advancedDetector.detectAdvancedSingletonViolations(components))
-
-
-            logger.debug("Detecting named qualifier mismatches...")
-            issues.addAll(advancedDetector.detectEnhancedNamedQualifierMismatches(components))
+            logger.info("Priority-based detection complete. Total issues before deduplication: ${issues.size}")
 
         } catch (e: Exception) {
             logger.error("Error during advanced issue detection, falling back to basic detection", e)
-
-
             issues.addAll(basicIssueDetection(components, dependencyGraph))
         }
 
         val detectionTime = System.currentTimeMillis() - startTime
-        logger.info("Issue detection completed in ${detectionTime}ms. Found ${issues.size} issues.")
+        logger.info("Issue detection completed in ${detectionTime}ms. Found ${issues.size} issues before deduplication.")
 
+        // Apply deduplication to remove duplicates and enforce priority-based classification
+        val deduplicatedIssues = deduplicateIssues(issues)
+        logger.info("After deduplication: ${deduplicatedIssues.size} issues (${issues.size - deduplicatedIssues.size} duplicates removed)")
 
-        return issues.sortedWith(compareBy<KnitIssue> {
+        return deduplicatedIssues.sortedWith(compareBy<KnitIssue> {
             when (it.severity) {
                 Severity.ERROR -> 0
                 Severity.WARNING -> 1

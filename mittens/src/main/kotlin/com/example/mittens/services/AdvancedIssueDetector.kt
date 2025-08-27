@@ -718,6 +718,66 @@ class AdvancedIssueDetector(private val project: Project) {
         return true
     }
 
+    // ================================
+    // EXCLUSION-AWARE DETECTION METHODS
+    // ================================
+
+    /**
+     * Detect unresolved dependencies with component exclusion support
+     */
+    fun detectImprovedUnresolvedDependencies(
+        components: List<KnitComponent>, 
+        excludedComponents: Set<String>
+    ): List<KnitIssue> {
+        val filteredComponents = components.filter { component ->
+            val fullName = "${component.packageName}.${component.className}"
+            fullName !in excludedComponents
+        }
+        return detectImprovedUnresolvedDependencies(filteredComponents)
+    }
+
+    /**
+     * Detect ambiguous providers with component exclusion support
+     */
+    fun detectEnhancedAmbiguousProviders(
+        components: List<KnitComponent>,
+        excludedComponents: Set<String>
+    ): List<KnitIssue> {
+        val filteredComponents = components.filter { component ->
+            val fullName = "${component.packageName}.${component.className}"
+            fullName !in excludedComponents
+        }
+        return detectEnhancedAmbiguousProviders(filteredComponents)
+    }
+
+    /**
+     * Detect singleton violations with component exclusion support
+     */
+    fun detectAdvancedSingletonViolations(
+        components: List<KnitComponent>,
+        excludedComponents: Set<String>
+    ): List<KnitIssue> {
+        val filteredComponents = components.filter { component ->
+            val fullName = "${component.packageName}.${component.className}"
+            fullName !in excludedComponents
+        }
+        return detectAdvancedSingletonViolations(filteredComponents)
+    }
+
+    /**
+     * Detect named qualifier mismatches with component exclusion support
+     */
+    fun detectEnhancedNamedQualifierMismatches(
+        components: List<KnitComponent>,
+        excludedComponents: Set<String>
+    ): List<KnitIssue> {
+        val filteredComponents = components.filter { component ->
+            val fullName = "${component.packageName}.${component.className}"
+            fullName !in excludedComponents
+        }
+        return detectEnhancedNamedQualifierMismatches(filteredComponents)
+    }
+
     /**
      * Clear all caches - useful for testing or when project structure changes significantly
      */

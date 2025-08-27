@@ -49,7 +49,9 @@ data class KnitIssue(
     val componentName: String,
     val sourceLocation: String? = null,
     val suggestedFix: String? = null,
-    val metadata: Map<String, Any> = emptyMap()
+    val metadata: Map<String, Any> = emptyMap(),
+    val confidenceScore: Double = 1.0,
+    val validationStatus: ValidationStatus = ValidationStatus.NOT_VALIDATED
 )
 
 enum class IssueType {
@@ -65,4 +67,11 @@ enum class Severity {
     ERROR,
     WARNING,
     INFO
+}
+
+enum class ValidationStatus {
+    NOT_VALIDATED,
+    VALIDATED_TRUE_POSITIVE,
+    VALIDATED_FALSE_POSITIVE,
+    VALIDATION_FAILED
 }

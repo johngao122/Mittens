@@ -16,7 +16,11 @@ class KnitSettingsService : PersistentStateComponent<KnitSettingsService.State> 
         var autoAnalyzeAfterBuild: Boolean = false,
         var showGraphOnStartup: Boolean = true,
         var maxNodesInGraph: Int = 500,
-        var enableDetailedLogging: Boolean = false
+        var enableDetailedLogging: Boolean = false,
+        var enableIssueValidation: Boolean = true,
+        var confidenceThreshold: Double = 0.3,
+        var enableAccuracyReporting: Boolean = true,
+        var trackAccuracyTrends: Boolean = true
     )
 
     override fun getState(): State = state
@@ -43,6 +47,26 @@ class KnitSettingsService : PersistentStateComponent<KnitSettingsService.State> 
     fun isDetailedLoggingEnabled(): Boolean = state.enableDetailedLogging
     fun setDetailedLoggingEnabled(enabled: Boolean) {
         state.enableDetailedLogging = enabled
+    }
+
+    fun isValidationEnabled(): Boolean = state.enableIssueValidation
+    fun setValidationEnabled(enabled: Boolean) {
+        state.enableIssueValidation = enabled
+    }
+
+    fun getConfidenceThreshold(): Double = state.confidenceThreshold
+    fun setConfidenceThreshold(threshold: Double) {
+        state.confidenceThreshold = threshold.coerceIn(0.0, 1.0)
+    }
+
+    fun isAccuracyReportingEnabled(): Boolean = state.enableAccuracyReporting
+    fun setAccuracyReportingEnabled(enabled: Boolean) {
+        state.enableAccuracyReporting = enabled
+    }
+
+    fun isAccuracyTrendTrackingEnabled(): Boolean = state.trackAccuracyTrends
+    fun setAccuracyTrendTrackingEnabled(enabled: Boolean) {
+        state.trackAccuracyTrends = enabled
     }
 
     companion object {
