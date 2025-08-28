@@ -45,6 +45,8 @@ export default function DependencyNetwork() {
     setPan({ x: 0, y: 0 });
   };
 
+  const { nodes, edges, links } = dependencyData();
+
   // Create SVG-based dependency network
   const renderDependencyNetwork = () => {
     const width = 800;
@@ -88,9 +90,9 @@ export default function DependencyNetwork() {
         >
           <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
           {/* Render connection lines */}
-          {dependencyData.links.map((link, index) => {
-            const sourcePos = nodePositions[link.source];
-            const targetPos = nodePositions[link.target];
+          {links.map((link, index) => {
+            const sourcePos = nodePositions()[link.source];
+            const targetPos = nodePositions()[link.target];
             
             if (!sourcePos || !targetPos) return null;
             
@@ -115,8 +117,8 @@ export default function DependencyNetwork() {
           })}
           
           {/* Render nodes */}
-          {dependencyData.nodes.map((node) => {
-            const pos = nodePositions[node.id];
+          {nodes.map((node) => {
+            const pos = nodePositions()[node.id];
             if (!pos) return null;
             
             const x = (pos.x / 100) * width;
@@ -193,6 +195,86 @@ export default function DependencyNetwork() {
               </g>
             );
           })}
+
+          {/* Render edges */}
+          {edges.map((edge) => {
+            const pos = nodePositions()[edge.id];
+            if (!pos) return null;
+            
+            const x = (pos.x / 100) * width;
+            const y = (pos.y / 100) * height;
+            const radius = 35;
+            
+            return (
+              <g key={edge.id}>
+                {/* Node circle */}
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={radius}
+                  fill={getNodeColor(edge.status)}
+                  stroke="#ffffff"
+                  strokeWidth="3"
+                  className="cursor-pointer"
+                  onMouseEnter={() => setHoveredNode(edge.id)}
+                  onMouseLeave={() => setHoveredNode(null)}
+                />
+                
+                {/* Node label */}
+                <text
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="#ffffff"
+                  fontSize="12"
+                  fontWeight="bold"
+                  className="pointer-events-none select-none"
+                  style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.9)' }}
+                >
+                  {edge.name}
+                </text>
+                
+                {/* Hover tooltip */}
+                {hoveredNode === edge.id && (
+                  <g>
+                    <rect
+                      x={x - 60}
+                      y={y - 60}
+                      width="120"
+                      height="40"
+                      fill="rgba(0, 0, 0, 0.9)"
+                      stroke="#ffffff"
+                      strokeWidth="1"
+                      rx="4"
+                      className="pointer-events-none"
+                    />
+                    <text
+                      x={x}
+                      y={y - 50}
+                      textAnchor="middle"
+                      fill="#ffffff"
+                      fontSize="11"
+                      fontWeight="bold"
+                      className="pointer-events-none"
+                    >
+                      📦 {edge.name}
+                    </text>
+                    <text
+                      x={x}
+                      y={y - 35}
+                      textAnchor="middle"
+                      fill="#cccccc"
+                      fontSize="10"
+                      className="pointer-events-none"
+                    >
+                      {getStatusDescription(edge.status)}
+                    </text>
+                  </g>
+                )}
+              </g>
+            );
+          })}
           </g>
         </svg>
       </div>
@@ -241,9 +323,9 @@ export default function DependencyNetwork() {
               </tr>
             </thead>
             <tbody>
-              {dependencyData.nodes.map((node, index) => {
-                const connectionCount = dependencyData.links.filter(
-                  link => link.source === node.id || link.target === node.id
+              {edges.map((edge, index) => {
+                const connectionCount = links.filter(
+                  link => link.source === edge.id || link.target === edge.id
                 ).length;
                 
                 // Mock data for demo - in real app this would come from actual package analysis
@@ -256,21 +338,21 @@ export default function DependencyNetwork() {
                   'ESLint': { version: '8.49.0', size: '2.8MB', risk: 'medium' }
                 };
                 
-                const info = packageInfo[node.id as keyof typeof packageInfo];
+                const info = packageInfo[edge.id as keyof typeof packageInfo];
                 
                 const statusIcon = {
                   'normal': '✓',
                   'vulnerable': '✗',
                   'deprecated': '⚠',
                   'conflict': '⚠'
-                }[node.status];
+                }[edge.status];
                 
                 const statusColor = {
                   'normal': 'text-green-400',
                   'vulnerable': 'text-red-400',
                   'deprecated': 'text-orange-400',
                   'conflict': 'text-yellow-400'
-                }[node.status];
+                }[edge.status];
                 
                 const riskColor = {
                   'low': 'text-green-400 bg-green-400/20',
@@ -279,22 +361,22 @@ export default function DependencyNetwork() {
                 }[info?.risk || 'low'];
                 
                 return (
-                  <tr key={node.id} className="border-b border-slate-600/50 hover:bg-slate-600/30">
+                  <tr key={edge.id} className="border-b border-slate-600/50 hover:bg-slate-600/30">
                     <td className="py-3 px-2">
                       <div className="flex items-center gap-2">
                         <span className={`${statusColor} font-medium`}>{statusIcon}</span>
-                        <span className="text-white font-medium">{node.name}</span>
+                        <span className="text-white font-medium">{edge.name}</span>
                       </div>
                     </td>
                     <td className="py-3 px-2 text-gray-300">{info?.version || 'N/A'}</td>
                     <td className="py-3 px-2">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        node.status === 'normal' ? 'text-green-400 bg-green-400/20' :
-                        node.status === 'vulnerable' ? 'text-red-400 bg-red-400/20' :
-                        node.status === 'deprecated' ? 'text-orange-400 bg-orange-400/20' :
+                        edge.status === 'normal' ? 'text-green-400 bg-green-400/20' :
+                        edge.status === 'vulnerable' ? 'text-red-400 bg-red-400/20' :
+                        edge.status === 'deprecated' ? 'text-orange-400 bg-orange-400/20' :
                         'text-yellow-400 bg-yellow-400/20'
                       }`}>
-                        {node.status === 'normal' ? 'healthy' : node.status}
+                        {edge.status === 'normal' ? 'healthy' : edge.status}
                       </span>
                     </td>
                     <td className="py-3 px-2 text-gray-300">{info?.size || 'N/A'}</td>

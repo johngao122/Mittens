@@ -10,14 +10,16 @@ export default function DependencyNetwork() {
   const renderDependencyNetwork = () => {
     const width = 800;
     const height = 400;
+
+    const { nodes, edges, links } = dependencyData();
     
     return (
       <div className="w-full h-96 bg-slate-800 rounded-lg flex items-center justify-center">
         <svg width={width} height={height} className="overflow-visible">
           {/* Render connection lines */}
-          {dependencyData.links.map((link, index) => {
-            const sourcePos = nodePositions[link.source];
-            const targetPos = nodePositions[link.target];
+          {links.map((link, index) => {
+            const sourcePos = nodePositions()[link.source];
+            const targetPos = nodePositions()[link.target];
             
             if (!sourcePos || !targetPos) return null;
             
@@ -42,8 +44,8 @@ export default function DependencyNetwork() {
           })}
           
           {/* Render nodes */}
-          {dependencyData.nodes.map((node) => {
-            const pos = nodePositions[node.id];
+          {nodes.map((node) => {
+            const pos = nodePositions()[node.id];
             if (!pos) return null;
             
             const x = (pos.x / 100) * width;
@@ -114,6 +116,86 @@ export default function DependencyNetwork() {
                       className="pointer-events-none"
                     >
                       {getStatusDescription(node.status)}
+                    </text>
+                  </g>
+                )}
+              </g>
+            );
+          })}
+
+          {/* Render edges */}
+          {edges.map((edge) => {
+            const pos = nodePositions()[edge.id];
+            if (!pos) return null;
+            
+            const x = (pos.x / 100) * width;
+            const y = (pos.y / 100) * height;
+            const radius = 35;
+            
+            return (
+              <g key={edge.id}>
+                {/* Node circle */}
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={radius}
+                  fill={getNodeColor(edge.status)}
+                  stroke="#ffffff"
+                  strokeWidth="3"
+                  className="cursor-pointer transition-all duration-200 hover:scale-110"
+                  onMouseEnter={() => setHoveredNode(edge.id)}
+                  onMouseLeave={() => setHoveredNode(null)}
+                />
+                
+                {/* Node label */}
+                <text
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="#ffffff"
+                  fontSize="12"
+                  fontWeight="bold"
+                  className="pointer-events-none select-none"
+                  style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.9)' }}
+                >
+                  {edge.name}
+                </text>
+                
+                {/* Hover tooltip */}
+                {hoveredNode === edge.id && (
+                  <g>
+                    <rect
+                      x={x - 60}
+                      y={y - 60}
+                      width="120"
+                      height="40"
+                      fill="rgba(0, 0, 0, 0.9)"
+                      stroke="#ffffff"
+                      strokeWidth="1"
+                      rx="4"
+                      className="pointer-events-none"
+                    />
+                    <text
+                      x={x}
+                      y={y - 50}
+                      textAnchor="middle"
+                      fill="#ffffff"
+                      fontSize="11"
+                      fontWeight="bold"
+                      className="pointer-events-none"
+                    >
+                      📦 {edge.name}
+                    </text>
+                    <text
+                      x={x}
+                      y={y - 35}
+                      textAnchor="middle"
+                      fill="#cccccc"
+                      fontSize="10"
+                      className="pointer-events-none"
+                    >
+                      {getStatusDescription(edge.status)}
                     </text>
                   </g>
                 )}

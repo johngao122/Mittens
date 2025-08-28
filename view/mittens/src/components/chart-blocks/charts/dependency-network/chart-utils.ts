@@ -1,3 +1,5 @@
+import demoData from "@/data/knit-demo-dependency-graph.json";
+
 interface DependencyNode {
   id: string;
   name: string;
@@ -9,6 +11,15 @@ interface DependencyLink {
   target: string;
   type?: 'solid' | 'dashed';
 }
+
+const linkTypeToVisual: Record<string, "solid" | "dashed"> = {
+  "COMPONENT":"solid", 
+  "PROVIDER":"solid", 
+  "PROVIDES":"solid", 
+  "DEPENDENCY":"dashed"
+}
+
+type MapKey = keyof typeof linkTypeToVisual;
 
 export const getNodeColor = (status: string) => {
   switch (status) {
@@ -36,34 +47,77 @@ export const getStatusDescription = (status: string) => {
   }
 };
 
-// Simplified dependency data with fewer nodes
-export const dependencyData: { nodes: DependencyNode[], links: DependencyLink[] } = {
-  nodes: [
-    { id: 'MyApp', name: 'MyApp', status: 'normal' },
-    { id: 'React', name: 'React', status: 'normal' },
-    { id: 'Webpack', name: 'Webpack', status: 'normal' },
-    { id: 'TypeScript', name: 'TypeScript', status: 'normal' },
-    { id: 'Lodash', name: 'Lodash', status: 'vulnerable' },
-    { id: 'ESLint', name: 'ESLint', status: 'conflict' },
-  ],
-  links: [
-    { source: 'MyApp', target: 'React', type: 'solid' },
-    { source: 'MyApp', target: 'Lodash', type: 'solid' },
-    { source: 'React', target: 'Webpack', type: 'solid' },
-    { source: 'Webpack', target: 'TypeScript', type: 'solid' },
-    { source: 'ESLint', target: 'TypeScript', type: 'dashed' },
-  ]
+// should include fix -> under errorContext in demoData
+export const dependencyData = (): { nodes: DependencyNode[], edges: DependencyNode[], links: DependencyLink[] } => {  
+  const nodes : DependencyNode[] = demoData.graph.nodes.map(node => ({
+    id: node.id,
+    name: node.label,
+    status: node.errorHighlight.hasErrors == null ? "normal" : "vulnerable"
+  }));
+
+  const edges : DependencyNode[] = demoData.graph.edges.map(edge => ({
+    id: edge.id,
+    name: edge.label,
+    status: edge.errorHighlight.hasErrors == null ? "normal" : "conflict"
+  }));
+
+  const links : DependencyLink[] = demoData.graph.edges.map(edge => {
+    const typeKey = edge.type as MapKey;
+    return {
+      source: edge.source,
+      target: edge.target,
+      type: linkTypeToVisual[typeKey]
+    };
+  });
+
+  return {nodes, edges, links} ;
 };
 
-// Simplified node positions for 6 nodes
-export const nodePositions: { [key: string]: { x: number; y: number } } = {
-  'MyApp': { x: 20, y: 50 },       // Left side - main app
-  'React': { x: 45, y: 25 },       // Upper middle
-  'Webpack': { x: 70, y: 15 },     // Top right
-  'TypeScript': { x: 70, y: 50 },  // Middle right
-  'Lodash': { x: 45, y: 75 },      // Bottom middle - vulnerable (red)
-  'ESLint': { x: 70, y: 85 },      // Bottom right - conflict (yellow)
+
+// // Simplified dependency data with fewer nodes
+// export const dependencyData: { nodes: DependencyNode[], links: DependencyLink[] } = {
+//   nodes: [
+//     { id: 'MyApp', name: 'MyApp', status: 'normal' },
+//     { id: 'React', name: 'React', status: 'normal' },
+//     { id: 'Webpack', name: 'Webpack', status: 'normal' },
+//     { id: 'TypeScript', name: 'TypeScript', status: 'normal' },
+//     { id: 'Lodash', name: 'Lodash', status: 'vulnerable' },
+//     { id: 'ESLint', name: 'ESLint', status: 'conflict' },
+//   ],
+//   links: [
+//     { source: 'MyApp', target: 'React', type: 'solid' },
+//     { source: 'MyApp', target: 'Lodash', type: 'solid' },
+//     { source: 'React', target: 'Webpack', type: 'solid' },
+//     { source: 'Webpack', target: 'TypeScript', type: 'solid' },
+//     { source: 'ESLint', target: 'TypeScript', type: 'dashed' },
+//   ]
+// };
+
+
+export const nodePositions = () : { [key: string]: { x: number; y: number } } => {
+  // need unique nodes & edges
+  // depending on no. of dependency count in node (no. of edges to one node), space them out
+  const nodesLabel = demoData.graph.nodes.map(node => node.label );
+  const edgesLabel = demoData.graph.nodes.map(edge => edge.label );
+  const allLabels = [...nodesLabel, ...edgesLabel];
+
+  const labelMap: { [key: string]: { x: number; y: number } } = {};
+  allLabels.forEach((label, index) => {
+    labelMap[label] = { x: index, y: index};
+  });
+  
+  return labelMap;
 };
+
+// // Simplified node positions for 6 nodes
+// export const nodePositions: { [key: string]: { x: number; y: number } } = {
+//   'MyApp': { x: 20, y: 50 },       // Left side - main app
+//   'React': { x: 45, y: 25 },       // Upper middle
+//   'Webpack': { x: 70, y: 15 },     // Top right
+//   'TypeScript': { x: 70, y: 50 },  // Middle right
+//   'Lodash': { x: 45, y: 75 },      // Bottom middle - vulnerable (red)
+//   'ESLint': { x: 70, y: 85 },      // Bottom right - conflict (yellow)
+// };
 
 export const createChartSpec = (nodeData: any[], linkData: any[]) => {
   return {
