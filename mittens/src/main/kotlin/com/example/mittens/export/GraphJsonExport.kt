@@ -40,7 +40,7 @@ data class GraphNodeExport(
     val label: String,
     
     @JsonProperty("type")
-    val type: String, // NodeType as string
+    val type: String, 
     
     @JsonProperty("packageName")
     val packageName: String,
@@ -69,7 +69,7 @@ data class GraphEdgeExport(
     val target: String,
     
     @JsonProperty("type")
-    val type: String, // EdgeType as string
+    val type: String, 
     
     @JsonProperty("label")
     val label: String?,
@@ -89,10 +89,10 @@ data class ErrorHighlight(
     val hasErrors: Boolean,
     
     @JsonProperty("errorSeverity")
-    val errorSeverity: String?, // Severity as string, null if no errors
+    val errorSeverity: String?, 
     
     @JsonProperty("errorTypes")
-    val errorTypes: List<String>, // List of IssueType as strings
+    val errorTypes: List<String>, 
     
     @JsonProperty("isPartOfCycle")
     val isPartOfCycle: Boolean = false,
@@ -118,13 +118,13 @@ data class VisualHints(
     val borderWidth: Int = 1,
     
     @JsonProperty("color")
-    val color: String? = null, // For edges
+    val color: String? = null, 
     
     @JsonProperty("width")
-    val width: Int? = null, // For edges
+    val width: Int? = null, 
     
     @JsonProperty("style")
-    val style: String? = null, // solid, dashed, dotted
+    val style: String? = null, 
     
     @JsonProperty("classes")
     val classes: List<String> = emptyList()
@@ -192,16 +192,16 @@ data class CycleInfo(
     val id: String,
     
     @JsonProperty("path") 
-    val path: List<String>, // Human-readable path
+    val path: List<String>, 
     
     @JsonProperty("nodeIds")
-    val nodeIds: List<String>, // Actual node IDs in the cycle
+    val nodeIds: List<String>, 
     
     @JsonProperty("edgeIds") 
-    val edgeIds: List<String>, // Edge IDs forming the cycle
+    val edgeIds: List<String>, 
     
     @JsonProperty("severity")
-    val severity: String // ERROR, WARNING, etc.
+    val severity: String 
 )
 
 /**
@@ -229,10 +229,10 @@ data class IssueDetail(
     val id: String,
     
     @JsonProperty("type")
-    val type: String, // IssueType as string
+    val type: String, 
     
     @JsonProperty("severity")
-    val severity: String, // Severity as string
+    val severity: String, 
     
     @JsonProperty("message")
     val message: String,

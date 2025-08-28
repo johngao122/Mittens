@@ -120,7 +120,7 @@ class GraphExportService(private val project: Project) {
                 path = cycle.path,
                 nodeIds = cycle.nodeIds,
                 edgeIds = cycle.edgeIds,
-                severity = "ERROR" // Cycles are always errors
+                severity = "ERROR" 
             )
         }
         
@@ -227,7 +227,7 @@ class GraphExportService(private val project: Project) {
         }
     }
     
-    // Helper methods
+    
     private fun generateEdgeId(edge: GraphEdge): String {
         return "${edge.from}_to_${edge.to}".replace(".", "_")
     }
@@ -271,24 +271,24 @@ class GraphExportService(private val project: Project) {
     }
     
     private fun findNodeIdForComponent(componentName: String): String {
-        // This would need to be enhanced based on how component names are stored
+        
         return componentName
     }
     
     private fun extractTargetType(message: String): String {
-        // Extract target type from error message - would need regex based on actual message format
+        
         return "UnknownType"
     }
     
     private fun extractNamedQualifierFromIssue(issue: KnitIssue): String? {
-        // Extract named qualifier from issue metadata if available
+        
         return issue.metadata["namedQualifier"] as? String
     }
     
     private fun findAffectedNodesForIssue(issue: KnitIssue, errorAnalysis: ErrorAnalysis): List<String> {
         return when (issue.type) {
             IssueType.CIRCULAR_DEPENDENCY -> {
-                // Find nodes involved in cycles that match this issue
+                
                 errorAnalysis.cycles
                     .find { cycle -> cycle.path.any { it.contains(issue.componentName) } }
                     ?.nodeIds ?: listOf(findNodeIdForComponent(issue.componentName))
@@ -300,7 +300,7 @@ class GraphExportService(private val project: Project) {
     private fun findAffectedEdgesForIssue(issue: KnitIssue, errorAnalysis: ErrorAnalysis): List<String> {
         return when (issue.type) {
             IssueType.CIRCULAR_DEPENDENCY -> {
-                // Find edges involved in cycles that match this issue
+                
                 errorAnalysis.cycles
                     .find { cycle -> cycle.path.any { it.contains(issue.componentName) } }
                     ?.edgeIds ?: emptyList()
