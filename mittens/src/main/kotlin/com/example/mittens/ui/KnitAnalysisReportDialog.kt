@@ -1,9 +1,14 @@
 package com.example.mittens.ui
 
+import com.example.mittens.export.GraphExportService
+import com.example.mittens.model.AnalysisResult
 import com.example.mittens.model.AnalysisSummary
 import com.example.mittens.model.DetailedAnalysisReport
 import com.example.mittens.model.IssuePreview
 import com.example.mittens.model.Severity
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
@@ -15,16 +20,19 @@ import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionEvent
 import java.io.File
 import javax.swing.*
+import javax.swing.filechooser.FileNameExtensionFilter
 
 class KnitAnalysisReportDialog(
     private val project: Project,
     private val report: DetailedAnalysisReport,
-    private val summary: AnalysisSummary
+    private val summary: AnalysisSummary,
+    private val analysisResult: AnalysisResult
 ) : DialogWrapper(project) {
 
     private lateinit var reportTextArea: JBTextArea
     private lateinit var exportButton: JButton
     private lateinit var copyButton: JButton
+    private lateinit var exportGraphButton: JButton
 
     init {
         title = "Knit Analysis - Detailed Report"
@@ -298,8 +306,12 @@ class KnitAnalysisReportDialog(
         exportButton = JButton("Export Report")
         exportButton.addActionListener { exportReportToFile() }
 
+        exportGraphButton = JButton("Export Graph JSON")
+        exportGraphButton.addActionListener { exportGraphToFile() }
+
         panel.add(copyButton)
         panel.add(exportButton)
+        panel.add(exportGraphButton)
 
         return panel
     }
@@ -344,6 +356,50 @@ class KnitAnalysisReportDialog(
                 Messages.showErrorDialog(
                     project,
                     "Failed to export report: ${e.message}",
+                    "Export Failed"
+                )
+            }
+        }
+    }
+
+    private fun exportGraphToFile() {
+        val fileChooser = JFileChooser()
+        fileChooser.dialogTitle = "Export Dependency Graph JSON"
+        fileChooser.selectedFile = File("${project.name}-dependency-graph.json")
+        
+        // Add JSON file filter
+        val jsonFilter = FileNameExtensionFilter("JSON files (*.json)", "json")
+        fileChooser.fileFilter = jsonFilter
+        fileChooser.addChoosableFileFilter(jsonFilter)
+
+        val result = fileChooser.showSaveDialog(contentPane)
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try {
+                val file = fileChooser.selectedFile
+                // Ensure the file has .json extension
+                val finalFile = if (!file.name.endsWith(".json")) {
+                    File(file.parentFile, "${file.nameWithoutExtension}.json")
+                } else {
+                    file
+                }
+                
+                // Get the GraphExportService and convert to JSON
+                val graphExportService = project.service<GraphExportService>()
+                val graphExport = graphExportService.exportToJson(analysisResult)
+                
+                // Create ObjectMapper with pretty printing
+                val objectMapper = jacksonObjectMapper()
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(finalFile, graphExport)
+                
+                Messages.showInfoMessage(
+                    project,
+                    "Dependency graph exported successfully to: ${finalFile.absolutePath}",
+                    "Export Successful"
+                )
+            } catch (e: Exception) {
+                Messages.showErrorDialog(
+                    project,
+                    "Failed to export dependency graph: ${e.message}",
                     "Export Failed"
                 )
             }
