@@ -1,5 +1,6 @@
 package com.example.mittens.actions
 
+import com.example.mittens.model.AnalysisResult
 import com.example.mittens.model.DetailedAnalysisReport
 import com.example.mittens.services.KnitAnalysisService
 import com.example.mittens.services.KnitProjectDetector
@@ -101,7 +102,7 @@ class RunKnitAnalysisAction :
                         else -> NotificationType.INFORMATION
                     }
 
-                    showEnhancedNotification(project, message, report, notificationType)
+                    showEnhancedNotification(project, message, report, result, notificationType)
 
                 } catch (e: Exception) {
                     logger.error("Knit analysis failed", e)
@@ -126,6 +127,7 @@ class RunKnitAnalysisAction :
         project: Project,
         message: String,
         report: DetailedAnalysisReport,
+        analysisResult: AnalysisResult,
         type: NotificationType
     ) {
         val notification = NotificationGroupManager.getInstance()
@@ -134,7 +136,7 @@ class RunKnitAnalysisAction :
 
 
         notification.addAction(NotificationAction.createSimple("View Full Report") {
-            val dialog = KnitAnalysisReportDialog(project, report, report.summary)
+            val dialog = KnitAnalysisReportDialog(project, report, report.summary, analysisResult)
             dialog.show()
         })
 
