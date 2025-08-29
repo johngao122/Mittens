@@ -3,6 +3,7 @@ package com.example.knit.demo.core.models
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
+
 data class Order(
     val id: Long,
     val userId: Long,
@@ -21,8 +22,5 @@ data class OrderItem(
 enum class OrderStatus {
     PENDING,
     CONFIRMED,
-    PROCESSING,
-    SHIPPED,
-    DELIVERED,
     CANCELLED
 }

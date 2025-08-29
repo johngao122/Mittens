@@ -1,314 +1,6 @@
 {
   "graph" : {
     "nodes" : [ {
-      "id" : "com.example.knit.demo.core.models.User",
-      "label" : "User",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "User",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/User.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.models.Product",
-      "label" : "Product",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "Product",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/Product.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.models.Order",
-      "label" : "Order",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "Order",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/Order.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.models.OrderItem",
-      "label" : "OrderItem",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "OrderItem",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/Order.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.models.PENDING",
-      "label" : "PENDING",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "PENDING",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/Order.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.models.CONFIRMED",
-      "label" : "CONFIRMED",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "CONFIRMED",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/Order.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.models.PROCESSING",
-      "label" : "PROCESSING",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "PROCESSING",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/Order.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.models.SHIPPED",
-      "label" : "SHIPPED",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "SHIPPED",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/Order.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.models.DELIVERED",
-      "label" : "DELIVERED",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "DELIVERED",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/Order.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.models.CANCELLED",
-      "label" : "CANCELLED",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "CANCELLED",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/Order.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.models.OrderStatus",
-      "label" : "OrderStatus",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.models",
-      "className" : "OrderStatus",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/models/Order.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
       "id" : "com.example.knit.demo.core.services.OrderService",
       "label" : "OrderService",
       "type" : "PROVIDER",
@@ -344,34 +36,6 @@
       "className" : "provideOrderService",
       "metadata" : {
         "sourceFile" : null,
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.repositories.InMemoryUserRepository",
-      "label" : "InMemoryUserRepository",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.repositories",
-      "className" : "InMemoryUserRepository",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/repositories/InMemoryUserRepository.kt",
         "dependencyCount" : 0,
         "providerCount" : 0,
         "issueCount" : 0
@@ -505,34 +169,6 @@
         }
       }
     }, {
-      "id" : "com.example.knit.demo.core.repositories.UserRepository",
-      "label" : "UserRepository",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.repositories",
-      "className" : "UserRepository",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/repositories/UserRepository.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
       "id" : "com.example.knit.demo.core.repositories.DatabaseUserRepository",
       "label" : "DatabaseUserRepository",
       "type" : "PROVIDER",
@@ -568,90 +204,6 @@
       "className" : "provideDatabaseUserRepository",
       "metadata" : {
         "sourceFile" : null,
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.services.NotificationChannel",
-      "label" : "NotificationChannel",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.services",
-      "className" : "NotificationChannel",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/NotificationService.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.services.EmailChannel",
-      "label" : "EmailChannel",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.services",
-      "className" : "EmailChannel",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/NotificationService.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.core.services.SmsChannel",
-      "label" : "SmsChannel",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.core.services",
-      "className" : "SmsChannel",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/NotificationService.kt",
         "dependencyCount" : 0,
         "providerCount" : 0,
         "issueCount" : 0
@@ -782,62 +334,6 @@
           "width" : null,
           "style" : null,
           "classes" : [ "error-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.payment.PaymentGateway",
-      "label" : "PaymentGateway",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.payment",
-      "className" : "PaymentGateway",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/payment/PaymentGateway.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
-        }
-      }
-    }, {
-      "id" : "com.example.knit.demo.payment.PaymentResult",
-      "label" : "PaymentResult",
-      "type" : "COMPONENT",
-      "packageName" : "com.example.knit.demo.payment",
-      "className" : "PaymentResult",
-      "metadata" : {
-        "sourceFile" : "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/payment/PaymentGateway.kt",
-        "dependencyCount" : 0,
-        "providerCount" : 0,
-        "issueCount" : 0
-      },
-      "errorHighlight" : {
-        "hasErrors" : false,
-        "errorSeverity" : null,
-        "errorTypes" : [ ],
-        "isPartOfCycle" : false,
-        "cycleId" : null,
-        "visualHints" : {
-          "borderColor" : "#28a745",
-          "backgroundColor" : "#f8fff9",
-          "borderWidth" : 1,
-          "color" : null,
-          "width" : null,
-          "style" : null,
-          "classes" : [ "healthy-node" ]
         }
       }
     } ],
@@ -1066,9 +562,9 @@
         }
       }
     }, {
-      "id" : "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_repositories_UserRepository",
+      "id" : "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_repositories_DatabaseUserRepository",
       "source" : "com.example.knit.demo.main.ECommerceApplication",
-      "target" : "com.example.knit.demo.core.repositories.UserRepository",
+      "target" : "com.example.knit.demo.core.repositories.DatabaseUserRepository",
       "type" : "DEPENDENCY",
       "label" : "userRepository",
       "metadata" : {
@@ -1217,11 +713,11 @@
   },
   "metadata" : {
     "projectName" : "knit-demo",
-    "analysisTimestamp" : 1756345392456,
-    "totalComponents" : 24,
+    "analysisTimestamp" : 1756463639298,
+    "totalComponents" : 6,
     "totalDependencies" : 12,
-    "componentsWithErrors" : 4,
-    "healthyComponents" : 20,
+    "componentsWithErrors" : 3,
+    "healthyComponents" : 3,
     "knitVersion" : null,
     "pluginVersion" : "1.0.0"
   }

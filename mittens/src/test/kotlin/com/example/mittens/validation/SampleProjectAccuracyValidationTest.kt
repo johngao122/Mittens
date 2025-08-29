@@ -300,13 +300,11 @@ class SampleProjectAccuracyValidationTest : LightJavaCodeInsightFixtureTestCase(
         val inMemoryRepo = components.find { it.className == "InMemoryUserRepository" }
         
         assertNotNull("DatabaseUserRepository should be detected", databaseRepo)
-        assertNotNull("InMemoryUserRepository should be detected", inMemoryRepo)
+        assertNull("InMemoryUserRepository should NOT be detected (no active DI features)", inMemoryRepo)
         
-        // Verify active provider is detected, commented provider is not
+        // Verify active provider is detected
         assertTrue("DatabaseUserRepository should have UserRepository provider", 
                   databaseRepo!!.providers.any { it.returnType == "UserRepository" })
-        assertFalse("InMemoryUserRepository should NOT have providers (commented annotation)", 
-                   inMemoryRepo!!.providers.any { it.returnType == "UserRepository" })
         
         // Run full analysis
         val dependencyGraph = knitAnalysisService.buildDependencyGraph(components)

@@ -20,10 +20,10 @@ class SmsChannel : NotificationChannel {
 
 @Provides
 class NotificationService {
-    
+
     @Provides
     fun provideEmailChannel(): EmailChannel = EmailChannel()
-    
+
     @Provides
     fun provideSmsChannel(): SmsChannel = SmsChannel()
     
