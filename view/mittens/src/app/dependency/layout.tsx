@@ -6,11 +6,9 @@ export default function DependencyLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const projectName = process.env.NEXT_PUBLIC_PROJECT_NAME || "Mittens";
-  
   return (
     <>
-      <TopNav title={`${projectName} | Dependency Network`} />
+      <TopNav title="Dependency Network" />
       <main>
         <Container>{children}</Container>
       </main>

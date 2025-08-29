@@ -16,78 +16,6 @@ export default function DependencyNetwork() {
     setSelectedNode(node);
   };
 
-  // Sorting state and functions
-  const [sortField, setSortField] = useState<string>('label');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-
-  // Sorting function
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  // Get sorted nodes
-  const getSortedNodes = () => {
-    return [...networkData.nodes].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
-
-      switch (sortField) {
-        case 'label':
-          aValue = a.label.toLowerCase();
-          bValue = b.label.toLowerCase();
-          break;
-        case 'packageName':
-          aValue = a.packageName.toLowerCase();
-          bValue = b.packageName.toLowerCase();
-          break;
-        case 'status':
-          aValue = getStatusText(a);
-          bValue = getStatusText(b);
-          break;
-        case 'dependencyCount':
-          aValue = a.metadata.dependencyCount;
-          bValue = b.metadata.dependencyCount;
-          break;
-        case 'providerCount':
-          aValue = a.metadata.providerCount;
-          bValue = b.metadata.providerCount;
-          break;
-        case 'connections':
-          aValue = getConnectionCount(a.id);
-          bValue = getConnectionCount(b.id);
-          break;
-        default:
-          aValue = a.label.toLowerCase();
-          bValue = b.label.toLowerCase();
-      }
-
-      if (typeof aValue === 'string') {
-        if (sortDirection === 'asc') {
-          return aValue.localeCompare(bValue);
-        } else {
-          return bValue.localeCompare(aValue);
-        }
-      } else {
-        if (sortDirection === 'asc') {
-          return aValue - bValue;
-        } else {
-          return bValue - aValue;
-        }
-      }
-    });
-  };
-
-  // Get sort indicator
-  const getSortIndicator = (field: string) => {
-    if (sortField !== field) return '↕';
-    return sortDirection === 'asc' ? '↑' : '↓';
-  };
-
   // Keep the graph container height matched to the details panel when visible
   useEffect(() => {
     if (!detailsRef.current) {
@@ -177,7 +105,6 @@ export default function DependencyNetwork() {
         </div>
       </div>
       {/* Summary Statistics (moved to top) */}
-      <h4 className="text-lg font-semibold text-black dark:text-white mb-3">Network Overview</h4>
       <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-gray-900 dark:text-white">{networkData.nodes.length}</div>
@@ -271,17 +198,7 @@ export default function DependencyNetwork() {
                                 .map(issue => issue.suggestedFix)}
                   </p>
                 </div>
-              </div>
-              <button 
-                onClick={() => setSelectedNode(null)}
-                className="mt-4 px-3 py-1 bg-slate-200 dark:bg-slate-600 text-black dark:text-white rounded hover:bg-slate-300 dark:hover:bg-slate-500 text-sm transition-colors"
-              >
-                Clear Selection
-              </button>
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full text-black dark:text-gray-400">
-              <p>Select a component to see details</p>
+              )}
             </div>
             <button 
               onClick={() => setSelectedNode(null)}
@@ -309,7 +226,7 @@ export default function DependencyNetwork() {
               </tr>
             </thead>
             <tbody>
-              {getSortedNodes().map((node) => {
+              {networkData.nodes.map((node) => {
                 const connectionCount = getConnectionCount(node.id);
                 const statusIcon = getStatusIcon(node);
                 const statusColor = getStatusColor(node);
