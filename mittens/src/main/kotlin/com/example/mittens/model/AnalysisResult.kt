@@ -67,11 +67,9 @@ data class AnalysisResult(
                 IssuePreview(
                     type = issue.type,
                     severity = issue.severity,
-                    message = issue.message.take(80) + if (issue.message.length > 80) "..." else "",
+                    message = issue.message,
                     componentName = issue.componentName,
-                    suggestedFix = issue.suggestedFix?.take(60) + if ((issue.suggestedFix?.length
-                            ?: 0) > 60
-                    ) "..." else "",
+                    suggestedFix = issue.suggestedFix,
                     confidenceScore = issue.confidenceScore,
                     validationStatus = issue.validationStatus
                 )
