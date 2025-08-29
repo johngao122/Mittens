@@ -194,7 +194,7 @@ export default function D3Network({
                     })
             );
 
-        // Create node labels
+        // Create labels
         const labels = container
             .selectAll(".label")
             .data(nodes)
@@ -202,13 +202,47 @@ export default function D3Network({
             .append("text")
             .attr("class", "label")
             .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "#ffffff")
-            .attr("font-size", "12px")
-            .attr("font-weight", "bold")
-            .attr("pointer-events", "none")
-            .style("text-shadow", "2px 2px 4px rgba(0,0,0,0.9)")
-            .text((d) => d.label);
+            .attr("dy", ".35em")
+            .attr("font-size", "16px")
+            .attr("font-weight", "500")
+            .attr("fill", () => {
+                // Check if dark mode is active by looking for dark class on html or body
+                const isDarkMode = document.documentElement.classList.contains('dark') || 
+                                  document.body.classList.contains('dark');
+                return isDarkMode ? "#ffffff" : "#000000";
+            })
+            .text((d) => d.label)
+            .style("pointer-events", "none")
+            .style("user-select", "none");
+
+        // Function to get current theme color for labels
+        const getLabelColor = () => {
+            const isDarkMode = document.documentElement.classList.contains('dark') || 
+                              document.body.classList.contains('dark');
+            return isDarkMode ? "#ffffff" : "#000000";
+        };
+
+        // Function to update label colors when theme changes
+        const updateLabelColors = () => {
+            const newColor = getLabelColor();
+            labels.attr("fill", newColor);
+        };
+
+        // Listen for theme changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && 
+                    (mutation.attributeName === 'class' || mutation.attributeName === 'data-theme')) {
+                    updateLabelColors();
+                }
+            });
+        });
+
+        // Observe the html element for class changes
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
 
         // Add event listeners
         node.on("click", (event, d) => {
@@ -242,6 +276,7 @@ export default function D3Network({
         // Clean up simulation on unmount
         return () => {
             simulation.stop();
+            observer.disconnect(); // Clean up the theme observer
         };
     }, [data, width, height, containerSize.width, containerSize.height]);
 
@@ -298,11 +333,34 @@ export default function D3Network({
                     >
                         Reset
                     </button>
+                    
+                    {/* Status Legend - positioned below reset button */}
+                    <div className="mt-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 shadow-lg">
+                        <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">Status Legend</div>
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">Healthy</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">Error</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">Warning</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">Cycle</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
             <svg
                 ref={svgRef}
-                className="border rounded-lg bg-slate-800 w-full h-full"
+                className="border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 w-full h-full"
             />
 
             {tooltip && (
