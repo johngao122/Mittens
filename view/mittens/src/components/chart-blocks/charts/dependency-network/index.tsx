@@ -84,26 +84,7 @@ export default function DependencyNetwork() {
 
   return (
     <div className="w-full">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex gap-4 items-center justify-end ml-auto">
-          <div className="flex items-center gap-1">
-            <div className="h-3 w-3 rounded-full bg-green-500"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-300">Healthy</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="h-3 w-3 rounded-full bg-red-500"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-300">Error</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-300">Warning</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="h-3 w-3 rounded-full bg-purple-500"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-300">Cycle</span>
-          </div>
-        </div>
-      </div>
+      
       {/* Summary Statistics (moved to top) */}
       <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 text-center">

@@ -346,6 +346,29 @@ export default function D3Network({
                     >
                         Reset
                     </button>
+
+                    {/* Status Legend - positioned below reset button */}
+                    <div className="mt-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 shadow-lg">
+                        <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">Status Legend</div>
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">Healthy</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">Error</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">Warning</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">Cycle</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
             <svg
