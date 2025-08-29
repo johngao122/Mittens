@@ -1,6 +1,7 @@
 import { type LucideIcon, MessagesSquare } from "lucide-react";
 
 export type SiteConfig = typeof siteConfig;
+
 export type Navigation = {
   icon: LucideIcon;
   name: string;
@@ -8,8 +9,7 @@ export type Navigation = {
 };
 
 export const siteConfig = {
-  title: "VisActor Next Template",
-  description: "Template for VisActor and Next.js",
+
 };
 
 export const navigations: Navigation[] = [

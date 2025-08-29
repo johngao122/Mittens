@@ -8,7 +8,7 @@ export default function DependencyLayout({
 }) {
   return (
     <>
-      <TopNav title="Dependency" />
+      <TopNav title="Dependency Network" />
       <main>
         <Container>{children}</Container>
       </main>
