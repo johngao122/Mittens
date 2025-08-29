@@ -9,6 +9,9 @@ export default function DependencyNetwork() {
   const [selectedNode, setSelectedNode] = useState<D3Node | null>(null);
   const detailsRef = useRef<HTMLDivElement | null>(null);
   const [detailsHeight, setDetailsHeight] = useState<number | null>(null);
+  
+  // Filter states
+  const [componentTypeFilter, setComponentTypeFilter] = useState<string>('all');
 
   const networkData = getD3NetworkData();
 
@@ -73,6 +76,17 @@ export default function DependencyNetwork() {
     return 'healthy';
   };
 
+  // Helper function to determine component type based on package name
+  const getComponentType = (node: D3Node): string => {
+    const packageName = node.packageName.toLowerCase();
+    if (packageName.includes('models')) return 'models';
+    if (packageName.includes('services')) return 'services';
+    if (packageName.includes('repositories') || packageName.includes('repo')) return 'repo';
+    if (packageName.includes('payment')) return 'payment';
+    if (packageName.includes('main') || node.className.toLowerCase().includes('main')) return 'main';
+    return 'other';
+  };
+
   // Calculate connection count for each node
   const getConnectionCount = (nodeId: string) => {
     return networkData.links.filter(
@@ -105,8 +119,36 @@ export default function DependencyNetwork() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const toggleExpand = (id: string) => setExpanded(e => ({ ...e, [id]: !e[id] }));
 
+  // Helper function to check if a node matches component type filter
+  const matchesFilters = (node: D3Node): boolean => {
+    // Check component type filter
+    const matchesType = componentTypeFilter === 'all' || getComponentType(node) === componentTypeFilter;
+    return matchesType;
+  };
+
+  // Recursive function to check if any descendant matches filters
+  const hasMatchingDescendant = (node: D3Node): boolean => {
+    const providees = providerTree.providerToProvidees[node.id] || [];
+    return providees.some(child => matchesFilters(child) || hasMatchingDescendant(child));
+  };
+
+  // Filter the tree roots to show only nodes that match or have matching descendants
+  const filteredRoots = useMemo(() => {
+    return providerTree.roots.filter(node => 
+      matchesFilters(node) || hasMatchingDescendant(node)
+    );
+  }, [providerTree.roots, componentTypeFilter]);
+
   // Recursive render function for tree rows
   const renderTreeRows: any = (node: D3Node, depth = 0) => {
+    // Check if this node should be visible
+    const nodeMatches = matchesFilters(node);
+    const hasMatchingChild = hasMatchingDescendant(node);
+    
+    // If neither this node nor its children match, don't render
+    if (!nodeMatches && !hasMatchingChild) {
+      return null;
+    }
     const connectionCount = getConnectionCount(node.id);
     const statusIcon = getStatusIcon(node);
     const statusColor = getStatusColor(node);
@@ -116,40 +158,89 @@ export default function DependencyNetwork() {
       <React.Fragment key={node.id}>
         <tr
           key={node.id}
-          className={`border-b border-gray-100 dark:border-slate-600/50 hover:bg-gray-100 dark:hover:bg-slate-600/30 cursor-pointer transition-colors ${
-            selectedNode?.id === node.id ? 'bg-gray-200 dark:bg-slate-600/50' : ''
+          className={`group transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-slate-700/50 dark:hover:to-slate-600/50 cursor-pointer ${
+            selectedNode?.id === node.id 
+              ? 'bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-slate-600/70 dark:to-slate-500/70 shadow-sm' 
+              : 'hover:shadow-sm'
           }`}
           onClick={() => setSelectedNode(node)}
         >
-          <td className="py-3 px-2">
-            <div className="flex items-center gap-2" style={{ marginLeft: depth * 18 }}>
-              {hasProvidees && (
-                <button
-                  onClick={e => { e.stopPropagation(); toggleExpand(node.id); }}
-                  className="mr-1 text-xs"
-                  aria-label={expanded[node.id] ? "Collapse" : "Expand"}
-                >
-                  {expanded[node.id] ? "▼" : "▶"}
-                </button>
-              )}
-              <span className="font-medium">{statusIcon}</span>
-              <span className="text-gray-900 dark:text-white font-medium">{node.label}</span>
+          {/* Simple Component Column */}
+          <td className="py-4 px-6">
+            <div className="flex items-center gap-3" style={{ marginLeft: depth * 20 }}>
+              {/* Always reserve space for expand button to maintain alignment */}
+              <div className="w-5 h-5 flex items-center justify-center">
+                {hasProvidees ? (
+                  <button
+                    onClick={e => { e.stopPropagation(); toggleExpand(node.id); }}
+                    className="flex items-center justify-center w-5 h-5 rounded-md hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors text-gray-500 dark:text-gray-400"
+                    aria-label={expanded[node.id] ? "Collapse" : "Expand"}
+                  >
+                    {expanded[node.id] ? (
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                ) : (
+                  // Empty space to maintain alignment
+                  <div className="w-5 h-5"></div>
+                )}
+              </div>
+              <span className="text-lg transition-transform group-hover:scale-110">{statusIcon}</span>
+              <span className="text-gray-900 dark:text-white font-medium group-hover:text-gray-700 dark:group-hover:text-gray-200">{node.label}</span>
             </div>
           </td>
-          <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.packageName}</td>
-          <td className="py-3 px-2">
-            <span className={`px-2 py-1 rounded text-xs font-medium ${statusColor}`}>
+          
+          {/* Enhanced Package Column */}
+          <td className="py-4 px-6">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-300 border border-white dark:border-gray-600 shadow-sm">
+              {node.packageName}
+            </span>
+          </td>
+          
+          {/* Enhanced Status Column */}
+          <td className="py-4 px-6 text-center">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 shadow-sm ${statusColor}`}>
               {statusText}
             </span>
           </td>
-          <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.metadata.dependencyCount}</td>
-          <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.metadata.providerCount}</td>
-          <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{connectionCount}</td>
+          
+          {/* Enhanced Dependencies Column */}
+          <td className="py-4 px-6 text-center">
+            <div className="flex items-center justify-center">
+              <span className="inline-flex items-center justify-center w-10 h-8 bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 text-purple-700 dark:text-purple-300 rounded-lg text-sm font-bold border border-purple-200 dark:border-purple-700/50 shadow-sm">
+                {node.metadata.dependencyCount}
+              </span>
+            </div>
+          </td>
+          
+          {/* Enhanced Providers Column */}
+          <td className="py-4 px-6 text-center">
+            <div className="flex items-center justify-center">
+              <span className="inline-flex items-center justify-center w-10 h-8 bg-gradient-to-r from-indigo-100 to-indigo-200 dark:from-indigo-900/30 dark:to-indigo-800/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm font-bold border border-indigo-200 dark:border-indigo-700/50 shadow-sm">
+                {node.metadata.providerCount}
+              </span>
+            </div>
+          </td>
+          
+          {/* Enhanced Connections Column */}
+          <td className="py-4 px-6 text-center">
+            <div className="flex items-center justify-center">
+              <span className="inline-flex items-center justify-center w-10 h-8 bg-gradient-to-r from-rose-100 to-rose-200 dark:from-rose-900/30 dark:to-rose-800/30 text-rose-700 dark:text-rose-300 rounded-lg text-sm font-bold border border-rose-200 dark:border-rose-700/50 shadow-sm">
+                {connectionCount}
+              </span>
+            </div>
+          </td>
         </tr>
         {hasProvidees && expanded[node.id] &&
-          providerTree.providerToProvidees[node.id].map(child =>
-            renderTreeRows(child, depth + 1)
-          )
+          providerTree.providerToProvidees[node.id]
+            .filter(child => matchesFilters(child) || hasMatchingDescendant(child))
+            .map(child => renderTreeRows(child, depth + 1))
         }
       </React.Fragment>
     );
@@ -309,83 +400,146 @@ export default function DependencyNetwork() {
       {/* Enhanced Component Inventory Table */}
       <div className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-gray-100 to-gray-50 dark:from-slate-700 dark:to-slate-800 px-6 py-4 border-b border-gray-200 dark:border-slate-600">
-          <h4 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <span className="text-blue-500 dark:text-blue-400">📊</span>
-            Component Inventory
-          </h4>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Complete overview of all components and their dependencies</p>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* Left side - Title */}
+            <div>
+              <h4 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <span className="text-blue-500 dark:text-blue-400">📊</span>
+                Component Inventory
+              </h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Complete overview of all components and their dependencies</p>
+            </div>
+
+            {/* Right side - Filters */}
+            <div className="flex flex-col sm:flex-row gap-3 lg:items-center">
+              {/* Beautiful Component Type Filter Buttons */}
+              <div className="flex gap-1 flex-nowrap">
+                <button
+                  onClick={() => setComponentTypeFilter('all')}
+                  className={`flex items-center gap-1.5 px-2.5 py-2 text-xs font-semibold rounded-lg transition-all duration-200 shadow-sm whitespace-nowrap ${
+                    componentTypeFilter === 'all'
+                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25 scale-105'
+                      : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 hover:shadow-md'
+                  }`}
+                >
+                  <span>All ({networkData.nodes.length})</span>
+                </button>
+                
+                <button
+                  onClick={() => setComponentTypeFilter('main')}
+                  className={`flex items-center gap-1.5 px-2.5 py-2 text-xs font-semibold rounded-lg transition-all duration-200 shadow-sm whitespace-nowrap ${
+                    componentTypeFilter === 'main'
+                      ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25 scale-105'
+                      : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:shadow-md border border-indigo-200 dark:border-indigo-800'
+                  }`}
+                >
+                  <div className="w-3 h-3 rounded-full bg-indigo-500 flex items-center justify-center">
+                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span>Main ({networkData.nodes.filter(n => getComponentType(n) === 'main').length})</span>
+                </button>
+                
+                <button
+                  onClick={() => setComponentTypeFilter('models')}
+                  className={`flex items-center gap-1.5 px-2.5 py-2 text-xs font-semibold rounded-lg transition-all duration-200 shadow-sm whitespace-nowrap ${
+                    componentTypeFilter === 'models'
+                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 scale-105'
+                      : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:shadow-md border border-emerald-200 dark:border-emerald-800'
+                  }`}
+                >
+                  <div className="w-3 h-3 rounded-full bg-emerald-500 flex items-center justify-center">
+                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span>Models ({networkData.nodes.filter(n => getComponentType(n) === 'models').length})</span>
+                </button>
+                
+                <button
+                  onClick={() => setComponentTypeFilter('services')}
+                  className={`flex items-center gap-1.5 px-2.5 py-2 text-xs font-semibold rounded-lg transition-all duration-200 shadow-sm whitespace-nowrap ${
+                    componentTypeFilter === 'services'
+                      ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/25 scale-105'
+                      : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 hover:shadow-md border border-amber-200 dark:border-amber-800'
+                  }`}
+                >
+                  <div className="w-3 h-3 rounded-full bg-amber-500 flex items-center justify-center">
+                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 010 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span>Services ({networkData.nodes.filter(n => getComponentType(n) === 'services').length})</span>
+                </button>
+                
+                <button
+                  onClick={() => setComponentTypeFilter('repo')}
+                  className={`flex items-center gap-1.5 px-2.5 py-2 text-xs font-semibold rounded-lg transition-all duration-200 shadow-sm whitespace-nowrap ${
+                    componentTypeFilter === 'repo'
+                      ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25 scale-105'
+                      : 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:shadow-md border border-purple-200 dark:border-purple-800'
+                  }`}
+                >
+                  <div className="w-3 h-3 rounded-full bg-purple-500 flex items-center justify-center">
+                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span>Repo ({networkData.nodes.filter(n => getComponentType(n) === 'repo').length})</span>
+                </button>
+                
+                <button
+                  onClick={() => setComponentTypeFilter('payment')}
+                  className={`flex items-center gap-1.5 px-2.5 py-2 text-xs font-semibold rounded-lg transition-all duration-200 shadow-sm whitespace-nowrap ${
+                    componentTypeFilter === 'payment'
+                      ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/25 scale-105'
+                      : 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/30 hover:shadow-md border border-rose-200 dark:border-rose-800'
+                  }`}
+                >
+                  <div className="w-3 h-3 rounded-full bg-rose-500 flex items-center justify-center">
+                    <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                      <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span>Payment ({networkData.nodes.filter(n => getComponentType(n) === 'payment').length})</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto bg-white dark:bg-slate-800 rounded-b-lg border-t border-gray-200 dark:border-slate-600">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-slate-800/50">
-              <tr className="border-b border-gray-200 dark:border-slate-600">
-                <th className="text-left py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">COMPONENT</th>
-                <th className="text-left py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">PACKAGE</th>
-                <th className="text-center py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">STATUS</th>
-                <th className="text-right py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">DEPS</th>
-                <th className="text-right py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">PROVIDERS</th>
-                <th className="text-right py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">CONNECTIONS</th>
+            {/* Beautiful Table Header */}
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800">
+              <tr className="border-b-2 border-gray-200 dark:border-slate-600">
+                <th className="text-left py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
+                  Component
+                </th>
+                <th className="text-left py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
+                  Package
+                </th>
+                <th className="text-center py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
+                  Status
+                </th>
+                <th className="text-center py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
+                  Dependencies
+                </th>
+                <th className="text-center py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
+                  Providers
+                </th>
+                <th className="text-center py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
+                  Connections
+                </th>
               </tr>
             </thead>
-            <tbody>
-              {providerTree.roots.map(node => renderTreeRows(node))}
-              {/* {networkData.nodes.map((node) => {
-                const connectionCount = getConnectionCount(node.id);
-                const statusIcon = getStatusIcon(node);
-                const statusColor = getStatusColor(node);
-                const statusText = getStatusText(node);
-                
-                return (
-                  <tr 
-                    key={node.id} 
-                    className={`group border-b border-gray-100 dark:border-slate-700/50 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-slate-700/30 dark:hover:to-slate-600/30 cursor-pointer transition-all duration-200 ${
-                      selectedNode?.id === node.id ? 'bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-slate-600/50 dark:to-slate-500/50' : index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-gray-50/50 dark:bg-slate-800/50'
-                    }`}
-                    onClick={() => setSelectedNode(node)}
-                  >
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg transition-transform group-hover:scale-110">{statusIcon}</span>
-                        <div>
-                          <span className="text-gray-900 dark:text-white font-semibold block">{node.label}</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 block mt-0.5">{node.className}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300">
-                        {node.packageName}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${statusColor}`}>
-                        {statusText}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-right">
-                      <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-bold">
-                        {node.metadata.dependencyCount}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-right">
-                      <span className="inline-flex items-center justify-center w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-sm font-bold">
-                        {node.metadata.providerCount}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-right">
-                      <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-bold">
-                        {connectionCount}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })} */}
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
+              {filteredRoots.map(node => renderTreeRows(node))}
             </tbody>
           </table>
         </div>
       </div>
-      
-      
     </div>
   );
 }
