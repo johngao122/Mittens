@@ -52,7 +52,8 @@ class KnitSourceAnalyzer(private val project: Project) {
     }
 
     /**
-     * Determines if a class is relevant for dependency injection analysis
+     * Determines if a class is relevant for dependency injection analysis.
+     * This filters out enum constants, pure data classes, and other non-DI classes.
      */
     private fun isDiRelevantClass(ktClass: KtClass): Boolean {
         val classAnnotations = ktClass.annotationEntries
@@ -109,7 +110,6 @@ class KnitSourceAnalyzer(private val project: Project) {
             logger.debug("Class ${ktClass.name} is an interface with no @Provides methods - excluding")
             return false
         }
-        
         
         
         logger.debug("Class ${ktClass.name} has no DI relevance - excluding")
@@ -472,7 +472,7 @@ class KnitSourceAnalyzer(private val project: Project) {
         val lineEndOffset = document.getLineEndOffset(lineNumber)
         val lineText = document.getText(TextRange(lineStartOffset, lineEndOffset))
 
-        val commentIndex = lineText.indexOf("
+        val commentIndex = lineText.indexOf("//")
 
         if (commentIndex == -1) {
             return false
