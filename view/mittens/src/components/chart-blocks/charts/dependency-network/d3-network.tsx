@@ -85,6 +85,28 @@ export default function D3Network({
             );
         };
 
+        const clusters: Record<string, { x: number; y: number }> = {};
+        const clusterTags = Array.from(new Set(nodes.map(n => n.packageName)));
+        const clusterRadius = Math.min(width, height) / 3;
+
+        // Assign cluster centers in a circle
+        clusterTags.forEach((tag, i) => {
+            const angle = (2 * Math.PI * i) / clusterTags.length;
+            clusters[tag] = {
+                x: width / 2 + clusterRadius * Math.cos(angle),
+                y: height / 2 + clusterRadius * Math.sin(angle),
+            };
+        });
+
+        // Custom cluster force
+        function forceCluster(alpha: number) {
+            nodes.forEach((node: any) => {
+                const cluster = clusters[node.packageName];
+                node.vx += (cluster.x - node.x) * 0.1 * alpha;
+                node.vy += (cluster.y - node.y) * 0.1 * alpha;
+            });
+        }
+
         // Create force simulation
         const simulation = d3
             .forceSimulation(nodes)
@@ -93,15 +115,16 @@ export default function D3Network({
                 d3
                     .forceLink(links)
                     .id((d: any) => d.id)
-                    .distance(100)
+                    .distance(170)
                     .strength(0.5)
             )
-            .force("charge", d3.forceManyBody().strength(-300))
+            .force("charge", d3.forceManyBody().strength(-100))
             .force("center", d3.forceCenter(width / 2, height / 2))
             .force(
                 "collision",
                 d3.forceCollide().radius((d) => getNodeSize(d as D3Node) + 5)
-            );
+            )
+            .force("cluster", forceCluster as any);
 
         // Create links
         const link = container
@@ -200,7 +223,7 @@ export default function D3Network({
         return () => {
             simulation.stop();
         };
-    }, [data, width, height, onNodeClick]);
+    }, [data, width, height]);
 
     // Zoom control functions
     const handleZoomIn = () => {
