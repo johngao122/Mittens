@@ -158,41 +158,46 @@ export default function DependencyNetwork() {
   return (
     <div className="w-full">
       
-      {/* Summary Statistics (moved to top) */}
-      <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{networkData.nodes.length}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Components</div>
+      {/* Enhanced Summary Statistics */}
+      <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-700 border border-blue-200 dark:border-slate-600 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{networkData.nodes.length}</div>
+          <div className="text-sm font-medium text-blue-700 dark:text-blue-300">Components</div>
+          <div className="mt-1 text-xs text-blue-600/70 dark:text-blue-400/70">Total Nodes</div>
         </div>
-        <div className="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{networkData.links.length}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Dependencies</div>
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-slate-800 dark:to-slate-700 border border-emerald-200 dark:border-slate-600 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">{networkData.links.length}</div>
+          <div className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Dependencies</div>
+          <div className="mt-1 text-xs text-emerald-600/70 dark:text-emerald-400/70">Total Connections</div>
         </div>
-        <div className="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-red-500 dark:text-red-400">
+        <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-slate-800 dark:to-slate-700 border border-red-200 dark:border-slate-600 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
             {networkData.nodes.filter(n => n.errorInfo.hasErrors && n.errorInfo.errorSeverity === 'ERROR').length}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Errors</div>
+          <div className="text-sm font-medium text-red-700 dark:text-red-300">Errors</div>
+          <div className="mt-1 text-xs text-red-600/70 dark:text-red-400/70">Critical Issues</div>
         </div>
-        <div className="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-purple-500 dark:text-purple-400">
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-slate-800 dark:to-slate-700 border border-purple-200 dark:border-slate-600 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
             {networkData.nodes.filter(n => n.errorInfo.isPartOfCycle).length}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Cycles</div>
+          <div className="text-sm font-medium text-purple-700 dark:text-purple-300">Cycles</div>
+          <div className="mt-1 text-xs text-purple-600/70 dark:text-purple-400/70">Circular Dependencies</div>
         </div>
       </div>
       
       {/* Graph + Details side-by-side */}
       <div className="mb-6 flex flex-col lg:flex-row gap-4 items-stretch">
         <div
-          className="flex-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-0"
-          style={{ height: selectedNode && detailsHeight ? detailsHeight : undefined, minHeight: selectedNode ? 520 : 600 }}
+          className="flex-1 bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden"
+          style={{ height: selectedNode && detailsHeight ? detailsHeight : 650, minHeight: 650 }}
         >
           <D3Network 
             data={networkData}
             width="100%"
             height="100%"
             onNodeClick={handleNodeClick}
+            selectedNode={selectedNode}
           />
         </div>
         {selectedNode && (
@@ -226,31 +231,68 @@ export default function DependencyNetwork() {
                 </span>
               </div>
               {selectedNode.errorInfo.hasErrors && (
-                <>
-                  <div>
-                    <p className="text-sm text-gray-400">Error Details</p>
-                    <p className="text-red-400 text-sm">{selectedNode.errorInfo.errorTypes.join(", ")}</p>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-red-500">⚠️</span>
+                    <p className="text-sm font-semibold text-red-700 dark:text-red-300">Error Details</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Suggested Fix</p>
-                    <div className="text-red-400 text-sm">{
-                      networkData.errorContext.issueDetails
-                                  .filter(issue => selectedNode.errorInfo.errorTypes.includes(issue.type))
-                                  .map((issue, index) => (
-                                    <p key={index}>{issue.suggestedFix}</p>))}
+                  <p className="text-red-600 dark:text-red-400 text-sm mb-4 font-medium">
+                    {selectedNode.errorInfo.errorTypes.join(", ")}
+                  </p>
+                  
+                  <div className="border-t border-red-200 dark:border-red-800 pt-3">
+                    <p className="text-xs uppercase tracking-wide text-red-500 dark:text-red-400 font-semibold mb-2">
+                      Suggested Fix
+                    </p>
+                    <div className="bg-red-100 dark:bg-red-900/30 rounded-md p-3 border-l-4 border-red-400">
+                      {networkData.errorContext.issueDetails
+                        .filter(issue => selectedNode.errorInfo.errorTypes.includes(issue.type))
+                        .map((issue, index) => (
+                          <p key={index} className="text-red-700 dark:text-red-300 text-sm leading-relaxed mb-2 last:mb-0">
+                            {issue.suggestedFix}
+                          </p>
+                        ))}
                     </div>
                   </div>
-                </>
+                </div>
               )}
 
               {selectedNode.errorInfo.isPartOfCycle && (                
-                <div>
-                  <p className="text-sm text-gray-400">Suggested Fix</p>
-                  <p className="text-purple-400 text-sm">{
-                    networkData.errorContext.issueDetails
-                                .filter(issue => issue.type == "CIRCULAR_DEPENDENCY")
-                                .map(issue => issue.suggestedFix)}
-                  </p>
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-purple-500">🔄</span>
+                    <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">Circular Dependency</p>
+                  </div>
+                  
+                  <div className="border-t border-purple-200 dark:border-purple-800 pt-3">
+                    <p className="text-xs uppercase tracking-wide text-purple-500 dark:text-purple-400 font-semibold mb-2">
+                      Suggested Fix
+                    </p>
+                    <div className="bg-purple-100 dark:bg-purple-900/30 rounded-md p-3 border-l-4 border-purple-400">
+                      <p className="text-purple-700 dark:text-purple-300 text-sm leading-relaxed">
+                        {networkData.errorContext.issueDetails
+                          .filter(issue => issue.type == "CIRCULAR_DEPENDENCY")
+                          .map(issue => {
+                            // Format the suggested fix with proper line breaks
+                            const formattedFix = issue.suggestedFix
+                              .replace(/(\d\))/g, '\n$1')
+                              .split('\n')
+                              .filter(line => line.trim())
+                              .map((line, index) => line.trim());
+                            
+                            return (
+                              <div key="circular-fix">
+                                {formattedFix.map((line, lineIndex) => (
+                                  <div key={lineIndex} className={lineIndex === 0 ? "mb-2" : "ml-0 mb-1"}>
+                                    {line}
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -264,19 +306,25 @@ export default function DependencyNetwork() {
         )}
       </div>
       
-      {/* Package Inventory Status Table */}
-      <div className="bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4">
-        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Component Inventory</h4>
+      {/* Enhanced Component Inventory Table */}
+      <div className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-gradient-to-r from-gray-100 to-gray-50 dark:from-slate-700 dark:to-slate-800 px-6 py-4 border-b border-gray-200 dark:border-slate-600">
+          <h4 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <span className="text-blue-500 dark:text-blue-400">📊</span>
+            Component Inventory
+          </h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Complete overview of all components and their dependencies</p>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead>
+            <thead className="bg-gray-50 dark:bg-slate-800/50">
               <tr className="border-b border-gray-200 dark:border-slate-600">
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">COMPONENT</th>
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">PACKAGE</th>
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">STATUS</th>
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">DEPENDENCIES</th>
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">PROVIDERS</th>
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">CONNECTIONS</th>
+                <th className="text-left py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">COMPONENT</th>
+                <th className="text-left py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">PACKAGE</th>
+                <th className="text-center py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">STATUS</th>
+                <th className="text-right py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">DEPS</th>
+                <th className="text-right py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">PROVIDERS</th>
+                <th className="text-right py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold tracking-wide">CONNECTIONS</th>
               </tr>
             </thead>
             <tbody>
@@ -290,26 +338,45 @@ export default function DependencyNetwork() {
                 return (
                   <tr 
                     key={node.id} 
-                    className={`border-b border-gray-100 dark:border-slate-600/50 hover:bg-gray-100 dark:hover:bg-slate-600/30 cursor-pointer transition-colors ${
-                      selectedNode?.id === node.id ? 'bg-gray-200 dark:bg-slate-600/50' : ''
+                    className={`group border-b border-gray-100 dark:border-slate-700/50 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-slate-700/30 dark:hover:to-slate-600/30 cursor-pointer transition-all duration-200 ${
+                      selectedNode?.id === node.id ? 'bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-slate-600/50 dark:to-slate-500/50' : index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-gray-50/50 dark:bg-slate-800/50'
                     }`}
                     onClick={() => setSelectedNode(node)}
                   >
-                    <td className="py-3 px-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{statusIcon}</span>
-                        <span className="text-gray-900 dark:text-white font-medium">{node.label}</span>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg transition-transform group-hover:scale-110">{statusIcon}</span>
+                        <div>
+                          <span className="text-gray-900 dark:text-white font-semibold block">{node.label}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 block mt-0.5">{node.className}</span>
+                        </div>
                       </div>
                     </td>
-                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.packageName}</td>
-                    <td className="py-3 px-2">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${statusColor}`}>
+                    <td className="py-4 px-4">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300">
+                        {node.packageName}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${statusColor}`}>
                         {statusText}
                       </span>
                     </td>
-                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.metadata.dependencyCount}</td>
-                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.metadata.providerCount}</td>
-                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{connectionCount}</td>
+                    <td className="py-4 px-4 text-right">
+                      <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-bold">
+                        {node.metadata.dependencyCount}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <span className="inline-flex items-center justify-center w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-sm font-bold">
+                        {node.metadata.providerCount}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-bold">
+                        {connectionCount}
+                      </span>
+                    </td>
                   </tr>
                 );
               })} */}

@@ -4,6 +4,23 @@ import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import { NetworkData, D3Node, D3Link } from "../../../../lib/knit-data-parser";
 
+// Configuration constants
+const FORCE_CONFIG = {
+    LINK_DISTANCE: 170,
+    LINK_STRENGTH: 0.5,
+    CHARGE_STRENGTH: -100,
+    COLLISION_PADDING: 5,
+    CLUSTER_STRENGTH: 0.1,
+    DRAG_THRESHOLD: 5,
+    SIDE_PANEL_WIDTH_RATIO: 1,
+} as const;
+
+const ANIMATION_DURATIONS = {
+    ZOOM: 300,
+    RESET: 500,
+    CENTER: 500,
+} as const;
+
 interface D3NetworkProps {
     data: NetworkData;
     width?: number | string;
@@ -11,6 +28,7 @@ interface D3NetworkProps {
     onNodeClick?: (node: D3Node) => void;
     onLinkClick?: (link: D3Link) => void;
     showZoomControls?: boolean;
+    selectedNode?: D3Node | null;
 }
 
 interface TooltipData {
@@ -22,10 +40,11 @@ interface TooltipData {
 export default function D3Network({
     data,
     width = 800,
-    height = 600,
+    height = 400,
     onNodeClick,
     onLinkClick,
     showZoomControls = true,
+    selectedNode = null,
 }: D3NetworkProps) {
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -35,9 +54,10 @@ export default function D3Network({
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(
         null
     );
-    const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 800, height: 600 });
+    const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 800, height: 400 });
     const labelsRef = useRef<any>(null); // Store reference to labels for theme updates
     const nodesRef = useRef<any>(null); // Store reference to nodes for theme updates
+    const hasSelectionRef = useRef<boolean>(false); // Track if a node is currently selected
 
     // Wait for component to mount before using browser APIs
     useEffect(() => {
@@ -71,7 +91,7 @@ export default function D3Network({
     useEffect(() => {
         if (labelsRef.current) {
             labelsRef.current
-                .attr("fill", isDarkMode ? "#ffffff" : "#1f2937") // Dark gray for light mode
+                .attr("fill", isDarkMode ? "#ffffff" : "#434850ff") // Dark gray for light mode
                 .style("text-shadow", isDarkMode ? "2px 2px 4px rgba(0,0,0,0.9)" : "1px 1px 2px rgba(255,255,255,0.8)");
         }
         if (nodesRef.current) {
@@ -80,6 +100,11 @@ export default function D3Network({
                 .attr("stroke-width", 2.5);
         }
     }, [isDarkMode]);
+
+    // Track selection state for centering logic
+    useEffect(() => {
+        hasSelectionRef.current = selectedNode !== null;
+    }, [selectedNode]);
 
     // Track container size so we can fill 100% of the parent
     useEffect(() => {
@@ -97,7 +122,7 @@ export default function D3Network({
         if (!mounted || !svgRef.current || !data.nodes.length) return;
 
         const numericWidth = typeof width === "number" ? width : (containerSize.width || 800);
-        const numericHeight = typeof height === "number" ? height : (containerSize.height || 600);
+        const numericHeight = typeof height === "number" ? height : (containerSize.height || 400);
 
         const svg = d3.select(svgRef.current);
         svg.selectAll("*").remove();
@@ -166,8 +191,9 @@ export default function D3Network({
         function forceCluster(alpha: number) {
             nodes.forEach((node: any) => {
                 const cluster = clusters[node.packageName];
-                node.vx += (cluster.x - node.x) * 0.1 * alpha;
-                node.vy += (cluster.y - node.y) * 0.1 * alpha;
+                // Clustering strength
+                node.vx += (cluster.x - node.x) * FORCE_CONFIG.CLUSTER_STRENGTH * alpha;
+                node.vy += (cluster.y - node.y) * FORCE_CONFIG.CLUSTER_STRENGTH * alpha;
             });
         }
 
@@ -179,14 +205,14 @@ export default function D3Network({
                 d3
                     .forceLink(links)
                     .id((d: any) => d.id)
-                    .distance(170)
-                    .strength(0.5)
+                    .distance(FORCE_CONFIG.LINK_DISTANCE)
+                    .strength(FORCE_CONFIG.LINK_STRENGTH)
             )
-            .force("charge", d3.forceManyBody().strength(-100))
-            .force("center", d3.forceCenter(numericWidth / 2, numericHeight / 2))
+            .force("charge", d3.forceManyBody().strength(FORCE_CONFIG.CHARGE_STRENGTH))
+            .force("center", d3.forceCenter(numericWidth, numericHeight))
             .force(
                 "collision",
-                d3.forceCollide().radius((d) => getNodeSize(d as D3Node) + 5)
+                d3.forceCollide().radius((d) => getNodeSize(d as D3Node) + FORCE_CONFIG.COLLISION_PADDING)
             )
             .force("cluster", forceCluster as any);
 
@@ -197,12 +223,12 @@ export default function D3Network({
             .enter()
             .append("line")
             .attr("class", "link")
-            .attr("stroke", (d) =>
+            .attr("stroke", (d: any) =>
                 d.errorInfo.hasErrors ? "#ef4444" : "#64748b"
             )
             .attr("stroke-width", 2)
             .attr("stroke-opacity", 0.6)
-            .attr("stroke-dasharray", (d) =>
+            .attr("stroke-dasharray", (d: any) =>
                 d.errorInfo.hasErrors ? "5,5" : "0"
             );
 
@@ -213,28 +239,92 @@ export default function D3Network({
             .enter()
             .append("circle")
             .attr("class", "node")
-            .attr("r", (d) => getNodeSize(d as D3Node))
-            .attr("fill", (d) => getNodeColor(d as D3Node))
-            .attr("stroke", isDarkMode ? "#ffffff" : "#444f62ff")
-            .attr("stroke-width", 1)
+            .attr("r", (d: any) => getNodeSize(d as D3Node))
+            .attr("fill", (d: any) => getNodeColor(d as D3Node))
+            .attr("stroke", isDarkMode ? "#ffffff" : "#374151")
+            .attr("stroke-width", 2.5)
             .style("cursor", "pointer")
             .call(
                 d3
                     .drag<SVGCircleElement, D3Node>()
                     .on("start", (event, d) => {
-                        if (!event.active)
-                            simulation.alphaTarget(0.3).restart();
+                        // Always restart simulation for responsive dragging
+                        if (!event.active) simulation.alphaTarget(0.3).restart();
+                        
+                        // Store starting position to detect if it's a real drag
+                        (d as any)._dragStartX = event.x;
+                        (d as any)._dragStartY = event.y;
+                        (d as any)._dragStartTime = Date.now();
+                        
                         d.fx = d.x;
                         d.fy = d.y;
+                        
+                        // Set a timeout to stop simulation if no significant movement
+                        (d as any)._dragTimeout = setTimeout(() => {
+                            const dragDistance = Math.sqrt(
+                                Math.pow(event.x - ((d as any)._dragStartX || 0), 2) + 
+                                Math.pow(event.y - ((d as any)._dragStartY || 0), 2)
+                            );
+                            
+                            // If no significant movement after 200ms, stop simulation
+                            if (dragDistance < FORCE_CONFIG.DRAG_THRESHOLD) {
+                                simulation.alphaTarget(0);
+                            }
+                        }, 200);
                     })
                     .on("drag", (event, d) => {
-                        d.fx = event.x;
-                        d.fy = event.y;
+                        // Clear the timeout since we're actively dragging
+                        if ((d as any)._dragTimeout) {
+                            clearTimeout((d as any)._dragTimeout);
+                            (d as any)._dragTimeout = null;
+                        }
+                        
+                        // Check for collision with other nodes
+                        const draggedNode = d as D3Node;
+                        const draggedRadius = getNodeSize(draggedNode) + FORCE_CONFIG.COLLISION_PADDING;
+                        let newX = event.x;
+                        let newY = event.y;
+                        
+                        // Check collision with all other nodes
+                        for (const otherNode of nodes) {
+                            if (otherNode.id === draggedNode.id) continue; // Skip self
+                            
+                            if (otherNode.x !== undefined && otherNode.y !== undefined) {
+                                const otherRadius = getNodeSize(otherNode as D3Node) + FORCE_CONFIG.COLLISION_PADDING;
+                                const dx = newX - otherNode.x;
+                                const dy = newY - otherNode.y;
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+                                const minDistance = draggedRadius + otherRadius;
+                                
+                                // If collision detected, adjust position
+                                if (distance < minDistance && distance > 0) {
+                                    const angle = Math.atan2(dy, dx);
+                                    newX = otherNode.x + Math.cos(angle) * minDistance;
+                                    newY = otherNode.y + Math.sin(angle) * minDistance;
+                                }
+                            }
+                        }
+                        
+                        // Update node position during drag with collision prevention
+                        d.fx = newX;
+                        d.fy = newY;
                     })
                     .on("end", (event, d) => {
+                        // Clear timeout if it exists
+                        if ((d as any)._dragTimeout) {
+                            clearTimeout((d as any)._dragTimeout);
+                        }
+                        
+                        // Stop simulation
                         if (!event.active) simulation.alphaTarget(0);
-                        d.fx = null;
-                        d.fy = null;
+                        d.fx = event.x;
+                        d.fy = event.y;
+                        
+                        // Clean up tracking properties
+                        delete (d as any)._dragStartX;
+                        delete (d as any)._dragStartY;
+                        delete (d as any)._dragStartTime;
+                        delete (d as any)._dragTimeout;
                     })
             );
 
@@ -247,23 +337,31 @@ export default function D3Network({
             .attr("class", "label")
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
-            .attr("fill", isDarkMode ? "#ffffff" : "#1f2937") // Dark gray for light mode
+            .attr("fill", isDarkMode ? "#ffffff" : "#1f2937")
             .attr("font-size", "12px")
             .attr("font-weight", "bold")
             .attr("pointer-events", "none")
             .style("text-shadow", isDarkMode ? "2px 2px 4px rgba(0,0,0,0.9)" : "1px 1px 2px rgba(255,255,255,0.8)")
-            .text((d) => d.label);
+            .text((d: any) => d.label);
 
         // Store references for theme updates
         labelsRef.current = labels;
         nodesRef.current = node;
 
         // Add event listeners
-        node.on("click", (event, d) => {
+        node.on("click", (event: any, d: any) => {
             event.stopPropagation();
-            onNodeClick?.(d as D3Node);
+            const nodeData = d as D3Node;
+            
+            // Only center if no node is currently selected (transitioning from big border to small border)
+            if (!hasSelectionRef.current) {
+                centerOnNode(nodeData);
+                hasSelectionRef.current = true; // Update immediately to prevent further centering
+            }
+            
+            onNodeClick?.(nodeData);
         })
-            .on("mouseenter", (event, d) => {
+            .on("mouseenter", (event: any, d: any) => {
                 const [x, y] = d3.pointer(event, svgRef.current);
                 setTooltip({
                     node: d as D3Node,
@@ -291,14 +389,24 @@ export default function D3Network({
         return () => {
             simulation.stop();
         };
-    }, [mounted, data, width, height, containerSize.width, containerSize.height]);
+    }, [mounted, data, width, height]);
+
+    // Handle container resize without recreating the entire network
+    useEffect(() => {
+        if (!mounted || !svgRef.current) return;
+
+        const numericWidth = typeof width === "number" ? width : (containerSize.width || 800);
+        const numericHeight = typeof height === "number" ? height : (containerSize.height || 400);
+        
+        d3.select(svgRef.current).attr("width", numericWidth).attr("height", numericHeight);
+    }, [mounted, containerSize.width, containerSize.height, width, height]);
 
     // Zoom control functions
     const handleZoomIn = () => {
         if (svgRef.current && zoomRef.current) {
             d3.select(svgRef.current)
                 .transition()
-                .duration(300)
+                .duration(ANIMATION_DURATIONS.ZOOM)
                 .call(zoomRef.current.scaleBy, 1.5);
         }
     };
@@ -307,7 +415,7 @@ export default function D3Network({
         if (svgRef.current && zoomRef.current) {
             d3.select(svgRef.current)
                 .transition()
-                .duration(300)
+                .duration(ANIMATION_DURATIONS.ZOOM)
                 .call(zoomRef.current.scaleBy, 1 / 1.5);
         }
     };
@@ -316,8 +424,30 @@ export default function D3Network({
         if (svgRef.current && zoomRef.current) {
             d3.select(svgRef.current)
                 .transition()
-                .duration(500)
+                .duration(ANIMATION_DURATIONS.RESET)
                 .call(zoomRef.current.transform, d3.zoomIdentity);
+        }
+    };
+
+    const centerOnNode = (node: D3Node) => {
+        if (svgRef.current && zoomRef.current && node.x !== undefined && node.y !== undefined) {
+            const numericWidth = typeof width === "number" ? width : (containerSize.width || 800);
+            const numericHeight = typeof height === "number" ? height : (containerSize.height || 400);
+            
+            // Get current scale to maintain zoom level
+            const currentTransform = d3.zoomTransform(svgRef.current);
+            const currentScale = currentTransform.k;
+            
+            // Calculate the transform to center the node
+            // When centering from big border, use effective width for where the graph will be after side panel appears
+            const effectiveWidth = numericWidth * FORCE_CONFIG.SIDE_PANEL_WIDTH_RATIO; // Space when side panel is open
+            const x = effectiveWidth / 2 - node.x * currentScale;
+            const y = numericHeight / 2 - node.y * currentScale;
+            
+            d3.select(svgRef.current)
+                .transition()
+                .duration(ANIMATION_DURATIONS.CENTER)
+                .call(zoomRef.current.transform, d3.zoomIdentity.translate(x, y).scale(currentScale));
         }
     };
 
