@@ -15,7 +15,7 @@ class KnitAnalysisService(private val project: Project) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     /**
-     * Priority order for issue detection - higher priority issues exclude components from lower priority detection
+     * Priority order for issue detection
      */
     private enum class IssuePriority(val issueType: IssueType) {
         CRITICAL_CIRCULAR(IssueType.CIRCULAR_DEPENDENCY),
@@ -244,8 +244,26 @@ class KnitAnalysisService(private val project: Project) {
         val nodes = mutableListOf<GraphNode>()
         val edges = mutableListOf<GraphEdge>()
 
+        
+        val filteredComponents = components.filter { component ->
+            val hasDependencies = component.dependencies.isNotEmpty()
+            val hasProviders = component.providers.isNotEmpty()
+            val isRelevant = hasDependencies || hasProviders
+            
+            if (!isRelevant) {
+                logger.debug("Graph-level filtering: excluding component with 0 dependencies and 0 providers: ${component.packageName}.${component.className}")
+            }
+            
+            isRelevant
+        }
 
-        components.forEach { component ->
+        val filteredCount = components.size - filteredComponents.size
+        if (filteredCount > 0) {
+            logger.info("Filtered out $filteredCount components with no dependencies or providers. Remaining: ${filteredComponents.size} components")
+        }
+
+        
+        filteredComponents.forEach { component ->
             val nodeId = "${component.packageName}.${component.className}"
             val nodeType = when (component.type) {
                 ComponentType.COMPONENT -> NodeType.COMPONENT
@@ -288,14 +306,14 @@ class KnitAnalysisService(private val project: Project) {
             }
         }
 
-
-        components.forEach { component ->
+        
+        filteredComponents.forEach { component ->
             val consumerNodeId = "${component.packageName}.${component.className}"
 
             component.dependencies.forEach { dependency ->
 
                 val providerComponent = findProviderForType(
-                    components,
+                    filteredComponents,
                     dependency.targetType,
                     if (dependency.isNamed) dependency.namedQualifier else null
                 )
@@ -359,7 +377,7 @@ class KnitAnalysisService(private val project: Project) {
     }
 
     /**
-     * Deduplicates issues by component and type, keeping highest priority issues
+     * Deduplicates issues by component and type
      */
     private fun deduplicateIssues(issues: List<KnitIssue>): List<KnitIssue> {
         
@@ -550,7 +568,7 @@ class KnitAnalysisService(private val project: Project) {
     }
 
     /**
-     * Detect singleton violations - multiple singleton instances of the same type
+     * Detect singleton violations 
      */
     private fun detectSingletonViolations(components: List<KnitComponent>): List<KnitIssue> {
         val issues = mutableListOf<KnitIssue>()

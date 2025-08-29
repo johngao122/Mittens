@@ -51,9 +51,80 @@ class KnitSourceAnalyzer(private val project: Project) {
         }
     }
 
+    /**
+     * Determines if a class is relevant for dependency injection analysis
+     */
+    private fun isDiRelevantClass(ktClass: KtClass): Boolean {
+        val classAnnotations = ktClass.annotationEntries
+        
+        
+        val hasDiAnnotations = classAnnotations.any { annotation ->
+            val annotationName = annotation.shortName?.asString()
+            annotationName in listOf("Component", "Provides", "KnitViewModel", "Singleton")
+        }
+        
+        if (hasDiAnnotations) {
+            logger.debug("Class ${ktClass.name} has DI annotations - including")
+            return true
+        }
+        
+        
+        if (ktClass.isEnum()) {
+            logger.debug("Class ${ktClass.name} is an enum - excluding enum constants")
+            return false
+        }
+        
+        
+        val properties = ktClass.collectDescendantsOfType<KtProperty>()
+        val hasDiProperties = properties.any { property ->
+            val delegate = property.delegate
+            delegate?.text?.contains("di") == true && !isCommentedOut(property)
+        }
+        
+        if (hasDiProperties) {
+            logger.debug("Class ${ktClass.name} has 'by di' properties - including")
+            return true
+        }
+        
+        
+        val methods = ktClass.collectDescendantsOfType<KtNamedFunction>()
+        val hasProvidesMethod = methods.any { method ->
+            val providesAnnotation = method.annotationEntries.find { it.shortName?.asString() == "Provides" }
+            providesAnnotation != null && !isAnnotationCommentedOut(providesAnnotation)
+        }
+        
+        if (hasProvidesMethod) {
+            logger.debug("Class ${ktClass.name} has @Provides methods - including")
+            return true
+        }
+        
+        
+        if (ktClass.isData()) {
+            logger.debug("Class ${ktClass.name} is a pure data class with no DI features - excluding")
+            return false
+        }
+        
+        
+        if (ktClass.isInterface()) {
+            logger.debug("Class ${ktClass.name} is an interface with no @Provides methods - excluding")
+            return false
+        }
+        
+        
+        
+        logger.debug("Class ${ktClass.name} has no DI relevance - excluding")
+        return false
+    }
+
     private fun analyzeClass(ktClass: KtClass, psiFile: KtFile, filePath: String): KnitComponent? {
         val className = ktClass.name ?: return null
         val packageName = psiFile.packageFqName.asString()
+
+        
+        if (!isDiRelevantClass(ktClass)) {
+            logger.debug("Skipping non-DI relevant class: $packageName.$className")
+            return null
+        }
 
         val dependencies = mutableListOf<KnitDependency>()
         val providers = mutableListOf<KnitProvider>()
@@ -401,7 +472,7 @@ class KnitSourceAnalyzer(private val project: Project) {
         val lineEndOffset = document.getLineEndOffset(lineNumber)
         val lineText = document.getText(TextRange(lineStartOffset, lineEndOffset))
 
-        val commentIndex = lineText.indexOf("//")
+        val commentIndex = lineText.indexOf("
 
         if (commentIndex == -1) {
             return false
