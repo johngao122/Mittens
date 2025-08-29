@@ -179,12 +179,12 @@ export default function DependencyNetwork() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-400">Suggested Fix</p>
-                    <p className="text-red-400 text-sm">{
+                    <div className="text-red-400 text-sm">{
                       networkData.errorContext.issueDetails
                                   .filter(issue => selectedNode.errorInfo.errorTypes.includes(issue.type))
                                   .map((issue, index) => (
                                     <p key={index}>{issue.suggestedFix}</p>))}
-                    </p>
+                    </div>
                   </div>
                 </>
               )}
