@@ -108,15 +108,15 @@ export default function DependencyNetwork() {
 
   // Helper function to get status color for the inventory table
   const getStatusColor = (node: D3Node) => {
-    if (node.errorInfo.isPartOfCycle) return 'text-purple-400 bg-purple-400/20';
+    if (node.errorInfo.isPartOfCycle) return 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-400/20';
     if (node.errorInfo.hasErrors) {
       switch (node.errorInfo.errorSeverity) {
-        case "ERROR": return 'text-red-400 bg-red-400/20';
-        case "WARNING": return 'text-yellow-400 bg-yellow-400/20';
-        default: return 'text-green-400 bg-green-400/20';
+        case "ERROR": return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-400/20';
+        case "WARNING": return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-400/20';
+        default: return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-400/20';
       }
     }
-    return 'text-green-400 bg-green-400/20';
+    return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-400/20';
   };
 
   // Helper function to get status icon
@@ -156,36 +156,56 @@ export default function DependencyNetwork() {
 
   return (
     <div className="w-full">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex gap-4 items-center justify-end ml-auto">
+          <div className="flex items-center gap-1">
+            <div className="h-3 w-3 rounded-full bg-green-500"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Healthy</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="h-3 w-3 rounded-full bg-red-500"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Error</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Warning</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="h-3 w-3 rounded-full bg-purple-500"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Cycle</span>
+          </div>
+        </div>
+      </div>
       {/* Summary Statistics (moved to top) */}
       <h4 className="text-lg font-semibold text-black dark:text-white mb-3">Network Overview</h4>
       <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-slate-100 dark:bg-slate-700 rounded-lg p-4 text-center border border-slate-200 dark:border-slate-600">
-          <div className="text-2xl font-bold text-black dark:text-white">{networkData.nodes.length}</div>
-          <div className="text-sm text-black dark:text-gray-400">Components</div>
+        <div className="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{networkData.nodes.length}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Components</div>
         </div>
-        <div className="bg-slate-100 dark:bg-slate-700 rounded-lg p-4 text-center border border-slate-200 dark:border-slate-600">
-          <div className="text-2xl font-bold text-black dark:text-white">{networkData.links.length}</div>
-          <div className="text-sm text-black dark:text-gray-400">Dependencies</div>
+        <div className="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{networkData.links.length}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Dependencies</div>
         </div>
-        <div className="bg-slate-100 dark:bg-slate-700 rounded-lg p-4 text-center border border-slate-200 dark:border-slate-600">
-          <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+        <div className="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-red-500 dark:text-red-400">
             {networkData.nodes.filter(n => n.errorInfo.hasErrors && n.errorInfo.errorSeverity === 'ERROR').length}
           </div>
-          <div className="text-sm text-black dark:text-gray-400">Errors</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Errors</div>
         </div>
-        <div className="bg-slate-100 dark:bg-slate-700 rounded-lg p-4 text-center border border-slate-200 dark:border-slate-600">
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+        <div className="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-purple-500 dark:text-purple-400">
             {networkData.nodes.filter(n => n.errorInfo.isPartOfCycle).length}
           </div>
-          <div className="text-sm text-black dark:text-gray-400">Cycles</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Cycles</div>
         </div>
       </div>
       
       {/* Graph + Details side-by-side */}
-      <div className="mb-6 flex flex-col lg:flex-row gap-4">
+      <div className="mb-6 flex flex-col lg:flex-row gap-4 items-stretch">
         <div
-          className="flex-1 bg-slate-50 dark:bg-slate-800 rounded-lg p-0 border border-slate-200 dark:border-slate-700"
-          style={{ height: '550px' }}
+          className="flex-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-0"
+          style={{ height: selectedNode && detailsHeight ? detailsHeight : undefined, minHeight: selectedNode ? 520 : 600 }}
         >
           <D3Network 
             data={networkData}
@@ -194,45 +214,62 @@ export default function DependencyNetwork() {
             onNodeClick={handleNodeClick}
           />
         </div>
-        {/* Always render the details panel container with fixed height */}
-        <div ref={detailsRef} className="lg:w-96 bg-slate-50 dark:bg-slate-700 rounded-lg p-4 border border-slate-200 dark:border-slate-600" style={{ height: '550px' }}>
-          {selectedNode ? (
-            <>
-              <h4 className="text-lg font-semibold text-black dark:text-white mb-2">Selected Component Details</h4>
-              <div className="overflow-y-auto max-h-[450px] pr-2">
-                <div className="grid grid-cols-1 gap-4">
+        {selectedNode && (
+          <div ref={detailsRef} className="lg:w-96 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 self-start">
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Selected Component Details</h4>
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Component Name</p>
+                <p className="text-gray-900 dark:text-white font-medium">{selectedNode.label}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Package</p>
+                <p className="text-gray-900 dark:text-white font-medium">{selectedNode.packageName}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Class</p>
+                <p className="text-gray-900 dark:text-white font-medium">{selectedNode.className}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Dependencies</p>
+                <p className="text-gray-900 dark:text-white font-medium">{selectedNode.metadata.dependencyCount}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Providers</p>
+                <p className="text-gray-900 dark:text-white font-medium">{selectedNode.metadata.providerCount}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedNode)}`}>
+                  {getStatusText(selectedNode)}
+                </span>
+              </div>
+              {selectedNode.errorInfo.hasErrors && (
+                <>
                   <div>
-                    <p className="text-sm text-black dark:text-gray-400">Component Name</p>
-                    <p className="text-black dark:text-white font-medium">{selectedNode.label}</p>
+                    <p className="text-sm text-gray-400">Error Details</p>
+                    <p className="text-red-400 text-sm">{selectedNode.errorInfo.errorTypes.join(", ")}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-black dark:text-gray-400">Package</p>
-                    <p className="text-black dark:text-white font-medium">{selectedNode.packageName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-black dark:text-gray-400">Class</p>
-                    <p className="text-black dark:text-white font-medium">{selectedNode.className}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-black dark:text-gray-400">Dependencies</p>
-                    <p className="text-black dark:text-white font-medium">{selectedNode.metadata.dependencyCount}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-black dark:text-gray-400">Providers</p>
-                    <p className="text-black dark:text-white font-medium">{selectedNode.metadata.providerCount}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-black dark:text-gray-400">Status</p>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedNode)}`}>
-                      {getStatusText(selectedNode)}
-                    </span>
-                  </div>
-                  {selectedNode.errorInfo.hasErrors && (
-                    <div>
-                      <p className="text-sm text-black dark:text-gray-400">Error Details</p>
-                      <p className="text-red-600 dark:text-red-400 text-sm">{selectedNode.errorInfo.errorTypes.join(", ")}</p>
+                    <p className="text-sm text-gray-400">Suggested Fix</p>
+                    <div className="text-red-400 text-sm">{
+                      networkData.errorContext.issueDetails
+                                  .filter(issue => selectedNode.errorInfo.errorTypes.includes(issue.type))
+                                  .map((issue, index) => (
+                                    <p key={index}>{issue.suggestedFix}</p>))}
                     </div>
-                  )}
+                  </div>
+                </>
+              )}
+
+              {selectedNode.errorInfo.isPartOfCycle && (                
+                <div>
+                  <p className="text-sm text-gray-400">Suggested Fix</p>
+                  <p className="text-purple-400 text-sm">{
+                    networkData.errorContext.issueDetails
+                                .filter(issue => issue.type == "CIRCULAR_DEPENDENCY")
+                                .map(issue => issue.suggestedFix)}
+                  </p>
                 </div>
               </div>
               <button 
@@ -246,71 +283,29 @@ export default function DependencyNetwork() {
             <div className="flex items-center justify-center h-full text-black dark:text-gray-400">
               <p>Select a component to see details</p>
             </div>
-          )}
-        </div>
+            <button 
+              onClick={() => setSelectedNode(null)}
+              className="mt-4 px-3 py-1 bg-gray-200 dark:bg-slate-600 text-gray-800 dark:text-white rounded hover:bg-gray-300 dark:hover:bg-slate-500 text-sm transition-colors"
+            >
+              Clear Selection
+            </button>
+          </div>
+        )}
       </div>
       
       {/* Package Inventory Status Table */}
-      <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4 border border-slate-200 dark:border-slate-600">
-        <h4 className="text-lg font-semibold text-black dark:text-white mb-4">Component Inventory</h4>
+      <div className="bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4">
+        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Component Inventory</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-600">
-                <th 
-                  className="text-left py-3 px-2 text-black dark:text-gray-400 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors select-none"
-                  onClick={() => handleSort('label')}
-                >
-                  <div className="flex items-center gap-2">
-                    COMPONENT
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{getSortIndicator('label')}</span>
-                  </div>
-                </th>
-                <th 
-                  className="text-left py-3 px-2 text-black dark:text-gray-400 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors select-none"
-                  onClick={() => handleSort('packageName')}
-                >
-                  <div className="flex items-center gap-2">
-                    PACKAGE
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{getSortIndicator('packageName')}</span>
-                  </div>
-                </th>
-                <th 
-                  className="text-left py-3 px-2 text-black dark:text-gray-400 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors select-none"
-                  onClick={() => handleSort('status')}
-                >
-                  <div className="flex items-center gap-2">
-                    STATUS
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{getSortIndicator('status')}</span>
-                  </div>
-                </th>
-                <th 
-                  className="text-left py-3 px-2 text-black dark:text-gray-400 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors select-none"
-                  onClick={() => handleSort('dependencyCount')}
-                >
-                  <div className="flex items-center gap-2">
-                    DEPENDENCIES
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{getSortIndicator('dependencyCount')}</span>
-                  </div>
-                </th>
-                <th 
-                  className="text-left py-3 px-2 text-black dark:text-gray-400 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors select-none"
-                  onClick={() => handleSort('providerCount')}
-                >
-                  <div className="flex items-center gap-2">
-                    PROVIDERS
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{getSortIndicator('providerCount')}</span>
-                  </div>
-                </th>
-                <th 
-                  className="text-left py-3 px-2 text-black dark:text-gray-400 font-medium cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors select-none"
-                  onClick={() => handleSort('connections')}
-                >
-                  <div className="flex items-center gap-2">
-                    CONNECTIONS
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{getSortIndicator('connections')}</span>
-                  </div>
-                </th>
+              <tr className="border-b border-gray-200 dark:border-slate-600">
+                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">COMPONENT</th>
+                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">PACKAGE</th>
+                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">STATUS</th>
+                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">DEPENDENCIES</th>
+                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">PROVIDERS</th>
+                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">CONNECTIONS</th>
               </tr>
             </thead>
             <tbody>
@@ -323,26 +318,26 @@ export default function DependencyNetwork() {
                 return (
                   <tr 
                     key={node.id} 
-                    className={`border-b border-slate-200/50 dark:border-slate-600/50 hover:bg-slate-100/50 dark:hover:bg-slate-600/30 cursor-pointer transition-colors ${
-                      selectedNode?.id === node.id ? 'bg-slate-200/50 dark:bg-slate-600/50' : ''
+                    className={`border-b border-gray-100 dark:border-slate-600/50 hover:bg-gray-100 dark:hover:bg-slate-600/30 cursor-pointer transition-colors ${
+                      selectedNode?.id === node.id ? 'bg-gray-200 dark:bg-slate-600/50' : ''
                     }`}
                     onClick={() => setSelectedNode(node)}
                   >
                     <td className="py-3 px-2">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{statusIcon}</span>
-                        <span className="text-black dark:text-white font-medium">{node.label}</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{node.label}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-2 text-black dark:text-gray-300">{node.packageName}</td>
+                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.packageName}</td>
                     <td className="py-3 px-2">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${statusColor}`}>
                         {statusText}
                       </span>
                     </td>
-                    <td className="py-3 px-2 text-black dark:text-gray-300">{node.metadata.dependencyCount}</td>
-                    <td className="py-3 px-2 text-black dark:text-gray-300">{node.metadata.providerCount}</td>
-                    <td className="py-3 px-2 text-black dark:text-gray-300">{connectionCount}</td>
+                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.metadata.dependencyCount}</td>
+                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.metadata.providerCount}</td>
+                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{connectionCount}</td>
                   </tr>
                 );
               })}
