@@ -123,40 +123,6 @@ class DetailedAnalysisReportTest {
         assertContains(expandedDetails, "🔴 CRITICAL ERRORS")
     }
     
-    @Test
-    fun testHealthScoreCalculation() {
-        // Perfect health
-        val perfectSummary = AnalysisSummary(
-            totalComponents = 10,
-            totalDependencies = 15,
-            totalIssues = 0,
-            errorCount = 0,
-            warningCount = 0,
-            infoCount = 0,
-            hasCycles = false,
-            analysisTime = 1000,
-            componentsWithIssues = 0
-        )
-        
-        val perfectScore = DetailedAnalysisReport.generateHealthScore(perfectSummary)
-        assertEquals(100, perfectScore)
-        
-        // Poor health
-        val poorSummary = AnalysisSummary(
-            totalComponents = 10,
-            totalDependencies = 15,
-            totalIssues = 20,
-            errorCount = 5,
-            warningCount = 10,
-            infoCount = 5,
-            hasCycles = true,
-            analysisTime = 1000,
-            componentsWithIssues = 8
-        )
-        
-        val poorScore = DetailedAnalysisReport.generateHealthScore(poorSummary)
-        assertTrue(poorScore < 50)
-    }
     
     @Test
     fun testFormatIssueForQuickInfo() {

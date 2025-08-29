@@ -62,10 +62,7 @@ class KnitAnalysisReportDialog(
         val headerPanel = JPanel(BorderLayout())
         headerPanel.border = JBUI.Borders.empty(10)
 
-        val healthScore = DetailedAnalysisReport.generateHealthScore(summary)
-        val healthEmoji = DetailedAnalysisReport.getHealthEmoji(healthScore)
-
-        val titleLabel = JLabel("Knit Analysis Results $healthEmoji Health Score: $healthScore/100")
+        val titleLabel = JLabel("Knit Analysis Results")
         titleLabel.font = titleLabel.font.deriveFont(Font.BOLD, 16f)
 
         val summaryText = buildString {
@@ -176,19 +173,7 @@ class KnitAnalysisReportDialog(
                 }
             }
 
-            appendLine("=== Recommendations ===")
-            if (summary.hasCycles) {
-                appendLine("🔄 Break circular dependencies by introducing interfaces or mediator patterns")
-            }
-            if (summary.errorCount > 0) {
-                appendLine("🔴 Address critical errors first to ensure compilation success")
-            }
-            if (summary.warningCount > 0) {
-                appendLine("🟡 Review warnings to improve code quality and maintainability")
-            }
-            if (summary.totalIssues == 0) {
-                appendLine("✨ Excellent! Your Knit dependency injection setup is clean and well-structured.")
-            }
+            append(generateIssueSpecificRecommendations())
         }
 
         val textArea = JBTextArea(overviewText)
@@ -204,75 +189,7 @@ class KnitAnalysisReportDialog(
     private fun createIssuesTab(): JComponent {
         val panel = JPanel(BorderLayout())
 
-        val issuesText = buildString {
-            appendLine("=== Detailed Issue Analysis ===")
-            appendLine()
-
-            val groupedIssues = summary.topIssues.groupBy { it.severity }
-
-
-            groupedIssues[Severity.ERROR]?.let { errors ->
-                appendLine("🔴 CRITICAL ERRORS (${errors.size}):")
-                appendLine("=" * 50)
-                errors.forEachIndexed { index, issue ->
-                    appendLine("${index + 1}. ${issue.type}")
-                    appendLine("   Component: ${issue.componentName}")
-                    appendLine("   Problem: ${issue.message}")
-                    if (issue.suggestedFix != null) {
-                        appendLine("   💡 Suggested Fix: ${issue.suggestedFix}")
-                    }
-                    appendLine()
-                }
-                appendLine()
-            }
-
-
-            groupedIssues[Severity.WARNING]?.let { warnings ->
-                appendLine("🟡 WARNINGS (${warnings.size}):")
-                appendLine("=" * 30)
-                warnings.forEachIndexed { index, issue ->
-                    appendLine("${index + 1}. ${issue.type}")
-                    appendLine("   Component: ${issue.componentName}")
-                    appendLine("   Problem: ${issue.message}")
-                    if (issue.suggestedFix != null) {
-                        appendLine("   💡 Suggested Fix: ${issue.suggestedFix}")
-                    }
-                    appendLine()
-                }
-                appendLine()
-            }
-
-
-            groupedIssues[Severity.INFO]?.let { infos ->
-                appendLine("ℹ️ INFORMATION (${infos.size}):")
-                appendLine("=" * 25)
-                infos.forEachIndexed { index, issue ->
-                    appendLine("${index + 1}. ${issue.type}")
-                    appendLine("   Component: ${issue.componentName}")
-                    appendLine("   Info: ${issue.message}")
-                    if (issue.suggestedFix != null) {
-                        appendLine("   💡 Suggestion: ${issue.suggestedFix}")
-                    }
-                    appendLine()
-                }
-            }
-
-            appendLine("=== Quick Fix Guide ===")
-            appendLine("🔄 Circular Dependencies:")
-            appendLine("   • Extract interfaces to break direct dependencies")
-            appendLine("   • Use provider methods instead of direct injection")
-            appendLine("   • Consider architectural redesign")
-            appendLine()
-            appendLine("❓ Unresolved Dependencies:")
-            appendLine("   • Add @Provides annotation to provider classes/methods")
-            appendLine("   • Check import statements and class visibility")
-            appendLine("   • Verify @Named qualifiers match exactly")
-            appendLine()
-            appendLine("🔁 Singleton Violations:")
-            appendLine("   • Use @Singleton annotation consistently")
-            appendLine("   • Avoid multiple providers for same type")
-            appendLine("   • Consider component scope appropriateness")
-        }
+        val issuesText = generateDetailedIssueAnalysis()
 
         val textArea = JBTextArea(issuesText)
         textArea.isEditable = false
@@ -367,7 +284,7 @@ class KnitAnalysisReportDialog(
         fileChooser.dialogTitle = "Export Dependency Graph JSON"
         fileChooser.selectedFile = File("${project.name}-dependency-graph.json")
         
-        // Add JSON file filter
+        
         val jsonFilter = FileNameExtensionFilter("JSON files (*.json)", "json")
         fileChooser.fileFilter = jsonFilter
         fileChooser.addChoosableFileFilter(jsonFilter)
@@ -376,18 +293,18 @@ class KnitAnalysisReportDialog(
         if (result == JFileChooser.APPROVE_OPTION) {
             try {
                 val file = fileChooser.selectedFile
-                // Ensure the file has .json extension
+                
                 val finalFile = if (!file.name.endsWith(".json")) {
                     File(file.parentFile, "${file.nameWithoutExtension}.json")
                 } else {
                     file
                 }
                 
-                // Get the GraphExportService and convert to JSON
+                
                 val graphExportService = project.service<GraphExportService>()
                 val graphExport = graphExportService.exportToJson(analysisResult)
                 
-                // Create ObjectMapper with pretty printing
+                
                 val objectMapper = jacksonObjectMapper()
                 objectMapper.writerWithDefaultPrettyPrinter().writeValue(finalFile, graphExport)
                 
@@ -406,6 +323,172 @@ class KnitAnalysisReportDialog(
         }
     }
 
+    private fun generateIssueSpecificRecommendations(): String {
+        return buildString {
+            appendLine("=== Issue-Specific Recommendations ===")
+            
+            if (summary.topIssues.isEmpty()) {
+                appendLine("✨ Excellent! Your Knit dependency injection setup is clean and well-structured.")
+                return@buildString
+            }
+            
+            val issuesByType = summary.topIssues.groupBy { it.type }
+            
+            issuesByType.forEach { (issueType, issues) ->
+                appendLine("${getIssueTypeIcon(issueType)} ${formatIssueType(issueType)} (${issues.size} found):")
+                
+                when (issueType) {
+                    com.example.mittens.model.IssueType.CIRCULAR_DEPENDENCY -> {
+                        appendLine("   💡 Specific Actions:")
+                        issues.forEach { issue ->
+                            appendLine("   • ${issue.componentName}: ${issue.suggestedFix ?: "Break the cycle by introducing an interface or removing direct dependency"}")
+                        }
+                        appendLine("   📋 General Approach:")
+                        appendLine("   • Extract common interfaces to break direct dependencies")
+                        appendLine("   • Use dependency injection patterns instead of direct instantiation")
+                        appendLine("   • Consider using mediator pattern for complex cycles")
+                    }
+                    
+                    com.example.mittens.model.IssueType.UNRESOLVED_DEPENDENCY -> {
+                        appendLine("   💡 Specific Actions:")
+                        issues.forEach { issue ->
+                            appendLine("   • ${issue.componentName}: ${issue.suggestedFix ?: "Add provider for missing dependency"}")
+                        }
+                        appendLine("   📋 General Approach:")
+                        appendLine("   • Add @Provides methods for missing dependencies")
+                        appendLine("   • Check import statements and package visibility")
+                        appendLine("   • Verify component registration in your DI setup")
+                    }
+                    
+                    com.example.mittens.model.IssueType.SINGLETON_VIOLATION -> {
+                        appendLine("   💡 Specific Actions:")
+                        issues.forEach { issue ->
+                            appendLine("   • ${issue.componentName}: ${issue.suggestedFix ?: "Ensure consistent singleton usage"}")
+                        }
+                        appendLine("   📋 General Approach:")
+                        appendLine("   • Use @Singleton annotation consistently")
+                        appendLine("   • Remove duplicate providers for same type")
+                        appendLine("   • Review component lifecycle requirements")
+                    }
+                    
+                    com.example.mittens.model.IssueType.NAMED_QUALIFIER_MISMATCH -> {
+                        appendLine("   💡 Specific Actions:")
+                        issues.forEach { issue ->
+                            appendLine("   • ${issue.componentName}: ${issue.suggestedFix ?: "Check @Named qualifier spelling"}")
+                        }
+                        appendLine("   📋 General Approach:")
+                        appendLine("   • Verify @Named annotations match exactly between providers and consumers")
+                        appendLine("   • Use constants or enum for qualifier names to avoid typos")
+                        appendLine("   • Consider using type-safe qualifiers")
+                    }
+                    
+                    com.example.mittens.model.IssueType.AMBIGUOUS_PROVIDER -> {
+                        appendLine("   💡 Specific Actions:")
+                        issues.forEach { issue ->
+                            appendLine("   • ${issue.componentName}: ${issue.suggestedFix ?: "Add @Named qualifiers to distinguish providers"}")
+                        }
+                        appendLine("   📋 General Approach:")
+                        appendLine("   • Use @Named qualifiers to distinguish multiple providers of same type")
+                        appendLine("   • Remove unnecessary duplicate providers")
+                        appendLine("   • Consider using @Primary for default provider")
+                    }
+                    
+                    com.example.mittens.model.IssueType.MISSING_COMPONENT_ANNOTATION -> {
+                        appendLine("   💡 Specific Actions:")
+                        issues.forEach { issue ->
+                            appendLine("   • ${issue.componentName}: ${issue.suggestedFix ?: "Add appropriate component annotation"}")
+                        }
+                        appendLine("   📋 General Approach:")
+                        appendLine("   • Add @Component annotation to classes that provide dependencies")
+                        appendLine("   • Ensure all components are properly registered")
+                        appendLine("   • Review component scanning configuration")
+                    }
+                }
+                
+                appendLine()
+            }
+            
+            if (summary.errorCount > 0) {
+                appendLine("⚠️ Priority: Address ERROR-level issues first to ensure compilation success")
+            }
+            if (summary.warningCount > 0) {
+                appendLine("📈 Next: Review WARNING-level issues to improve code quality")
+            }
+        }
+    }
+    
+    private fun getIssueTypeIcon(type: com.example.mittens.model.IssueType): String {
+        return when (type) {
+            com.example.mittens.model.IssueType.CIRCULAR_DEPENDENCY -> "🔄"
+            com.example.mittens.model.IssueType.UNRESOLVED_DEPENDENCY -> "❓"
+            com.example.mittens.model.IssueType.SINGLETON_VIOLATION -> "🔁"
+            com.example.mittens.model.IssueType.NAMED_QUALIFIER_MISMATCH -> "🏷️"
+            com.example.mittens.model.IssueType.AMBIGUOUS_PROVIDER -> "🎯"
+            com.example.mittens.model.IssueType.MISSING_COMPONENT_ANNOTATION -> "📝"
+        }
+    }
+    
+    private fun generateDetailedIssueAnalysis(): String {
+        return buildString {
+            appendLine("=== Detailed Issue Solutions ===")
+            appendLine()
+            
+            if (summary.topIssues.isEmpty()) {
+                appendLine("✨ No issues found! Your dependency injection setup is clean.")
+                return@buildString
+            }
+            
+            val groupedIssues = summary.topIssues.groupBy { it.severity }
+            
+            groupedIssues[Severity.ERROR]?.let { errors ->
+                appendLine("🔴 CRITICAL ERRORS (${errors.size}) - Fix these first:")
+                appendLine("=" * 60)
+                errors.forEachIndexed { index, issue ->
+                    appendLine("${index + 1}. ${issue.type}")
+                    appendLine("   🏢 Component: ${issue.componentName}")
+                    appendLine("   ❌ Problem: ${issue.message}")
+                    if (!issue.suggestedFix.isNullOrBlank()) {
+                        appendLine("   💡 Solution: ${issue.suggestedFix}")
+                    }
+                    appendLine("   📍 Impact: This prevents compilation and must be resolved")
+                    appendLine()
+                }
+                appendLine()
+            }
+            
+            groupedIssues[Severity.WARNING]?.let { warnings ->
+                appendLine("🟡 WARNINGS (${warnings.size}) - Address after fixing errors:")
+                appendLine("=" * 50)
+                warnings.forEachIndexed { index, issue ->
+                    appendLine("${index + 1}. ${issue.type}")
+                    appendLine("   🏢 Component: ${issue.componentName}")
+                    appendLine("   ⚠️ Problem: ${issue.message}")
+                    if (!issue.suggestedFix.isNullOrBlank()) {
+                        appendLine("   💡 Solution: ${issue.suggestedFix}")
+                    }
+                    appendLine("   📍 Impact: Affects code quality and maintainability")
+                    appendLine()
+                }
+                appendLine()
+            }
+            
+            groupedIssues[Severity.INFO]?.let { infos ->
+                appendLine("ℹ️ INFORMATION (${infos.size}) - Consider these improvements:")
+                appendLine("=" * 45)
+                infos.forEachIndexed { index, issue ->
+                    appendLine("${index + 1}. ${issue.type}")
+                    appendLine("   🏢 Component: ${issue.componentName}")
+                    appendLine("   ℹ️ Info: ${issue.message}")
+                    if (!issue.suggestedFix.isNullOrBlank()) {
+                        appendLine("   💡 Suggestion: ${issue.suggestedFix}")
+                    }
+                    appendLine("   📍 Impact: Optional improvements for better practices")
+                    appendLine()
+                }
+            }
+        }
+    }
+    
     private fun formatTime(millis: Long): String {
         return when {
             millis < 1000 -> "${millis}ms"

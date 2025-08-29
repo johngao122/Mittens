@@ -3,7 +3,8 @@ package com.example.knit.demo.core.repositories
 import com.example.knit.demo.core.models.User
 import knit.Provides
 
-// @Provides(UserRepository::class) // Temporarily commented to test other scenarios
+// AMBIGUOUS_PROVIDER: Now both DatabaseUserRepository and InMemoryUserRepository provide UserRepository
+@Provides(UserRepository::class)
 class InMemoryUserRepository : UserRepository {
     
     private val users = mutableListOf<User>()

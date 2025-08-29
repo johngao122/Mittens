@@ -3,12 +3,8 @@ package com.example.mittens.model
 class DetailedAnalysisReport(val summary: AnalysisSummary) {
 
     fun generateNotificationMessage(): String {
-        val healthScore = DetailedAnalysisReport.generateHealthScore(summary)
-        val healthEmoji = DetailedAnalysisReport.getHealthEmoji(healthScore)
-
         return buildString {
-
-            appendLine("Knit Analysis Complete! ✓ $healthEmoji Health Score: $healthScore/100")
+            appendLine("Knit Analysis Complete! ✓")
             appendLine(
                 "Components: ${summary.totalComponents} • Dependencies: ${summary.totalDependencies} • Analysis: ${
                     formatTime(
@@ -71,7 +67,6 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             appendLine("=== Knit Analysis Detailed Report ===")
             appendLine("Generated: ${java.time.LocalDateTime.now()}")
             appendLine("Analysis Time: ${formatTime(summary.analysisTime)}")
-            appendLine("Health Score: ${generateHealthScore(summary)}/100 ${getHealthEmoji(generateHealthScore(summary))}")
             appendLine()
 
             appendLine("=== Project Scan Summary ===")
@@ -230,10 +225,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
 
     fun generateCompactSummary(): String {
         return buildString {
-            val healthScore = generateHealthScore(summary)
-            val healthEmoji = getHealthEmoji(healthScore)
-
-            appendLine("Knit Analysis Results $healthEmoji $healthScore/100")
+            appendLine("Knit Analysis Results")
             appendLine("${summary.totalComponents} components, ${summary.totalDependencies} dependencies")
 
             if (summary.totalIssues > 0) {
@@ -343,30 +335,5 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             return "[$severity] $typeDescription: ${issue.message}"
         }
 
-        fun generateHealthScore(summary: AnalysisSummary): Int {
-            if (summary.totalComponents == 0) return 100
-
-            val errorPenalty = summary.errorCount * 10
-            val warningPenalty = summary.warningCount * 5
-            val infoPenalty = summary.infoCount * 2
-
-            val cyclePenalty = if (summary.hasCycles) 15 else 0
-            val componentHealthRatio =
-                (summary.totalComponents - summary.componentsWithIssues) / summary.totalComponents.toDouble()
-
-            val baseScore = (componentHealthRatio * 100).toInt()
-            val penalties = errorPenalty + warningPenalty + infoPenalty + cyclePenalty
-
-            return (baseScore - penalties).coerceIn(0, 100)
-        }
-
-        fun getHealthEmoji(score: Int): String {
-            return when {
-                score >= 90 -> "🟢"
-                score >= 70 -> "🟡"
-                score >= 50 -> "🟠"
-                else -> "🔴"
-            }
-        }
     }
 }
