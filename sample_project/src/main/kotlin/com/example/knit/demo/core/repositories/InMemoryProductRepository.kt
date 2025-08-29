@@ -2,9 +2,12 @@ package com.example.knit.demo.core.repositories
 
 import com.example.knit.demo.core.models.Product
 import knit.Provides
+import knit.Named
 import java.math.BigDecimal
 
+// Named provider - correct spelling
 @Provides(ProductRepository::class)
+@Named("primary")
 class InMemoryProductRepository : ProductRepository {
     
     private val products = mutableMapOf<Long, Product>()
@@ -54,4 +57,33 @@ class InMemoryProductRepository : ProductRepository {
     override fun isInStock(productId: Long): Boolean {
         return (stock[productId] ?: 0) > 0
     }
+}
+
+// NAMED_QUALIFIER_MISMATCH: Provider with different named qualifier  
+@Provides(ProductRepository::class)
+@Named("backup")  // Provider uses "backup"
+class BackupProductRepository : ProductRepository {
+    private val backupProducts = mutableMapOf<Long, Product>()
+    
+    override fun findById(id: Long): Product? {
+        println("BackupProductRepository: Finding backup product $id")
+        return backupProducts[id]
+    }
+    
+    override fun findByCategory(category: String): List<Product> {
+        return backupProducts.values.filter { it.category == category }
+    }
+    
+    override fun save(product: Product): Product {
+        backupProducts[product.id] = product
+        return product
+    }
+    
+    override fun findAll(): List<Product> = backupProducts.values.toList()
+    
+    override fun updateStock(productId: Long, quantity: Int) {
+        println("BackupProductRepository: Stock updates not supported")
+    }
+    
+    override fun isInStock(productId: Long): Boolean = false
 }

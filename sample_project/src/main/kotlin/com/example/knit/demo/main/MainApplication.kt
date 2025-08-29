@@ -13,7 +13,6 @@ import java.time.LocalDateTime
 @Component
 class ECommerceApplication {
     
-    
     val userRepository: UserRepository by di
     val orderService: OrderService by di
     val inventoryService: InventoryService by di

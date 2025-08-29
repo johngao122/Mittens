@@ -2,6 +2,7 @@ package com.example.knit.demo.core.services
 
 import com.example.knit.demo.core.models.User
 import knit.Provides
+import knit.Singleton
 import knit.di
 
 data class AuthToken(
@@ -10,7 +11,9 @@ data class AuthToken(
     val expiresAt: Long = System.currentTimeMillis() + 3600000 // 1 hour
 )
 
+// Primary auth service (singleton)
 @Provides
+@Singleton 
 class UserAuthService {
     
     private val userService: UserService by di
@@ -62,5 +65,27 @@ class UserAuthService {
         } else {
             null
         }
+    }
+}
+
+// SINGLETON_VIOLATION: Multiple singleton providers for UserAuthService
+@Provides
+@Singleton
+class BackupUserAuthService {
+    fun authenticateBackup(email: String, password: String): AuthToken? {
+        println("BackupUserAuthService: Backup authentication for $email")
+        return AuthToken(1L, "backup_token_${System.currentTimeMillis()}")
+    }
+}
+
+// SINGLETON_VIOLATION: Non-singleton provider for same interface/type conflicts
+@Provides
+class SessionManager {
+    // This depends on a singleton but is itself not singleton - creates violation
+    private val userAuthService: UserAuthService by di
+    
+    fun getActiveSessionCount(): Int {
+        println("SessionManager: Getting active session count")
+        return 5 // Mock implementation
     }
 }

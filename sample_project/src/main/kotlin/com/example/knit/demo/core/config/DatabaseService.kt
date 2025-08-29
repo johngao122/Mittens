@@ -1,6 +1,7 @@
 package com.example.knit.demo.core.config
 
 import knit.Provides
+import knit.Singleton
 import knit.di
 
 data class ConnectionInfo(
@@ -11,6 +12,7 @@ data class ConnectionInfo(
 )
 
 @Provides
+@Singleton
 class DatabaseService {
     
     private val appConfigService: AppConfigService by di
@@ -119,5 +121,26 @@ class DatabaseService {
             println("DatabaseService: Health check failed - ${e.message}")
             false
         }
+    }
+}
+
+// SINGLETON_VIOLATION: Another singleton provider for DatabaseService type
+@Provides
+@Singleton
+class TestDatabaseService {
+    fun getTestConnection(): ConnectionInfo {
+        println("TestDatabaseService: Providing test database connection")
+        return ConnectionInfo("test_conn", true)
+    }
+}
+
+// SINGLETON_VIOLATION: Non-singleton but tries to provide same functionality
+@Provides  
+class LocalDatabaseService {
+    private val databaseService: DatabaseService by di // Depends on singleton but isn't singleton itself
+    
+    fun getLocalConnection(): ConnectionInfo {
+        println("LocalDatabaseService: Delegating to main database service")
+        return databaseService.getConnection()
     }
 }

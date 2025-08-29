@@ -9,6 +9,8 @@ import knit.di
 class UserService {
     
     private val userRepository: UserRepository by di
+    // MISSING_COMPONENT_ANNOTATION: Trying to inject ValidationService but it lacks @Provides
+    private val validationService: ValidationService by di
     
     fun findUser(userId: Long): User? {
         println("UserService: Finding user $userId")
@@ -29,6 +31,13 @@ class UserService {
         println("UserService: Registering new user $name")
         val newId = (userRepository.findAll().maxOfOrNull { it.id } ?: 0) + 1
         val user = User(newId, email, name)
+        
+        // Use validation service (which lacks @Provides annotation)
+        val validation = validationService.validateUser(user)
+        if (!validation.isValid) {
+            throw IllegalArgumentException("User validation failed: ${validation.getErrorMessage()}")
+        }
+        
         return userRepository.save(user)
     }
     
