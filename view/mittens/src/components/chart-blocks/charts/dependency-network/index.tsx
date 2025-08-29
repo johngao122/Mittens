@@ -85,8 +85,7 @@ export default function DependencyNetwork() {
   return (
     <div className="w-full">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white">Dependency Network</h3>
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center justify-end ml-auto">
           <div className="flex items-center gap-1">
             <div className="h-3 w-3 rounded-full bg-green-500"></div>
             <span className="text-sm text-gray-300">Healthy</span>

@@ -30,14 +30,20 @@ export default function D3Network({
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [tooltip, setTooltip] = useState<TooltipData | null>(null);
+    const [mounted, setMounted] = useState(false);
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(
         null
     );
-    const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+    const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 800, height: 600 });
 
-     // Track container size so we can fill 100% of the parent
+    // Wait for component to mount before using browser APIs
     useEffect(() => {
-        if (!containerRef.current) return;
+        setMounted(true);
+    }, []);
+
+    // Track container size so we can fill 100% of the parent
+    useEffect(() => {
+        if (!mounted || !containerRef.current) return;
         const el = containerRef.current;
         const ro = new ResizeObserver(entries => {
             for (const entry of entries) {
@@ -47,10 +53,8 @@ export default function D3Network({
         });
         ro.observe(el);
         return () => ro.disconnect();
-    }, []);
-
-    useEffect(() => {
-        if (!svgRef.current || !data.nodes.length) return;
+    }, [mounted]);    useEffect(() => {
+        if (!mounted || !svgRef.current || !data.nodes.length) return;
 
         const numericWidth = typeof width === "number" ? width : (containerSize.width || 800);
         const numericHeight = typeof height === "number" ? height : (containerSize.height || 600);
@@ -243,7 +247,7 @@ export default function D3Network({
         return () => {
             simulation.stop();
         };
-    }, [data, width, height, containerSize.width, containerSize.height]);
+    }, [mounted, data, width, height, containerSize.width, containerSize.height]);
 
     // Zoom control functions
     const handleZoomIn = () => {
