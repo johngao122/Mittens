@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { getD3NetworkData } from './chart-utils';
 import D3Network from './d3-network';
 import { D3Node } from '../../../../lib/knit-data-parser';
@@ -80,6 +80,79 @@ export default function DependencyNetwork() {
         (typeof link.source === 'string' ? link.source : link.source.id) === nodeId ||
         (typeof link.target === 'string' ? link.target : link.target.id) === nodeId
     ).length;
+  };
+
+  // Build provider→providee tree
+  const providerTree = useMemo(() => {
+    // Map nodeId → node
+    const nodeMap = Object.fromEntries(networkData.nodes.map(n => [n.id, n]));
+    // Map providerId → array of providee nodes
+    const providesLinks = networkData.links.filter(l => l.type === "PROVIDES");
+    const providerToProvidees: Record<string, D3Node[]> = {};
+    providesLinks.forEach(link => {
+      const providerId = typeof link.source === "string" ? link.source : link.source.id;
+      const provideeId = typeof link.target === "string" ? link.target : link.target.id;
+      if (!providerToProvidees[providerId]) providerToProvidees[providerId] = [];
+      if (nodeMap[provideeId]) providerToProvidees[providerId].push(nodeMap[provideeId]);
+    });
+    // Find root nodes (nodes that are not providees)
+    const provideeIds = new Set(providesLinks.map(l => (typeof l.target === "string" ? l.target : l.target.id)));
+    const roots = networkData.nodes.filter(n => !provideeIds.has(n.id));
+    return { nodeMap, providerToProvidees, roots };
+  }, [networkData]);
+
+  // Track expanded providers
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const toggleExpand = (id: string) => setExpanded(e => ({ ...e, [id]: !e[id] }));
+
+  // Recursive render function for tree rows
+  const renderTreeRows: any = (node: D3Node, depth = 0) => {
+    const connectionCount = getConnectionCount(node.id);
+    const statusIcon = getStatusIcon(node);
+    const statusColor = getStatusColor(node);
+    const statusText = getStatusText(node);
+    const hasProvidees = providerTree.providerToProvidees[node.id]?.length > 0;
+    return (
+      <React.Fragment key={node.id}>
+        <tr
+          key={node.id}
+          className={`border-b border-gray-100 dark:border-slate-600/50 hover:bg-gray-100 dark:hover:bg-slate-600/30 cursor-pointer transition-colors ${
+            selectedNode?.id === node.id ? 'bg-gray-200 dark:bg-slate-600/50' : ''
+          }`}
+          onClick={() => setSelectedNode(node)}
+        >
+          <td className="py-3 px-2">
+            <div className="flex items-center gap-2" style={{ marginLeft: depth * 18 }}>
+              {hasProvidees && (
+                <button
+                  onClick={e => { e.stopPropagation(); toggleExpand(node.id); }}
+                  className="mr-1 text-xs"
+                  aria-label={expanded[node.id] ? "Collapse" : "Expand"}
+                >
+                  {expanded[node.id] ? "▼" : "▶"}
+                </button>
+              )}
+              <span className="font-medium">{statusIcon}</span>
+              <span className="text-gray-900 dark:text-white font-medium">{node.label}</span>
+            </div>
+          </td>
+          <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.packageName}</td>
+          <td className="py-3 px-2">
+            <span className={`px-2 py-1 rounded text-xs font-medium ${statusColor}`}>
+              {statusText}
+            </span>
+          </td>
+          <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.metadata.dependencyCount}</td>
+          <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.metadata.providerCount}</td>
+          <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{connectionCount}</td>
+        </tr>
+        {hasProvidees && expanded[node.id] &&
+          providerTree.providerToProvidees[node.id].map(child =>
+            renderTreeRows(child, depth + 1)
+          )
+        }
+      </React.Fragment>
+    );
   };
 
   return (
@@ -207,7 +280,8 @@ export default function DependencyNetwork() {
               </tr>
             </thead>
             <tbody>
-              {networkData.nodes.map((node) => {
+              {providerTree.roots.map(node => renderTreeRows(node))}
+              {/* {networkData.nodes.map((node) => {
                 const connectionCount = getConnectionCount(node.id);
                 const statusIcon = getStatusIcon(node);
                 const statusColor = getStatusColor(node);
@@ -238,7 +312,7 @@ export default function DependencyNetwork() {
                     <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{connectionCount}</td>
                   </tr>
                 );
-              })}
+              })} */}
             </tbody>
           </table>
         </div>
