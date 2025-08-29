@@ -1,18 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getD3NetworkData } from './chart-utils';
 import D3Network from './d3-network';
 import { D3Node } from '../../../../lib/knit-data-parser';
 
 export default function DependencyNetwork() {
   const [selectedNode, setSelectedNode] = useState<D3Node | null>(null);
+  const detailsRef = useRef<HTMLDivElement | null>(null);
+  const [detailsHeight, setDetailsHeight] = useState<number | null>(null);
 
   const networkData = getD3NetworkData();
 
   const handleNodeClick = (node: D3Node) => {
     setSelectedNode(node);
   };
+
+  // Keep the graph container height matched to the details panel when visible
+  useEffect(() => {
+    if (!detailsRef.current) {
+      setDetailsHeight(null);
+      return;
+    }
+    const el = detailsRef.current;
+    const update = () => setDetailsHeight(Math.max(0, Math.floor(el.getBoundingClientRect().height)));
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener('resize', update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, [selectedNode]);
 
   // Helper function to get status color for the inventory table
   const getStatusColor = (node: D3Node) => {
@@ -85,63 +105,89 @@ export default function DependencyNetwork() {
           </div>
         </div>
       </div>
-      
-      {/* D3.js Network Visualization */}
-      <div className="mb-6 bg-slate-800 rounded-lg p-4">
-        <D3Network 
-          data={networkData}
-          width={800}
-          height={400}
-          onNodeClick={handleNodeClick}
-        />
-      </div>
-
-      {/* Selected Node Details */}
-      {selectedNode && (
-        <div className="mb-6 bg-slate-700 rounded-lg p-4">
-          <h4 className="text-lg font-semibold text-white mb-2">Selected Component Details</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-400">Component Name</p>
-              <p className="text-white font-medium">{selectedNode.label}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Package</p>
-              <p className="text-white font-medium">{selectedNode.packageName}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Class</p>
-              <p className="text-white font-medium">{selectedNode.className}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Dependencies</p>
-              <p className="text-white font-medium">{selectedNode.metadata.dependencyCount}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Providers</p>
-              <p className="text-white font-medium">{selectedNode.metadata.providerCount}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Status</p>
-              <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedNode)}`}>
-                {getStatusText(selectedNode)}
-              </span>
-            </div>
-            {selectedNode.errorInfo.hasErrors && (
-              <div className="md:col-span-2">
-                <p className="text-sm text-gray-400">Error Details</p>
-                <p className="text-red-400 text-sm">{selectedNode.errorInfo.errorTypes.join(", ")}</p>
-              </div>
-            )}
-          </div>
-          <button 
-            onClick={() => setSelectedNode(null)}
-            className="mt-4 px-3 py-1 bg-slate-600 text-white rounded hover:bg-slate-500 text-sm transition-colors"
-          >
-            Clear Selection
-          </button>
+      {/* Summary Statistics (moved to top) */}
+      <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-slate-700 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-white">{networkData.nodes.length}</div>
+          <div className="text-sm text-gray-400">Components</div>
         </div>
-      )}
+        <div className="bg-slate-700 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-white">{networkData.links.length}</div>
+          <div className="text-sm text-gray-400">Dependencies</div>
+        </div>
+        <div className="bg-slate-700 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-red-400">
+            {networkData.nodes.filter(n => n.errorInfo.hasErrors && n.errorInfo.errorSeverity === 'ERROR').length}
+          </div>
+          <div className="text-sm text-gray-400">Errors</div>
+        </div>
+        <div className="bg-slate-700 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-purple-400">
+            {networkData.nodes.filter(n => n.errorInfo.isPartOfCycle).length}
+          </div>
+          <div className="text-sm text-gray-400">Cycles</div>
+        </div>
+      </div>
+      
+      {/* Graph + Details side-by-side */}
+      <div className="mb-6 flex flex-col lg:flex-row gap-4 items-start">
+        <div
+          className="flex-1 bg-slate-800 rounded-lg p-0"
+          style={{ height: selectedNode && detailsHeight ? detailsHeight : undefined, minHeight: selectedNode ? 520 : 600 }}
+        >
+          <D3Network 
+            data={networkData}
+            width="100%"
+            height="100%"
+            onNodeClick={handleNodeClick}
+          />
+        </div>
+        {selectedNode && (
+          <div ref={detailsRef} className="lg:w-96 bg-slate-700 rounded-lg p-4 self-start">
+            <h4 className="text-lg font-semibold text-white mb-2">Selected Component Details</h4>
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <p className="text-sm text-gray-400">Component Name</p>
+                <p className="text-white font-medium">{selectedNode.label}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Package</p>
+                <p className="text-white font-medium">{selectedNode.packageName}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Class</p>
+                <p className="text-white font-medium">{selectedNode.className}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Dependencies</p>
+                <p className="text-white font-medium">{selectedNode.metadata.dependencyCount}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Providers</p>
+                <p className="text-white font-medium">{selectedNode.metadata.providerCount}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Status</p>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedNode)}`}>
+                  {getStatusText(selectedNode)}
+                </span>
+              </div>
+              {selectedNode.errorInfo.hasErrors && (
+                <div>
+                  <p className="text-sm text-gray-400">Error Details</p>
+                  <p className="text-red-400 text-sm">{selectedNode.errorInfo.errorTypes.join(", ")}</p>
+                </div>
+              )}
+            </div>
+            <button 
+              onClick={() => setSelectedNode(null)}
+              className="mt-4 px-3 py-1 bg-slate-600 text-white rounded hover:bg-slate-500 text-sm transition-colors"
+            >
+              Clear Selection
+            </button>
+          </div>
+        )}
+      </div>
       
       {/* Package Inventory Status Table */}
       <div className="bg-slate-700 rounded-lg p-4">
@@ -196,29 +242,7 @@ export default function DependencyNetwork() {
         </div>
       </div>
       
-      {/* Summary Statistics */}
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-slate-700 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-white">{networkData.nodes.length}</div>
-          <div className="text-sm text-gray-400">Components</div>
-        </div>
-        <div className="bg-slate-700 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-white">{networkData.links.length}</div>
-          <div className="text-sm text-gray-400">Dependencies</div>
-        </div>
-        <div className="bg-slate-700 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-red-400">
-            {networkData.nodes.filter(n => n.errorInfo.hasErrors && n.errorInfo.errorSeverity === 'ERROR').length}
-          </div>
-          <div className="text-sm text-gray-400">Errors</div>
-        </div>
-        <div className="bg-slate-700 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-purple-400">
-            {networkData.nodes.filter(n => n.errorInfo.isPartOfCycle).length}
-          </div>
-          <div className="text-sm text-gray-400">Cycles</div>
-        </div>
-      </div>
+      
     </div>
   );
 }

@@ -3,9 +3,12 @@
 import { Edit2, Check, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { siteConfig } from "@/config/site";
 
 export default function User() {
-  const [projectName, setProjectName] = useState("Project Name");
+  const defaultProjectName =
+    process.env.NEXT_PUBLIC_PROJECT_NAME || siteConfig.title || "Project";
+  const [projectName, setProjectName] = useState(defaultProjectName);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(projectName);
 

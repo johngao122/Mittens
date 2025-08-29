@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Gabarito } from "next/font/google";
-import { SideNav } from "@/components/nav";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import "@/style/globals.css";
@@ -18,13 +17,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const projectName = process.env.NEXT_PUBLIC_PROJECT_NAME || siteConfig.title;
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn("bg-background font-sans", gabarito.variable)}>
         <Providers>
-          <div className="flex min-h-[100dvh]">
-            <SideNav />
-            <div className="flex-grow overflow-auto">{children}</div>
+          <div className="min-h-[100dvh] flex flex-col">
+            <header className="sticky top-0 z-30 border-b border-border bg-slate-900/70 backdrop-blur supports-[backdrop-filter]:bg-slate-900/50">
+              <div className="mx-auto w-full max-w-8xl px-6 tablet:px-10 desktop:px-14 py-4">
+                <h1 className="text-xl font-semibold text-white">{projectName}</h1>
+              </div>
+            </header>
+            <main className="flex-1 overflow-auto">
+              {children}
+            </main>
           </div>
         </Providers>
       </body>

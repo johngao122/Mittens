@@ -6,8 +6,8 @@ import { NetworkData, D3Node, D3Link } from "../../../../lib/knit-data-parser";
 
 interface D3NetworkProps {
     data: NetworkData;
-    width?: number;
-    height?: number;
+    width?: number | string;
+    height?: number | string;
     onNodeClick?: (node: D3Node) => void;
     onLinkClick?: (link: D3Link) => void;
     showZoomControls?: boolean;
@@ -28,16 +28,36 @@ export default function D3Network({
     showZoomControls = true,
 }: D3NetworkProps) {
     const svgRef = useRef<SVGSVGElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [tooltip, setTooltip] = useState<TooltipData | null>(null);
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(
         null
     );
+    const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+
+     // Track container size so we can fill 100% of the parent
+    useEffect(() => {
+        if (!containerRef.current) return;
+        const el = containerRef.current;
+        const ro = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const { width: w, height: h } = entry.contentRect;
+                setContainerSize({ width: Math.max(1, Math.floor(w)), height: Math.max(1, Math.floor(h)) });
+            }
+        });
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, []);
 
     useEffect(() => {
         if (!svgRef.current || !data.nodes.length) return;
 
+        const numericWidth = typeof width === "number" ? width : (containerSize.width || 800);
+        const numericHeight = typeof height === "number" ? height : (containerSize.height || 600);
+
         const svg = d3.select(svgRef.current);
         svg.selectAll("*").remove();
+        svg.attr("width", numericWidth).attr("height", numericHeight);
 
         // Create main container group
         const container = svg.append("g").attr("class", "network-container");
@@ -87,14 +107,14 @@ export default function D3Network({
 
         const clusters: Record<string, { x: number; y: number }> = {};
         const clusterTags = Array.from(new Set(nodes.map(n => n.packageName)));
-        const clusterRadius = Math.min(width, height) / 3;
+        const clusterRadius = Math.min(numericWidth, numericHeight) / 3;
 
         // Assign cluster centers in a circle
         clusterTags.forEach((tag, i) => {
             const angle = (2 * Math.PI * i) / clusterTags.length;
             clusters[tag] = {
-                x: width / 2 + clusterRadius * Math.cos(angle),
-                y: height / 2 + clusterRadius * Math.sin(angle),
+                x: numericWidth / 2 + clusterRadius * Math.cos(angle),
+                y: numericHeight / 2 + clusterRadius * Math.sin(angle),
             };
         });
 
@@ -119,7 +139,7 @@ export default function D3Network({
                     .strength(0.5)
             )
             .force("charge", d3.forceManyBody().strength(-100))
-            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("center", d3.forceCenter(numericWidth / 2, numericHeight / 2))
             .force(
                 "collision",
                 d3.forceCollide().radius((d) => getNodeSize(d as D3Node) + 5)
@@ -223,7 +243,7 @@ export default function D3Network({
         return () => {
             simulation.stop();
         };
-    }, [data, width, height]);
+    }, [data, width, height, containerSize.width, containerSize.height]);
 
     // Zoom control functions
     const handleZoomIn = () => {
@@ -254,7 +274,7 @@ export default function D3Network({
     };
 
     return (
-        <div className="relative">
+        <div ref={containerRef} className="relative w-full h-full">
             {showZoomControls && (
                 <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
                     <button
@@ -282,9 +302,7 @@ export default function D3Network({
             )}
             <svg
                 ref={svgRef}
-                width={width}
-                height={height}
-                className="border rounded-lg bg-slate-800"
+                className="border rounded-lg bg-slate-800 w-full h-full"
             />
 
             {tooltip && (
@@ -294,7 +312,7 @@ export default function D3Network({
                         left: tooltip.x + 10,
                         top: tooltip.y - 10,
                         transform:
-                            tooltip.x > width - 200
+                            tooltip.x > containerSize.width - 200
                                 ? "translateX(-100%)"
                                 : "none",
                     }}
