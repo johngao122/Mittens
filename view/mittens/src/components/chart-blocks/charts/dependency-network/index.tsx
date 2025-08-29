@@ -130,7 +130,7 @@ export default function DependencyNetwork() {
       </div>
       
       {/* Graph + Details side-by-side */}
-      <div className="mb-6 flex flex-col lg:flex-row gap-4 items-start">
+      <div className="mb-6 flex flex-col lg:flex-row gap-4 items-stretch">
         <div
           className="flex-1 bg-slate-800 rounded-lg p-0"
           style={{ height: selectedNode && detailsHeight ? detailsHeight : undefined, minHeight: selectedNode ? 520 : 600 }}
@@ -173,9 +173,31 @@ export default function DependencyNetwork() {
                 </span>
               </div>
               {selectedNode.errorInfo.hasErrors && (
+                <>
+                  <div>
+                    <p className="text-sm text-gray-400">Error Details</p>
+                    <p className="text-red-400 text-sm">{selectedNode.errorInfo.errorTypes.join(", ")}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Suggested Fix</p>
+                    <p className="text-red-400 text-sm">{
+                      networkData.errorContext.issueDetails
+                                  .filter(issue => selectedNode.errorInfo.errorTypes.includes(issue.type))
+                                  .map((issue, index) => (
+                                    <p key={index}>{issue.suggestedFix}</p>))}
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {selectedNode.errorInfo.isPartOfCycle && (                
                 <div>
-                  <p className="text-sm text-gray-400">Error Details</p>
-                  <p className="text-red-400 text-sm">{selectedNode.errorInfo.errorTypes.join(", ")}</p>
+                  <p className="text-sm text-gray-400">Suggested Fix</p>
+                  <p className="text-purple-400 text-sm">{
+                    networkData.errorContext.issueDetails
+                                .filter(issue => issue.type == "CIRCULAR_DEPENDENCY")
+                                .map(issue => issue.suggestedFix)}
+                  </p>
                 </div>
               )}
             </div>
