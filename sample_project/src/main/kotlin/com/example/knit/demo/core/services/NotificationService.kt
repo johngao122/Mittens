@@ -8,13 +8,13 @@ interface NotificationChannel {
 
 class EmailChannel : NotificationChannel {
     override fun send(message: String, recipient: String) {
-        println("📧 Email sent to $recipient: $message")
+        println("Email sent to $recipient: $message")
     }
 }
 
 class SmsChannel : NotificationChannel {
     override fun send(message: String, recipient: String) {
-        println("📱 SMS sent to $recipient: $message")
+        println("SMS sent to $recipient: $message")
     }
 }
 

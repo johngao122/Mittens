@@ -18,12 +18,12 @@ class InventoryService {
     private val reservedStock = mutableMapOf<Long, MutableMap<Long, Int>>()
     
     fun checkStock(productIds: List<Long>): Boolean {
-        println("📊 InventoryService: Checking stock for products $productIds")
+        println("InventoryService: Checking stock for products $productIds")
         return productIds.all { (inventory[it] ?: 0) > 0 }
     }
     
     fun reserveStock(productQuantities: Map<Long, Int>) {
-        println("🔒 InventoryService: Reserving stock $productQuantities")
+        println("InventoryService: Reserving stock $productQuantities")
         productQuantities.forEach { (productId, quantity) ->
             val available = inventory[productId] ?: 0
             if (available >= quantity) {
@@ -33,7 +33,7 @@ class InventoryService {
     }
     
     fun releaseReservedStock(orderId: Long) {
-        println("🔓 InventoryService: Releasing reserved stock for order $orderId")
+        println("InventoryService: Releasing reserved stock for order $orderId")
         
         reservedStock[orderId]?.let { reserved ->
             reserved.forEach { (productId, quantity) ->

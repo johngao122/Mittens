@@ -11,7 +11,7 @@ class OrderService {
     private val inventoryService: InventoryService by di
     
     fun processOrder(order: Order): Order {
-        println("📦 OrderService: Processing order ${order.id}")
+        println("OrderService: Processing order ${order.id}")
         
         val hasStock = inventoryService.checkStock(order.items.map { it.productId })
         
@@ -24,7 +24,7 @@ class OrderService {
     }
     
     fun cancelOrder(orderId: Long) {
-        println("❌ OrderService: Cancelling order $orderId")
+        println("OrderService: Cancelling order $orderId")
         inventoryService.releaseReservedStock(orderId)
     }
 }
