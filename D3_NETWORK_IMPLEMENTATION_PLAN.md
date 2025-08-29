@@ -283,14 +283,7 @@ const zoom = d3
 -   Maintain backward compatibility during transition
 -   Update interfaces and type definitions
 
-#### Task 3.2: Replace VChart with D3.js Network Component
 
-**Files to update**:
-
--   `view/mittens/src/components/chart-blocks/charts/dependency-network/index.tsx`
--   Remove VChart dependencies
--   Update import statements
--   Preserve existing UI controls and layout
 
 #### Task 3.3: Testing and Integration
 
