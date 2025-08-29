@@ -266,12 +266,6 @@ data class ExportMetadata(
     @JsonProperty("totalDependencies")
     val totalDependencies: Int,
     
-    @JsonProperty("componentsWithErrors")
-    val componentsWithErrors: Int,
-    
-    @JsonProperty("healthyComponents")
-    val healthyComponents: Int,
-    
     @JsonProperty("knitVersion")
     val knitVersion: String?,
     

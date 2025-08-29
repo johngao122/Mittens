@@ -62,10 +62,7 @@ class KnitAnalysisReportDialog(
         val headerPanel = JPanel(BorderLayout())
         headerPanel.border = JBUI.Borders.empty(10)
 
-        val healthScore = DetailedAnalysisReport.generateHealthScore(summary)
-        val healthEmoji = DetailedAnalysisReport.getHealthEmoji(healthScore)
-
-        val titleLabel = JLabel("Knit Analysis Results $healthEmoji Health Score: $healthScore/100")
+        val titleLabel = JLabel("Knit Analysis Results")
         titleLabel.font = titleLabel.font.deriveFont(Font.BOLD, 16f)
 
         val summaryText = buildString {

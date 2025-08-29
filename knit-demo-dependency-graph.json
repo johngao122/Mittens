@@ -716,8 +716,6 @@
     "analysisTimestamp" : 1756479812357,
     "totalComponents" : 6,
     "totalDependencies" : 12,
-    "componentsWithErrors" : 3,
-    "healthyComponents" : 3,
     "knitVersion" : null,
     "pluginVersion" : "1.0.0"
   }

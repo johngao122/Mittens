@@ -29,8 +29,6 @@ class GraphExportService(private val project: Project) {
             analysisTimestamp = analysisResult.timestamp,
             totalComponents = analysisResult.components.size,
             totalDependencies = analysisResult.dependencyGraph.edges.size,
-            componentsWithErrors = countComponentsWithErrors(analysisResult.components, analysisResult.issues),
-            healthyComponents = analysisResult.components.size - countComponentsWithErrors(analysisResult.components, analysisResult.issues),
             knitVersion = analysisResult.knitVersion,
             pluginVersion = analysisResult.metadata.pluginVersion
         )
@@ -252,11 +250,6 @@ class GraphExportService(private val project: Project) {
         }?.severity
     }
     
-    private fun countComponentsWithErrors(components: List<KnitComponent>, issues: List<KnitIssue>): Int {
-        return components.count { component ->
-            issues.any { it.componentName.contains(component.className) }
-        }
-    }
     
     private fun isNamedDependency(edge: GraphEdge): Boolean {
         return edge.type == EdgeType.NAMED || edge.label?.contains("@Named") == true
