@@ -113,13 +113,14 @@ export default function DependencyNetwork() {
       <div className="mb-6 flex flex-col lg:flex-row gap-4 items-stretch">
         <div
           className="flex-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-0"
-          style={{ height: selectedNode && detailsHeight ? detailsHeight : undefined, minHeight: selectedNode ? 520 : 600 }}
+          style={{ height: selectedNode && detailsHeight ? detailsHeight : 600, minHeight: 600 }}
         >
           <D3Network 
             data={networkData}
             width="100%"
             height="100%"
             onNodeClick={handleNodeClick}
+            selectedNode={selectedNode}
           />
         </div>
         {selectedNode && (
@@ -195,15 +196,15 @@ export default function DependencyNetwork() {
       <div className="bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4">
         <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Component Inventory</h4>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm table-auto">
             <thead>
               <tr className="border-b border-gray-200 dark:border-slate-600">
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">COMPONENT</th>
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">PACKAGE</th>
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">STATUS</th>
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">DEPENDENCIES</th>
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">PROVIDERS</th>
-                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium">CONNECTIONS</th>
+                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium w-auto">COMPONENT</th>
+                <th className="text-left py-3 px-2 text-gray-700 dark:text-gray-400 font-medium w-auto">PACKAGE</th>
+                <th className="text-center py-3 px-2 text-gray-700 dark:text-gray-400 font-medium w-20">STATUS</th>
+                <th className="text-right py-3 px-2 text-gray-700 dark:text-gray-400 font-medium w-16">DEPENDENCIES</th>
+                <th className="text-right py-3 px-2 text-gray-700 dark:text-gray-400 font-medium w-16">PROVIDERS</th>
+                <th className="text-right py-3 px-2 text-gray-700 dark:text-gray-400 font-medium w-16">CONNECTIONS</th>
               </tr>
             </thead>
             <tbody>
@@ -228,14 +229,14 @@ export default function DependencyNetwork() {
                       </div>
                     </td>
                     <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.packageName}</td>
-                    <td className="py-3 px-2">
+                    <td className="py-3 px-2 text-center">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${statusColor}`}>
                         {statusText}
                       </span>
                     </td>
-                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.metadata.dependencyCount}</td>
-                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{node.metadata.providerCount}</td>
-                    <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{connectionCount}</td>
+                    <td className="py-3 px-2 text-right text-gray-700 dark:text-gray-300">{node.metadata.dependencyCount}</td>
+                    <td className="py-3 px-2 text-right text-gray-700 dark:text-gray-300">{node.metadata.providerCount}</td>
+                    <td className="py-3 px-2 text-right text-gray-700 dark:text-gray-300">{connectionCount}</td>
                   </tr>
                 );
               })}
