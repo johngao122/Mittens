@@ -223,12 +223,12 @@ export default function D3Network({
             .enter()
             .append("line")
             .attr("class", "link")
-            .attr("stroke", (d) =>
+            .attr("stroke", (d: any) =>
                 d.errorInfo.hasErrors ? "#ef4444" : "#64748b"
             )
             .attr("stroke-width", 2)
             .attr("stroke-opacity", 0.6)
-            .attr("stroke-dasharray", (d) =>
+            .attr("stroke-dasharray", (d: any) =>
                 d.errorInfo.hasErrors ? "5,5" : "0"
             );
 
@@ -239,10 +239,10 @@ export default function D3Network({
             .enter()
             .append("circle")
             .attr("class", "node")
-            .attr("r", (d) => getNodeSize(d as D3Node))
-            .attr("fill", (d) => getNodeColor(d as D3Node))
-            .attr("stroke", isDarkMode ? "#ffffff" : "#363f4fff")
-            .attr("stroke-width", 1)
+            .attr("r", (d: any) => getNodeSize(d as D3Node))
+            .attr("fill", (d: any) => getNodeColor(d as D3Node))
+            .attr("stroke", isDarkMode ? "#ffffff" : "#374151")
+            .attr("stroke-width", 2.5)
             .style("cursor", "pointer")
             .call(
                 d3
@@ -342,14 +342,14 @@ export default function D3Network({
             .attr("font-weight", "bold")
             .attr("pointer-events", "none")
             .style("text-shadow", isDarkMode ? "2px 2px 4px rgba(0,0,0,0.9)" : "1px 1px 2px rgba(255,255,255,0.8)")
-            .text((d) => d.label);
+            .text((d: any) => d.label);
 
         // Store references for theme updates
         labelsRef.current = labels;
         nodesRef.current = node;
 
         // Add event listeners
-        node.on("click", (event, d) => {
+        node.on("click", (event: any, d: any) => {
             event.stopPropagation();
             const nodeData = d as D3Node;
             
@@ -361,7 +361,7 @@ export default function D3Network({
             
             onNodeClick?.(nodeData);
         })
-            .on("mouseenter", (event, d) => {
+            .on("mouseenter", (event: any, d: any) => {
                 const [x, y] = d3.pointer(event, svgRef.current);
                 setTooltip({
                     node: d as D3Node,
