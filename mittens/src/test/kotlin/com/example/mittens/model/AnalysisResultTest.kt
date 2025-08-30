@@ -37,7 +37,7 @@ class AnalysisResultTest {
         
         assertEquals("Components should match", 1, result.components.size)
         assertEquals("Issues should match", 1, result.issues.size)
-        assertEquals("Project name should match", "TestProject", result.projectName)
+        assertEquals("Project Name should match", "TestProject", result.projectName)
         assertNotNull("Timestamp should be set", result.timestamp)
     }
     
