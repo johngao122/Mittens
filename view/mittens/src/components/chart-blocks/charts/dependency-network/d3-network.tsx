@@ -279,6 +279,7 @@ export default function D3Network({
                         );
                         const anchorStrength = 0.8 * strengthMultiplier;
 
+
                         if (distance > 5) {
                             node.vx += dx * anchorStrength * alpha;
                             node.vy += dy * anchorStrength * alpha;
@@ -388,6 +389,7 @@ export default function D3Network({
                             targetManuallyPositioned
                         ) {
                             return baseStrength * 0.7;
+
                         }
 
                         return baseStrength;
@@ -456,15 +458,19 @@ export default function D3Network({
                 d3
                     .drag<SVGRectElement, D3Node>()
                     .on("start", (event, d) => {
+
                         delete (d as any)._clickLocked;
+
 
                         delete (d as any)._manuallyPositioned;
                         delete (d as any)._targetX;
                         delete (d as any)._targetY;
                         delete (d as any)._dragPositioned;
 
+
                         if (!event.active)
                             simulation.alphaTarget(0.5).restart();
+
 
                         d.fx = d.x;
                         d.fy = d.y;
@@ -473,14 +479,17 @@ export default function D3Network({
                         d.fx = event.x;
                         d.fy = event.y;
 
+
                         simulation.alphaTarget(0.5);
                     })
                     .on("end", (event, d) => {
+
                         (d as any)._manuallyPositioned = true;
                         (d as any)._targetX = event.x;
                         (d as any)._targetY = event.y;
                         (d as any)._dragPositioned = true;
                         (d as any)._positionedAt = Date.now();
+
 
                         d.x = event.x;
                         d.y = event.y;
@@ -488,6 +497,7 @@ export default function D3Network({
                         d.fy = null;
 
                         simulation.alphaTarget(0.02);
+
                     })
             );
 

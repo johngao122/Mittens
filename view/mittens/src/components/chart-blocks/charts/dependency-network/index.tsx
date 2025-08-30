@@ -495,6 +495,7 @@ export default function DependencyNetwork() {
                         </button>
                     </div>
                 </div>
+
             </div>
 
             {/* ===== SUMMARY STATISTICS SECTION ===== */}
