@@ -86,45 +86,13 @@ class KnitAnalysisService(private val project: Project) {
 
                 logger.info("Knit project detected - Version: ${detectionResult.knitVersion ?: "Unknown"}")
 
-                progressIndicator?.text = "Analyzing source code..."
-                progressIndicator?.fraction = 0.3
-
-
+                // Get components with analysis metadata
+                progressIndicator?.text = "Analyzing project components..."
+                progressIndicator?.fraction = 0.2
+                
                 val sourceAnalyzer = project.service<KnitSourceAnalyzer>()
-                val sourceComponents = sourceAnalyzer.analyzeProject()
-
-                logger.info("Found ${sourceComponents.size} components in source analysis")
-
-                progressIndicator?.text = "Compiling project with Knit transformations..."
-                progressIndicator?.fraction = 0.5
-
-
-                val gradleRunner = project.service<GradleTaskRunner>()
-                val compilationResult = gradleRunner.executeKnitCompilation(progressIndicator)
-
-                if (!compilationResult.success) {
-                    logger.warn("Gradle compilation had issues: ${compilationResult.errorOutput}")
-                }
-
-                progressIndicator?.text = "Analyzing bytecode..."
-                progressIndicator?.fraction = 0.7
-
-
-                val bytecodeAnalyzer = project.service<KnitBytecodeAnalyzer>()
-                val classesDir = gradleRunner.getExpectedClassesDirectory()
-
-                val bytecodeResult = if (classesDir != null) {
-                    bytecodeAnalyzer.analyzeBytecode(classesDir)
-                } else {
-                    logger.warn("Classes directory not found, skipping bytecode analysis")
-                    KnitBytecodeAnalyzer.BytecodeAnalysisResult(emptyList(), emptyList(), emptyList())
-                }
-
-                progressIndicator?.text = "Building dependency graph..."
-                progressIndicator?.fraction = 0.9
-
-
-                val mergedComponents = mergeAnalysisResults(sourceComponents, bytecodeResult.detectedComponents)
+                val analysisWithMetadata = sourceAnalyzer.analyzeProjectWithMetadata()
+                val mergedComponents = analysisWithMetadata.components
                 val dependencyGraph = buildDependencyGraph(mergedComponents)
                 val detectedIssues = detectIssues(mergedComponents, dependencyGraph)
 
@@ -162,10 +130,12 @@ class KnitAnalysisService(private val project: Project) {
                     knitVersion = detectionResult.knitVersion,
                     metadata = AnalysisMetadata(
                         analysisTimeMs = totalAnalysisTime,
-                        bytecodeFilesScanned = bytecodeResult.detectedComponents.size,
-                        sourceFilesScanned = sourceComponents.size,
+                        bytecodeFilesScanned = 0, // Not used in current analysis approach
+                        sourceFilesScanned = mergedComponents.size,
                         validationTimeMs = validationTime,
-                        deduplicationTimeMs = 0 
+                        deduplicationTimeMs = 0,
+                        analysisMethod = analysisWithMetadata.analysisMethod,
+                        knitJsonPath = analysisWithMetadata.knitJsonPath
                     ),
                     accuracyMetrics = accuracyMetrics
                 )
@@ -207,38 +177,48 @@ class KnitAnalysisService(private val project: Project) {
         logger.info("Analysis cache cleared")
     }
 
-    private fun mergeAnalysisResults(
-        sourceComponents: List<KnitComponent>,
-        bytecodeComponents: List<KnitComponent>
-    ): List<KnitComponent> {
-
-        val mergedMap = mutableMapOf<String, KnitComponent>()
-
-
-        sourceComponents.forEach { component ->
-            val key = "${component.packageName}.${component.className}"
-            mergedMap[key] = component
+    /**
+     * Analyze project using knit.json - much faster than ASM analysis
+     */
+    private suspend fun analyzeWithKnitJson(progressIndicator: ProgressIndicator?): List<KnitComponent> {
+        progressIndicator?.text = "Loading dependency tree from knit.json..."
+        progressIndicator?.fraction = 0.3
+        
+        val sourceAnalyzer = project.service<KnitSourceAnalyzer>()
+        val components = sourceAnalyzer.analyzeFromKnitJson()
+        
+        if (components.isEmpty()) {
+            logger.warn("No components found in knit.json, falling back to source analysis")
+            progressIndicator?.text = "Analyzing source code as fallback..."
+            progressIndicator?.fraction = 0.5
+            return sourceAnalyzer.analyzeFromSource()
         }
-
-
-        bytecodeComponents.forEach { bytecodeComponent ->
-            val key = "${bytecodeComponent.packageName}.${bytecodeComponent.className}"
-            val existingComponent = mergedMap[key]
-
-            if (existingComponent != null) {
-
-                mergedMap[key] = existingComponent.copy(
-                    dependencies = (existingComponent.dependencies + bytecodeComponent.dependencies).distinctBy { it.propertyName },
-                    providers = (existingComponent.providers + bytecodeComponent.providers).distinctBy { it.methodName }
-                )
-            } else {
-
-                mergedMap[key] = bytecodeComponent
-            }
-        }
-
-        return mergedMap.values.toList()
+        
+        progressIndicator?.text = "Dependency analysis complete"
+        progressIndicator?.fraction = 0.9
+        
+        logger.info("knit.json analysis complete: ${components.size} components loaded")
+        return components
     }
+
+    /**
+     * Source-only analysis fallback when knit.json is not available
+     */
+    private suspend fun analyzeWithSourceOnly(progressIndicator: ProgressIndicator?): List<KnitComponent> {
+        progressIndicator?.text = "Analyzing source code..."
+        progressIndicator?.fraction = 0.3
+
+        val sourceAnalyzer = project.service<KnitSourceAnalyzer>()
+        val sourceComponents = sourceAnalyzer.analyzeFromSource()
+
+        logger.info("Found ${sourceComponents.size} components in source analysis")
+        
+        progressIndicator?.text = "Source analysis complete"
+        progressIndicator?.fraction = 0.9
+
+        return sourceComponents
+    }
+
 
     internal fun buildDependencyGraph(components: List<KnitComponent>): DependencyGraph {
         val nodes = mutableListOf<GraphNode>()
@@ -697,7 +677,6 @@ class KnitAnalysisService(private val project: Project) {
 data class AnalysisMetrics(
     val totalAnalysisTime: Long,
     val sourceAnalysisTime: Long,
-    val bytecodeAnalysisTime: Long,
     val issueDetectionTime: Long,
     val graphConstructionTime: Long,
     val componentsProcessed: Int,
@@ -711,7 +690,6 @@ data class AnalysisMetrics(
             |Analysis Performance Summary:
             |  Total Time: ${totalAnalysisTime}ms
             |  Source Analysis: ${sourceAnalysisTime}ms
-            |  Bytecode Analysis: ${bytecodeAnalysisTime}ms
             |  Issue Detection: ${issueDetectionTime}ms
             |  Graph Construction: ${graphConstructionTime}ms
             |  Components: $componentsProcessed

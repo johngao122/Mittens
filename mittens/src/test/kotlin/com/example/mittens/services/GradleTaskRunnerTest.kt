@@ -30,15 +30,6 @@ class GradleTaskRunnerTest : BasePlatformTestCase() {
         assertTrue("Result should be boolean", hasKnitPlugin is Boolean)
     }
     
-    @Test
-    fun testGetExpectedClassesDirectory() {
-        val classesDir = gradleTaskRunner.getExpectedClassesDirectory()
-        
-        // Should not throw an exception
-        if (classesDir != null) {
-            assertTrue("Classes directory should be a File", classesDir is File)
-        }
-    }
     
     @Test
     fun testGradleExecutionResultCreation() {
@@ -57,16 +48,14 @@ class GradleTaskRunnerTest : BasePlatformTestCase() {
     }
     
     @Test
-    fun testGradleExecutionWithoutActualExecution() {
-        // Test the data structures and basic functionality without running actual Gradle
+    fun testGradlePluginDetectionWithoutActualExecution() {
+        // Test the plugin detection functionality without running actual Gradle
         // This avoids long-running tests while still validating core functionality
         
         // Verify that service methods exist and can be called
         val hasKnit = gradleTaskRunner.hasKnitGradlePlugin()
-        val classesDir = gradleTaskRunner.getExpectedClassesDirectory()
         
-        // These should not throw exceptions
+        // This should not throw exceptions
         assertNotNull("hasKnitGradlePlugin should return a value", hasKnit)
-        // classesDir can be null for empty projects, which is valid
     }
 }

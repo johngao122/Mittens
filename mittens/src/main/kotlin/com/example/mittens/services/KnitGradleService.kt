@@ -46,9 +46,21 @@ class KnitGradleService(private val project: Project) {
         val buildFile = findKnitGradleConfiguration() ?: return null
         val content = String(buildFile.contentsToByteArray())
 
+        // Support multiple Gradle notations and both group ids
+        // Examples matched:
+        // implementation("io.github.tiktok.knit:knit:0.1.5")
+        // implementation("io.github.tiktok:knit:0.1.5")
+        // implementation 'io.github.tiktok.knit:knit:0.1.5'
+        // implementation 'io.github.tiktok:knit:0.1.5'
+        // id("io.github.tiktok.knit.plugin") version "0.1.5"
+        // id 'io.github.tiktok.knit.plugin' version '0.1.5'
         val versionRegexes = listOf(
-            Regex("""io\\.github\\.tiktok\\.knit:knit[^:]*:([^"']+)"""),
-            Regex("""io\\.github\\.tiktok:knit[^:]*:([^"']+)""")
+            // Dependency coordinates
+            Regex("""io\.github\.tiktok\.knit:knit:([^\s"'()]+)"""),
+            Regex("""io\.github\.tiktok:knit:([^\s"'()]+)"""),
+            // Plugin block with version keyword
+            Regex("""id\("io\.github\.tiktok\.knit\.plugin"\)\s+version\s+"([^"]+)"""),
+            Regex("""id\s*'io\.github\.tiktok\.knit\.plugin'\s+version\s*'([^']+)'""")
         )
         val version = versionRegexes.asSequence()
             .mapNotNull { it.find(content)?.groupValues?.get(1) }
@@ -102,5 +114,107 @@ class KnitGradleService(private val project: Project) {
                     false
                 }
             }
+    }
+
+    /**
+     * Get the knit.json file location in the build directory
+     * @return File object pointing to knit.json, or null if build directory doesn't exist
+     */
+    fun getKnitJsonFile(): File? {
+        val buildDir = getBuildDir() ?: return null
+        return File(buildDir, "knit.json")
+    }
+
+    /**
+     * Check if the knit.json file exists and is readable
+     * @return true if knit.json exists and can be read
+     */
+    fun hasKnitJsonFile(): Boolean {
+        val knitJsonFile = getKnitJsonFile() ?: return false
+        return knitJsonFile.exists() && knitJsonFile.canRead() && knitJsonFile.length() > 0
+    }
+
+    /**
+     * Get the absolute path to the knit.json file
+     * @return Absolute path string, or null if build directory doesn't exist
+     */
+    fun getKnitJsonPath(): String? {
+        return getKnitJsonFile()?.absolutePath
+    }
+
+    /**
+     * Get the last modified timestamp of the knit.json file
+     * @return Last modified timestamp in milliseconds, or null if file doesn't exist
+     */
+    fun getKnitJsonLastModified(): Long? {
+        val knitJsonFile = getKnitJsonFile()
+        return if (knitJsonFile?.exists() == true) {
+            knitJsonFile.lastModified()
+        } else null
+    }
+
+    /**
+     * Check if the knit.json file is newer than the last analysis
+     * @param lastAnalysisTime Timestamp of the last analysis in milliseconds
+     * @return true if knit.json has been modified since the last analysis
+     */
+    fun isKnitJsonNewer(lastAnalysisTime: Long): Boolean {
+        val knitJsonModified = getKnitJsonLastModified() ?: return false
+        return knitJsonModified > lastAnalysisTime
+    }
+
+    /**
+     * Get information about the knit.json file for debugging/logging
+     * @return Human-readable string with file information
+     */
+    fun getKnitJsonInfo(): String {
+        val knitJsonFile = getKnitJsonFile()
+        return if (knitJsonFile == null) {
+            "knit.json: Build directory not found"
+        } else if (!knitJsonFile.exists()) {
+            "knit.json: File not found at ${knitJsonFile.absolutePath}"
+        } else if (!knitJsonFile.canRead()) {
+            "knit.json: File not readable at ${knitJsonFile.absolutePath}"
+        } else {
+            val sizeKB = knitJsonFile.length() / 1024
+            val lastModified = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                .format(java.util.Date(knitJsonFile.lastModified()))
+            "knit.json: ${sizeKB}KB, modified $lastModified"
+        }
+    }
+
+    /**
+     * Check if the project has the knit plugin configured to generate knit.json
+     * This checks for the dependencyTreeOutputPath configuration
+     * @return true if the project is configured to generate knit.json
+     */
+    fun hasKnitJsonConfiguration(): Boolean {
+        val buildFile = findKnitGradleConfiguration() ?: return false
+        val content = String(buildFile.contentsToByteArray())
+        
+        return content.contains("dependencyTreeOutputPath") ||
+               content.contains("build/knit.json") ||
+               content.contains("KnitExtension")
+    }
+
+    /**
+     * Get the configured output path for knit.json from the build file
+     * @return The configured output path, or "build/knit.json" as default
+     */
+    fun getConfiguredKnitJsonOutputPath(): String {
+        val buildFile = findKnitGradleConfiguration()
+        if (buildFile != null) {
+            val content = String(buildFile.contentsToByteArray())
+            
+            // Look for dependencyTreeOutputPath.set("path") pattern
+            val pathRegex = Regex("""dependencyTreeOutputPath\.set\s*\(\s*"([^"]+)"\s*\)""")
+            val match = pathRegex.find(content)
+            if (match != null) {
+                return match.groupValues[1]
+            }
+        }
+        
+        // Default path used by Knit plugin
+        return "build/knit.json"
     }
 }

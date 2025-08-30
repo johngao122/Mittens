@@ -10,7 +10,6 @@ interface CacheProvider {
     fun clear(key: String)
 }
 
-// Provider without named qualifier
 @Provides(CacheProvider::class)
 class RedisCacheProvider : CacheProvider {
     private val cache = mutableMapOf<String, String>()
@@ -27,25 +26,6 @@ class RedisCacheProvider : CacheProvider {
     
     override fun clear(key: String) {
         cache.remove(key)
-    }
-}
-
-// Alternative provider - commented out to avoid ambiguous provider error
-// @Provides(CacheProvider::class) 
-class MemoryCacheProvider : CacheProvider {
-    private val memoryCache = mutableMapOf<String, String>()
-    
-    override fun get(key: String): String? {
-        println("MemoryCacheProvider: Getting $key from memory")
-        return memoryCache[key]
-    }
-    
-    override fun set(key: String, value: String) {
-        memoryCache[key] = value
-    }
-    
-    override fun clear(key: String) {
-        memoryCache.remove(key)
     }
 }
 

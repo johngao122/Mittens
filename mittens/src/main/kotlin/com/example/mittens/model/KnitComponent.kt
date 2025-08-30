@@ -75,3 +75,9 @@ enum class ValidationStatus {
     VALIDATED_FALSE_POSITIVE,
     VALIDATION_FAILED
 }
+
+enum class AnalysisMethod {
+    SOURCE_ANALYSIS,
+    KNIT_JSON_ANALYSIS,
+    HYBRID_ANALYSIS
+}

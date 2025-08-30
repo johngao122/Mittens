@@ -1,6 +1,7 @@
 package com.example.knit.demo.core.services
 
 import knit.Provides
+import knit.di
 import java.time.LocalDateTime
 
 data class AuditEvent(
@@ -12,10 +13,12 @@ data class AuditEvent(
     val timestamp: LocalDateTime = LocalDateTime.now()
 )
 
-// MISSING_COMPONENT_ANNOTATION: Missing @Provides annotation
-// @Provides  // Commented out to demonstrate missing annotation error
+// MISSING_COMPONENT_ANNOTATION: Missing @Provides annotation - NOW FIXED
+@Provides
 class AuditService {
     
+    // CIRCULAR_DEPENDENCY: AuditService depends on UserService which depends on AuditService
+    private val userService: UserService by di
     private val auditLog = mutableListOf<AuditEvent>()
     
     fun logEvent(userId: Long?, action: String, resource: String, details: Map<String, Any> = emptyMap()) {
@@ -30,7 +33,13 @@ class AuditService {
     }
     
     fun logUserAction(userId: Long, action: String, details: Map<String, Any> = emptyMap()) {
-        logEvent(userId, action, "user", details + ("targetUserId" to userId))
+        // CIRCULAR_DEPENDENCY: Validate that user exists before logging (uses UserService)
+        val user = userService.findUser(userId)
+        if (user != null) {
+            logEvent(userId, action, "user", details + ("targetUserId" to userId) + ("userName" to user.name))
+        } else {
+            logEvent(userId, "failed_$action", "user", details + ("targetUserId" to userId) + ("error" to "user_not_found"))
+        }
     }
     
     fun logOrderAction(userId: Long?, orderId: Long, action: String, details: Map<String, Any> = emptyMap()) {

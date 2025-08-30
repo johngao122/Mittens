@@ -9,9 +9,21 @@ import knit.di
 class OrderService {
     
     private val inventoryService: InventoryService by di
+    // CIRCULAR_DEPENDENCY: OrderService depends on ProductService which will depend on OrderService
+    private val productService: ProductService by di
     
     fun processOrder(order: Order): Order {
         println("OrderService: Processing order ${order.id}")
+        
+        // CIRCULAR_DEPENDENCY: Validate all products exist before processing (uses ProductService)
+        val allProductsExist = order.items.all { item ->
+            productService.findProduct(item.productId) != null
+        }
+        
+        if (!allProductsExist) {
+            println("OrderService: Order ${order.id} cancelled - invalid products")
+            return order.copy(status = OrderStatus.CANCELLED)
+        }
         
         val hasStock = inventoryService.checkStock(order.items.map { it.productId })
         

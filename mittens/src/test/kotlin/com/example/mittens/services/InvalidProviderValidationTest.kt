@@ -21,14 +21,14 @@ class InvalidProviderValidationTest : BasePlatformTestCase() {
     }
     
     @Test
-    fun testInvalidProviderValidation() {
-        // InMemoryUserRepository provider should be filtered out
-        // This addresses the false "ambiguous provider" error mentioned in the investigation
+    fun testUserRepositoryUnresolvedDependencyFix() {
+        // Test the real bug fix: InMemoryUserRepository provider should be available for dependency resolution
+        // This addresses the false UNRESOLVED_DEPENDENCY errors mentioned in the investigation
         
-        // Create the DatabaseUserRepository (active provider)
-        val databaseProvider = KnitProvider(
-            methodName = "provideDatabaseUserRepository",
-            returnType = "DatabaseUserRepository", 
+        // Create the InMemoryUserRepository provider (the only provider)
+        val inMemoryProvider = KnitProvider(
+            methodName = "provideInMemoryUserRepository", 
+            returnType = "InMemoryUserRepository",
             providesType = "UserRepository",  // Provides UserRepository interface
             isNamed = false,
             namedQualifier = null,
@@ -38,54 +38,48 @@ class InvalidProviderValidationTest : BasePlatformTestCase() {
             isIntoMap = false
         )
         
-        val databaseComponent = KnitComponent(
-            className = "DatabaseUserRepository",
-            packageName = "com.example.knit.demo.core.repositories",
-            type = ComponentType.PROVIDER,
-            dependencies = emptyList(),
-            providers = listOf(databaseProvider),
-            sourceFile = "DatabaseUserRepository.kt"
-        )
-        
-        // Create the InMemoryUserRepository (should be filtered as suspicious)
-        val inMemoryProvider = KnitProvider(
-            methodName = "provideInMemoryUserRepository",
-            returnType = "InMemoryUserRepository",
-            providesType = "UserRepository",  // Also provides UserRepository - this should be filtered!
-            isNamed = false,
-            namedQualifier = null,
-            isSingleton = false,
-            isIntoSet = false,
-            isIntoList = false,
-            isIntoMap = false
-        )
-        
         val inMemoryComponent = KnitComponent(
-            className = "InMemoryUserRepository", // This matches our suspicious pattern check
-            packageName = "com.example.knit.demo.core.repositories",
+            className = "InMemoryUserRepository",
+            packageName = "com.example.knit.demo.core.repositories", 
             type = ComponentType.PROVIDER,
             dependencies = emptyList(),
             providers = listOf(inMemoryProvider),
             sourceFile = "InMemoryUserRepository.kt"
         )
         
-        val components = listOf(databaseComponent, inMemoryComponent)
+        // Create UserService that depends on UserRepository
+        val userServiceDependency = KnitDependency(
+            propertyName = "userRepository",
+            targetType = "UserRepository", 
+            isNamed = false,
+            namedQualifier = null,
+            isFactory = false,
+            isLoadable = false,
+            isSingleton = false
+        )
         
-        // Before Phase 2: This would detect 2 providers for UserRepository -> ambiguous
-        // After Phase 2: InMemoryUserRepository should be filtered out -> no ambiguity
-        val issues = advancedDetector.detectEnhancedAmbiguousProviders(components)
+        val userServiceComponent = KnitComponent(
+            className = "UserService",
+            packageName = "com.example.knit.demo.core.services",
+            type = ComponentType.CONSUMER,
+            dependencies = listOf(userServiceDependency),
+            providers = emptyList(),
+            sourceFile = "UserService.kt"
+        )
         
-        // Validate Phase 2 fix
-        val ambiguousProviderIssues = issues.filter { it.type == IssueType.AMBIGUOUS_PROVIDER }
-        val userRepositoryIssues = ambiguousProviderIssues.filter { 
-            it.message.contains("UserRepository") 
+        val components = listOf(inMemoryComponent, userServiceComponent)
+        
+        // Test unresolved dependency detection - should NOT find any issues now
+        val issues = advancedDetector.detectImprovedUnresolvedDependencies(components)
+        val userRepositoryIssues = issues.filter { 
+            it.message.contains("UserRepository") && it.type == IssueType.UNRESOLVED_DEPENDENCY 
         }
         
-        assertTrue("Should not detect ambiguous UserRepository providers (InMemoryUserRepository filtered)", 
+        assertTrue("Should NOT detect unresolved UserRepository dependency (provider is available)", 
                   userRepositoryIssues.isEmpty())
         
-        println("✅ InMemoryUserRepository correctly filtered - no false ambiguous provider error")
-        println("✅ UserRepository ambiguity false positive eliminated")
+        println("✅ InMemoryUserRepository provider is correctly available for dependency resolution")
+        println("✅ UserRepository UNRESOLVED_DEPENDENCY false positive fixed")
     }
     
     @Test

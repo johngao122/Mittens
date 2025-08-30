@@ -25,9 +25,9 @@ import javax.swing.filechooser.FileNameExtensionFilter
 class KnitAnalysisReportDialog(
     private val project: Project,
     private val report: DetailedAnalysisReport,
-    private val summary: AnalysisSummary,
     private val analysisResult: AnalysisResult
 ) : DialogWrapper(project) {
+    private val summary: AnalysisSummary = report.summary
 
     private lateinit var reportTextArea: JBTextArea
     private lateinit var exportButton: JButton
@@ -159,9 +159,9 @@ class KnitAnalysisReportDialog(
                 }
                 appendLine()
 
-                if (summary.topIssues.isNotEmpty()) {
-                    appendLine("=== Top Priority Issues ===")
-                    summary.topIssues.forEachIndexed { index, issue ->
+                if (summary.allIssues.isNotEmpty()) {
+                    appendLine("=== All Issues ===")
+                    summary.allIssues.forEachIndexed { index, issue ->
                         appendLine("${index + 1}. [${issue.severity}] ${issue.type}")
                         appendLine("   Component: ${issue.componentName}")
                         appendLine("   Issue: ${issue.message}")
@@ -327,12 +327,12 @@ class KnitAnalysisReportDialog(
         return buildString {
             appendLine("=== Issue-Specific Recommendations ===")
             
-            if (summary.topIssues.isEmpty()) {
+            if (summary.allIssues.isEmpty()) {
                 appendLine("✨ Excellent! Your Knit dependency injection setup is clean and well-structured.")
                 return@buildString
             }
             
-            val issuesByType = summary.topIssues.groupBy { it.type }
+            val issuesByType = summary.allIssues.groupBy { it.type }
             
             issuesByType.forEach { (issueType, issues) ->
                 appendLine("${getIssueTypeIcon(issueType)} ${formatIssueType(issueType)} (${issues.size} found):")
@@ -433,12 +433,12 @@ class KnitAnalysisReportDialog(
             appendLine("=== Detailed Issue Solutions ===")
             appendLine()
             
-            if (summary.topIssues.isEmpty()) {
+            if (summary.allIssues.isEmpty()) {
                 appendLine("✨ No issues found! Your dependency injection setup is clean.")
                 return@buildString
             }
             
-            val groupedIssues = summary.topIssues.groupBy { it.severity }
+            val groupedIssues = summary.allIssues.groupBy { it.severity }
             
             groupedIssues[Severity.ERROR]?.let { errors ->
                 appendLine("🔴 CRITICAL ERRORS (${errors.size}) - Fix these first:")

@@ -45,6 +45,7 @@ data class AnalysisResult(
             analysisTime = metadata.analysisTimeMs,
             issueBreakdown = issuesByType.mapValues { it.value.size },
             topIssues = getTopIssues(),
+            allIssues = getAllIssues(),
             filesScanned = metadata.sourceFilesScanned + metadata.bytecodeFilesScanned,
             componentsWithIssues = components.count { component ->
                 issues.any { it.componentName.contains(component.className) }
@@ -75,6 +76,28 @@ data class AnalysisResult(
                 )
             }
     }
+
+    private fun getAllIssues(): List<IssuePreview> {
+        return issues
+            .sortedWith(compareBy<KnitIssue> {
+                when (it.severity) {
+                    Severity.ERROR -> 0
+                    Severity.WARNING -> 1
+                    Severity.INFO -> 2
+                }
+            }.thenBy { it.type })
+            .map { issue ->
+                IssuePreview(
+                    type = issue.type,
+                    severity = issue.severity,
+                    message = issue.message,
+                    componentName = issue.componentName,
+                    suggestedFix = issue.suggestedFix,
+                    confidenceScore = issue.confidenceScore,
+                    validationStatus = issue.validationStatus
+                )
+            }
+    }
 }
 
 data class AnalysisMetadata(
@@ -83,7 +106,9 @@ data class AnalysisMetadata(
     val sourceFilesScanned: Int = 0,
     val pluginVersion: String = "1.0.0",
     val validationTimeMs: Long = 0,
-    val deduplicationTimeMs: Long = 0
+    val deduplicationTimeMs: Long = 0,
+    val analysisMethod: AnalysisMethod = AnalysisMethod.SOURCE_ANALYSIS,
+    val knitJsonPath: String? = null
 )
 
 data class AnalysisSummary(
@@ -97,6 +122,7 @@ data class AnalysisSummary(
     val analysisTime: Long,
     val issueBreakdown: Map<IssueType, Int> = emptyMap(),
     val topIssues: List<IssuePreview> = emptyList(),
+    val allIssues: List<IssuePreview> = emptyList(),
     val filesScanned: Int = 0,
     val componentsWithIssues: Int = 0,
     val accuracyMetrics: AccuracyMetrics = AccuracyMetrics()

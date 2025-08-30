@@ -6,7 +6,6 @@ import knit.di
 @Provides
 class InventoryService {
     
-    private val orderService: OrderService by di
     
     private val inventory = mutableMapOf<Long, Int>(
         1L to 10,
@@ -42,7 +41,7 @@ class InventoryService {
             reservedStock.remove(orderId)
         }
         
-        orderService.cancelOrder(orderId)
+        // Note: OrderService cancellation handled elsewhere to avoid circular dependency
     }
     
     fun getAvailableStock(productId: Long): Int {

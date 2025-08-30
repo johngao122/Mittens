@@ -92,13 +92,12 @@ class RunKnitAnalysisAction :
                     indicator.fraction = 1.0
 
 
-                    val summary = result.getSummary()
-                    val report = DetailedAnalysisReport(summary)
+                    val report = DetailedAnalysisReport(result)
                     val message = report.generateNotificationMessage()
 
                     val notificationType = when {
-                        summary.errorCount > 0 -> NotificationType.ERROR
-                        summary.warningCount > 0 -> NotificationType.WARNING
+                        report.summary.errorCount > 0 -> NotificationType.ERROR
+                        report.summary.warningCount > 0 -> NotificationType.WARNING
                         else -> NotificationType.INFORMATION
                     }
 
@@ -136,7 +135,7 @@ class RunKnitAnalysisAction :
 
 
         notification.addAction(NotificationAction.createSimple("View Full Report") {
-            val dialog = KnitAnalysisReportDialog(project, report, report.summary, analysisResult)
+            val dialog = KnitAnalysisReportDialog(project, report, analysisResult)
             dialog.show()
         })
 

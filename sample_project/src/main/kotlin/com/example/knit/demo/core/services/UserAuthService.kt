@@ -68,9 +68,9 @@ class UserAuthService {
     }
 }
 
-// SINGLETON_VIOLATION: Multiple singleton providers for UserAuthService
-@Provides
-@Singleton
+// SINGLETON_VIOLATION: Multiple singleton providers for UserAuthService - REMOVED @Provides to clean up DI graph
+// @Provides
+// @Singleton
 class BackupUserAuthService {
     fun authenticateBackup(email: String, password: String): AuthToken? {
         println("BackupUserAuthService: Backup authentication for $email")

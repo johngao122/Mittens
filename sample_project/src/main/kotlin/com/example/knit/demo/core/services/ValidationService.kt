@@ -3,10 +3,11 @@ package com.example.knit.demo.core.services
 import com.example.knit.demo.core.models.User
 import com.example.knit.demo.core.models.Order
 import com.example.knit.demo.core.models.Product
+import knit.Provides
 
-// MISSING_COMPONENT_ANNOTATION: This class is missing @Provides annotation
+// MISSING_COMPONENT_ANNOTATION: This class is missing @Provides annotation - NOW FIXED
 // but is still referenced by other services
-// @Provides  // Missing annotation!
+@Provides
 class ValidationService {
     
     fun validateUser(user: User): ValidationResult {
@@ -69,7 +70,8 @@ data class ValidationResult(
     }
 }
 
-// MISSING_COMPONENT_ANNOTATION: Another class missing annotation but referenced elsewhere
+// MISSING_COMPONENT_ANNOTATION: Another class missing annotation but referenced elsewhere - NOW FIXED
+@Provides
 class EmailValidationService {
     fun validateEmail(email: String): Boolean {
         return email.contains("@") && email.contains(".")

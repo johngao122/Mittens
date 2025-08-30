@@ -1,6 +1,7 @@
 package com.example.mittens.model
 
-class DetailedAnalysisReport(val summary: AnalysisSummary) {
+class DetailedAnalysisReport(val analysisResult: AnalysisResult) {
+    val summary: AnalysisSummary = analysisResult.getSummary()
 
     fun generateNotificationMessage(): String {
         return buildString {
@@ -70,6 +71,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
             appendLine()
 
             appendLine("=== Project Scan Summary ===")
+            appendLine("Analysis Method: ${getAnalysisMethodDisplay()}")
             appendLine("Files Scanned: ${summary.filesScanned}")
             appendLine("Components Found: ${summary.totalComponents}")
             appendLine("Dependencies Analyzed: ${summary.totalDependencies}")
@@ -91,7 +93,7 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
                 appendLine()
 
                 appendLine("=== Detailed Issue Analysis ===")
-                val groupedIssues = summary.topIssues.groupBy { it.severity }
+                val groupedIssues = summary.allIssues.groupBy { it.severity }
 
 
                 groupedIssues[Severity.ERROR]?.let { errors ->
@@ -334,6 +336,16 @@ class DetailedAnalysisReport(val summary: AnalysisSummary) {
 
             return "[$severity] $typeDescription: ${issue.message}"
         }
+    }
 
+    private fun getAnalysisMethodDisplay(): String {
+        return when (analysisResult.metadata.analysisMethod) {
+            AnalysisMethod.KNIT_JSON_ANALYSIS -> {
+                val path = analysisResult.metadata.knitJsonPath?.let { " ($it)" } ?: ""
+                "🚀 knit.json Analysis$path"
+            }
+            AnalysisMethod.SOURCE_ANALYSIS -> "📝 Source Code Analysis"
+            AnalysisMethod.HYBRID_ANALYSIS -> "🔄 Hybrid Analysis (Source + knit.json)"
+        }
     }
 }

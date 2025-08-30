@@ -22,7 +22,78 @@ class KnitSourceAnalyzer(private val project: Project) {
 
     private val logger = thisLogger()
 
+    /**
+     * Main entry point for project analysis - automatically chooses between knit.json and source analysis
+     */
     fun analyzeProject(): List<KnitComponent> {
+        val result = analyzeProjectWithMetadata()
+        return result.components
+    }
+    
+    /**
+     * Analyze project and return components with analysis metadata
+     */
+    fun analyzeProjectWithMetadata(): AnalysisWithMetadata {
+        val gradleService = project.getService(KnitGradleService::class.java)
+        
+        // Try knit.json analysis first if available
+        if (gradleService.hasKnitJsonFile()) {
+            logger.info("knit.json detected - using JSON-based analysis")
+            val jsonComponents = analyzeFromKnitJson()
+            if (jsonComponents.isNotEmpty()) {
+                // Enhance with source file information for better UI support
+                val enhancedComponents = enhanceWithSourceInfo(jsonComponents)
+                return AnalysisWithMetadata(
+                    components = enhancedComponents,
+                    analysisMethod = AnalysisMethod.KNIT_JSON_ANALYSIS,
+                    knitJsonPath = gradleService.getKnitJsonPath()
+                )
+            }
+        }
+        
+        // Fall back to traditional source analysis
+        logger.info("Using traditional source-based analysis")
+        val sourceComponents = analyzeFromSource()
+        return AnalysisWithMetadata(
+            components = sourceComponents,
+            analysisMethod = AnalysisMethod.SOURCE_ANALYSIS,
+            knitJsonPath = null
+        )
+    }
+
+    /**
+     * Analyze project using knit.json dependency tree
+     */
+    fun analyzeFromKnitJson(): List<KnitComponent> {
+        val gradleService = project.getService(KnitGradleService::class.java)
+        val knitJsonFile = gradleService.getKnitJsonFile()
+        
+        if (knitJsonFile == null || !knitJsonFile.exists()) {
+            logger.warn("knit.json file not found or inaccessible")
+            return emptyList()
+        }
+        
+        logger.info("Analyzing project from knit.json: ${gradleService.getKnitJsonInfo()}")
+        
+        val parser = project.getService(KnitJsonParser::class.java)
+        val parseResult = parser.parseKnitJson(knitJsonFile)
+        
+        if (!parseResult.success) {
+            logger.error("Failed to parse knit.json: ${parseResult.errorMessage}")
+            return emptyList()
+        }
+        
+        val knitJsonRoot = parseResult.components ?: return emptyList()
+        val components = parser.convertToKnitComponents(knitJsonRoot)
+        
+        logger.info("Successfully analyzed ${components.size} components from knit.json")
+        return components
+    }
+
+    /**
+     * Traditional source-based analysis (preserved for backward compatibility and fallback)
+     */
+    fun analyzeFromSource(): List<KnitComponent> {
         return runReadAction {
             logger.info("Starting source analysis for Knit components")
 
@@ -49,6 +120,69 @@ class KnitSourceAnalyzer(private val project: Project) {
             logger.info("Found ${components.size} Knit components")
             components
         }
+    }
+
+    /**
+     * Enhance knit.json-based components with source file information for better IDE integration
+     */
+    private fun enhanceWithSourceInfo(jsonComponents: List<KnitComponent>): List<KnitComponent> {
+        return runReadAction {
+            logger.info("Enhancing ${jsonComponents.size} knit.json components with source file information")
+            
+            val enhancedComponents = mutableListOf<KnitComponent>()
+            val sourceFileMap = buildSourceFileMap()
+            
+            for (component in jsonComponents) {
+                val sourceFile = findSourceFile(component, sourceFileMap)
+                val enhancedComponent = component.copy(sourceFile = sourceFile)
+                enhancedComponents.add(enhancedComponent)
+            }
+            
+            logger.info("Enhanced ${enhancedComponents.size} components with source information")
+            enhancedComponents
+        }
+    }
+
+    /**
+     * Build a map of class names to their source file paths for quick lookup
+     */
+    private fun buildSourceFileMap(): Map<String, String> {
+        val sourceFileMap = mutableMapOf<String, String>()
+        
+        val kotlinFiles = FileTypeIndex.getFiles(
+            KotlinFileType.INSTANCE,
+            GlobalSearchScope.projectScope(project)
+        )
+        
+        val psiManager = PsiManager.getInstance(project)
+        
+        for (file in kotlinFiles) {
+            val psiFile = psiManager.findFile(file) as? KtFile ?: continue
+            val classes = psiFile.collectDescendantsOfType<KtClass>()
+            
+            for (ktClass in classes) {
+                val className = ktClass.name ?: continue
+                val packageName = psiFile.packageFqName.asString()
+                val fullClassName = if (packageName.isNotEmpty()) "$packageName.$className" else className
+                
+                sourceFileMap[fullClassName] = file.path
+            }
+        }
+        
+        return sourceFileMap
+    }
+
+    /**
+     * Find the source file path for a given component
+     */
+    private fun findSourceFile(component: KnitComponent, sourceFileMap: Map<String, String>): String? {
+        val fullClassName = if (component.packageName.isNotEmpty()) {
+            "${component.packageName}.${component.className}"
+        } else {
+            component.className
+        }
+        
+        return sourceFileMap[fullClassName]
     }
 
     /**
@@ -483,3 +617,12 @@ class KnitSourceAnalyzer(private val project: Project) {
         return elementPositionInLine > commentIndex
     }
 }
+
+/**
+ * Result of project analysis including metadata about the analysis method used
+ */
+data class AnalysisWithMetadata(
+    val components: List<KnitComponent>,
+    val analysisMethod: AnalysisMethod,
+    val knitJsonPath: String?
+)

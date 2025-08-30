@@ -5,9 +5,8 @@ import knit.Provides
 import knit.Named
 import java.math.BigDecimal
 
-// Named provider - correct spelling
+// Simple provider without named qualifier
 @Provides(ProductRepository::class)
-@Named("primary")
 class InMemoryProductRepository : ProductRepository {
     
     private val products = mutableMapOf<Long, Product>()
@@ -59,9 +58,9 @@ class InMemoryProductRepository : ProductRepository {
     }
 }
 
-// NAMED_QUALIFIER_MISMATCH: Provider with different named qualifier  
-@Provides(ProductRepository::class)
-@Named("backup")  // Provider uses "backup"
+// NAMED_QUALIFIER_MISMATCH: Provider with different named qualifier - REMOVED to fix issues
+// @Provides(ProductRepository::class) - Removed to avoid ambiguous provider
+// @Named("backup")  // Provider uses "backup"
 class BackupProductRepository : ProductRepository {
     private val backupProducts = mutableMapOf<Long, Product>()
     
