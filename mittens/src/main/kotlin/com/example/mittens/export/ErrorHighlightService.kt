@@ -72,10 +72,35 @@ class ErrorHighlightService {
     }
     
     private fun mapIssuestoNodes(issues: List<KnitIssue>): Map<String, List<KnitIssue>> {
-        return issues.groupBy { issue ->
+        val nodeIssues = mutableMapOf<String, MutableList<KnitIssue>>()
+        
+        issues.forEach { issue ->
+            val affectedNodeIds = when (issue.type) {
+                IssueType.AMBIGUOUS_PROVIDER -> {
+                    // Parse multiple component names for ambiguous provider issues
+                    parseComponentNamesFromIssue(issue).map { convertComponentNameToNodeId(it) }
+                }
+                else -> {
+                    // For other issue types, use the componentName directly
+                    listOf(convertComponentNameToNodeId(issue.componentName))
+                }
+            }
             
-            
-            convertComponentNameToNodeId(issue.componentName)
+            affectedNodeIds.forEach { nodeId ->
+                nodeIssues.getOrPut(nodeId) { mutableListOf() }.add(issue)
+            }
+        }
+        
+        return nodeIssues
+    }
+    
+    private fun parseComponentNamesFromIssue(issue: KnitIssue): List<String> {
+        // For ambiguous provider issues, componentName may contain multiple components
+        // separated by commas, like "EmailChannel.<init>, NotificationService.provideEmailChannel"
+        return if (issue.componentName.contains(",")) {
+            issue.componentName.split(",").map { it.trim() }
+        } else {
+            listOf(issue.componentName.trim())
         }
     }
     

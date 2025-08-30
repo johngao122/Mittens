@@ -385,7 +385,7 @@ export default function DependencyNetwork() {
         </div>
         <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-slate-800 dark:to-slate-700 border border-purple-200 dark:border-slate-600 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all duration-200">
           <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
-            {networkData.nodes.filter(n => n.errorInfo.isPartOfCycle).length}
+            {networkData.errorContext.cycles.length}
           </div>
           <div className="text-sm font-medium text-purple-700 dark:text-purple-300">Cycles</div>
           <div className="mt-1 text-xs text-purple-600/70 dark:text-purple-400/70">Circular Dependencies</div>

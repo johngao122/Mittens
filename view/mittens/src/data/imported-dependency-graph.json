@@ -786,23 +786,25 @@
           "sourceFile": null,
           "dependencyCount": 0,
           "providerCount": 0,
-          "issueCount": 0
+          "issueCount": 1
         },
         "errorHighlight": {
-          "hasErrors": false,
-          "errorSeverity": null,
-          "errorTypes": [],
+          "hasErrors": true,
+          "errorSeverity": "ERROR",
+          "errorTypes": [
+            "AMBIGUOUS_PROVIDER"
+          ],
           "isPartOfCycle": false,
           "cycleId": null,
           "visualHints": {
-            "borderColor": "#28a745",
-            "backgroundColor": "#f8fff9",
-            "borderWidth": 1,
+            "borderColor": "#ff0000",
+            "backgroundColor": "#ffeeee",
+            "borderWidth": 2,
             "color": null,
             "width": null,
             "style": null,
             "classes": [
-              "healthy-node"
+              "error-node"
             ]
           }
         }
@@ -1003,23 +1005,25 @@
           "sourceFile": null,
           "dependencyCount": 0,
           "providerCount": 0,
-          "issueCount": 0
+          "issueCount": 1
         },
         "errorHighlight": {
-          "hasErrors": false,
-          "errorSeverity": null,
-          "errorTypes": [],
+          "hasErrors": true,
+          "errorSeverity": "ERROR",
+          "errorTypes": [
+            "AMBIGUOUS_PROVIDER"
+          ],
           "isPartOfCycle": false,
           "cycleId": null,
           "visualHints": {
-            "borderColor": "#28a745",
-            "backgroundColor": "#f8fff9",
-            "borderWidth": 1,
+            "borderColor": "#ff0000",
+            "backgroundColor": "#ffeeee",
+            "borderWidth": 2,
             "color": null,
             "width": null,
             "style": null,
             "classes": [
-              "healthy-node"
+              "error-node"
             ]
           }
         }
@@ -1034,23 +1038,25 @@
           "sourceFile": null,
           "dependencyCount": 0,
           "providerCount": 0,
-          "issueCount": 0
+          "issueCount": 1
         },
         "errorHighlight": {
-          "hasErrors": false,
-          "errorSeverity": null,
-          "errorTypes": [],
+          "hasErrors": true,
+          "errorSeverity": "ERROR",
+          "errorTypes": [
+            "AMBIGUOUS_PROVIDER"
+          ],
           "isPartOfCycle": false,
           "cycleId": null,
           "visualHints": {
-            "borderColor": "#28a745",
-            "backgroundColor": "#f8fff9",
-            "borderWidth": 1,
+            "borderColor": "#ff0000",
+            "backgroundColor": "#ffeeee",
+            "borderWidth": 2,
             "color": null,
             "width": null,
             "style": null,
             "classes": [
-              "healthy-node"
+              "error-node"
             ]
           }
         }
@@ -1406,23 +1412,25 @@
           "sourceFile": null,
           "dependencyCount": 0,
           "providerCount": 0,
-          "issueCount": 0
+          "issueCount": 1
         },
         "errorHighlight": {
-          "hasErrors": false,
-          "errorSeverity": null,
-          "errorTypes": [],
+          "hasErrors": true,
+          "errorSeverity": "ERROR",
+          "errorTypes": [
+            "AMBIGUOUS_PROVIDER"
+          ],
           "isPartOfCycle": false,
           "cycleId": null,
           "visualHints": {
-            "borderColor": "#28a745",
-            "backgroundColor": "#f8fff9",
-            "borderWidth": 1,
+            "borderColor": "#ff0000",
+            "backgroundColor": "#ffeeee",
+            "borderWidth": 2,
             "color": null,
             "width": null,
             "style": null,
             "classes": [
-              "healthy-node"
+              "error-node"
             ]
           }
         }
@@ -4804,7 +4812,8 @@
         "severity": "ERROR",
         "message": "Multiple providers found for type: com.example.knit.demo.core.services.EmailChannel without qualifiers",
         "affectedNodes": [
-          "com.example.knit.demo.core.services.EmailChannel.<init>, com.example.knit.demo.core.services.NotificationService.provideEmailChannel"
+          "com.example.knit.demo.core.services.EmailChannel.<init>",
+          "com.example.knit.demo.core.services.NotificationService.provideEmailChannel"
         ],
         "affectedEdges": [],
         "suggestedFix": "Use @Named qualifiers to distinguish between providers:\n  @Named(\"EmailChannel_0\") com.example.knit.demo.core.services.EmailChannel.<init>\n  @Named(\"EmailChannel_1\") com.example.knit.demo.core.services.NotificationService.provideEmailChannel",
@@ -4816,7 +4825,8 @@
         "severity": "ERROR",
         "message": "Multiple providers found for type: com.example.knit.demo.core.services.SmsChannel without qualifiers",
         "affectedNodes": [
-          "com.example.knit.demo.core.services.NotificationService.provideSmsChannel, com.example.knit.demo.core.services.SmsChannel.<init>"
+          "com.example.knit.demo.core.services.NotificationService.provideSmsChannel",
+          "com.example.knit.demo.core.services.SmsChannel.<init>"
         ],
         "affectedEdges": [],
         "suggestedFix": "Use @Named qualifiers to distinguish between providers:\n  @Named(\"SmsChannel_0\") com.example.knit.demo.core.services.NotificationService.provideSmsChannel\n  @Named(\"SmsChannel_1\") com.example.knit.demo.core.services.SmsChannel.<init>",
@@ -4850,7 +4860,7 @@
   },
   "metadata": {
     "projectName": "knit-demo",
-    "analysisTimestamp": 1756541828657,
+    "analysisTimestamp": 1756542536009,
     "totalComponents": 34,
     "totalDependencies": 85,
     "knitVersion": "0.1.5",
