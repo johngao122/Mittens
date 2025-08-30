@@ -477,7 +477,7 @@ class KnitAnalysisReportDialog(
                     indicator.text = "Connecting to web view server..."
                     indicator.fraction = 0.3
                     
-                    val webViewUrl = "http://localhost:3000"
+                    val webViewUrl = "https://mittens-two.vercel.app"
                     val httpResult = sendDataToWebViewBackground(jsonString, webViewUrl, indicator)
                     
                     // Update UI on EDT after background operation

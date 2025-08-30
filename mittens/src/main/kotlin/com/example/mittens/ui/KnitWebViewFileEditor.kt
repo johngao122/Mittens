@@ -40,7 +40,7 @@ class KnitWebViewFileEditor(private val project: Project, private val virtualFil
     private var refreshQuery: JBCefJSQuery? = null
     
     // Default URL for the Next.js dependency graph page
-    private val defaultUrl = "http://localhost:3000/dependency"
+    private val defaultUrl = "https://mittens-two.vercel.app/dependency"
     
     init {
         initializeComponents()
@@ -269,7 +269,7 @@ class KnitWebViewFileEditor(private val project: Project, private val virtualFil
             .registerModule(com.fasterxml.jackson.module.kotlin.KotlinModule.Builder().build())
         val jsonBytes = objectMapper.writeValueAsBytes(payload)
 
-        val url = java.net.URL("http://localhost:3000/api/import-data")
+        val url = java.net.URL("https://mittens-two.vercel.app/api/import-data")
         val conn = (url.openConnection() as java.net.HttpURLConnection).apply {
             requestMethod = "POST"
             doOutput = true

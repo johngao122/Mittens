@@ -18,8 +18,8 @@ import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtClassOrObjectSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaFunctionSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
 import kotlin.ExperimentalStdlibApi
 
 @Service
@@ -165,7 +165,7 @@ class KnitProjectDetector(private val project: Project) {
 
                     // Use Analysis API for annotation detection (compatible with bundled Kotlin in 2024.1)
                     val (hasProvides, hasComponent) = analyze(ktClass) {
-                        val classSymbol = ktClass.getSymbol() as? KtClassOrObjectSymbol ?: return@analyze Pair(false, false)
+                        val classSymbol = ktClass.symbol as? KaClassOrObjectSymbol ?: return@analyze Pair(false, false)
 
                         val providesAnnotation = classSymbol.annotationsList.annotations.any { it.classId?.shortClassName?.asString() == "Provides" }
                         val componentAnnotation = classSymbol.annotationsList.annotations.any { it.classId?.shortClassName?.asString() == "Component" }
@@ -195,7 +195,7 @@ class KnitProjectDetector(private val project: Project) {
                     val methods = ktClass.collectDescendantsOfType<KtNamedFunction>()
                     val hasProvidesMethods = methods.any { method ->
                         analyze(method) {
-                            val methodSymbol = method.getSymbol() as? KtFunctionSymbol ?: return@analyze false
+                            val methodSymbol = method.symbol as? KaFunctionSymbol ?: return@analyze false
                             methodSymbol.annotationsList.annotations.any { annotation ->
                                 annotation.classId?.shortClassName?.asString() == "Provides"
                             }

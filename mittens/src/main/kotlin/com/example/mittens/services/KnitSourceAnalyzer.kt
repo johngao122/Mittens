@@ -19,9 +19,9 @@ import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.api.symbols.KtClassOrObjectSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtPropertySymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaPropertySymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaFunctionSymbol
 
 /**
  * Data class to hold property analysis results
@@ -244,7 +244,7 @@ class KnitSourceAnalyzer(private val project: Project) {
     private fun isDiRelevantClass(ktClass: KtClass): Boolean {
         // Use Analysis API for enhanced annotation resolution
         val hasDiAnnotations = analyze(ktClass) {
-            val classSymbol = ktClass.getSymbol() as? KtClassOrObjectSymbol ?: return@analyze false
+            val classSymbol = ktClass.symbol as? KaClassOrObjectSymbol ?: return@analyze false
             val diAnnotationNames = setOf("Component", "Provides", "KnitViewModel", "Singleton")
             
             classSymbol.annotationsList.annotations.any { annotation ->
@@ -281,7 +281,7 @@ class KnitSourceAnalyzer(private val project: Project) {
         val hasProvidesMethod = methods.any { method ->
             // Use Analysis API for method annotation analysis
             analyze(method) {
-                val methodSymbol = method.getSymbol() as? KtFunctionSymbol ?: return@analyze false
+                val methodSymbol = method.symbol as? KaFunctionSymbol ?: return@analyze false
                 methodSymbol.annotationsList.annotations.any { annotation ->
                     annotation.classId?.shortClassName?.asString() == "Provides"
                 }
@@ -345,7 +345,7 @@ class KnitSourceAnalyzer(private val project: Project) {
         
         // Use Analysis API for class-level annotation analysis
         val (classLevelProvidesAnnotation, providesAnnotationEntry) = analyze(ktClass) {
-            val classSymbol = ktClass.getSymbol() as? KtClassOrObjectSymbol ?: return@analyze Pair(null, null)
+            val classSymbol = ktClass.symbol as? KaClassOrObjectSymbol ?: return@analyze Pair(null, null)
             val providesAnnotation = classSymbol.annotationsList.annotations.firstOrNull { annotation ->
                 annotation.classId?.shortClassName?.asString() == "Provides"
             }
@@ -392,7 +392,7 @@ class KnitSourceAnalyzer(private val project: Project) {
         
         // Use Analysis API for component type detection
         val (hasComponent, hasProvides, hasKnitViewModel) = analyze(ktClass) {
-            val classSymbol = ktClass.getSymbol() as? KtClassOrObjectSymbol ?: return@analyze Triple(false, false, false)
+            val classSymbol = ktClass.symbol as? KaClassOrObjectSymbol ?: return@analyze Triple(false, false, false)
             
             val hasComponentAnnotation = classSymbol.annotationsList.annotations.any { annotation ->
                 annotation.classId?.shortClassName?.asString() == "Component"
@@ -447,7 +447,7 @@ class KnitSourceAnalyzer(private val project: Project) {
         
         // Use Analysis API for enhanced type and annotation analysis
         val (targetType, isNamed, namedQualifier, isSingletonAnnotated) = analyze(property) {
-            val propertySymbol = property.getSymbol() as? KtPropertySymbol
+            val propertySymbol = property.symbol as? KaPropertySymbol
             
             // Fallback to PSI type text to avoid renderer API differences across Kotlin versions
             val resolvedTargetType = property.typeReference?.text ?: "Unknown"
@@ -503,7 +503,7 @@ class KnitSourceAnalyzer(private val project: Project) {
         
         // Use Analysis API for enhanced method analysis
         val analysisResult = analyze(method) {
-            val methodSymbol = method.getSymbol() as? KtFunctionSymbol
+            val methodSymbol = method.symbol as? KaFunctionSymbol
             
             // Fallback to PSI type text to avoid renderer API differences across Kotlin versions
             val resolvedReturnType = method.typeReference?.text ?: "Unit"
