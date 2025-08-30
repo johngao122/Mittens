@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import { getD3NetworkData, parseKnitDataToD3Network } from "./chart-utils";
+import { getEmptyNetworkData, parseKnitDataToD3Network } from "./chart-utils";
 import D3Network from "./d3-network";
 import { D3Node } from "../../../../lib/knit-data-parser";
 import { useGraphData } from "../../../../hooks/use-graph-data";
@@ -45,8 +45,8 @@ export default function DependencyNetwork() {
             console.log("Using imported data:", importedData);
             return parseKnitDataToD3Network(importedData);
         }
-        console.log("Using sample data");
-        return getD3NetworkData();
+        console.log("No data provided, rendering empty graph");
+        return getEmptyNetworkData();
     }, [importedData]);
 
     // Precompute connected link ids for the selected node (used for scoping fixes)
