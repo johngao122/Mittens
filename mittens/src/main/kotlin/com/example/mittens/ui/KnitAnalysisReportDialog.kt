@@ -25,9 +25,9 @@ import javax.swing.filechooser.FileNameExtensionFilter
 class KnitAnalysisReportDialog(
     private val project: Project,
     private val report: DetailedAnalysisReport,
-    private val summary: AnalysisSummary,
     private val analysisResult: AnalysisResult
 ) : DialogWrapper(project) {
+    private val summary: AnalysisSummary = report.summary
 
     private lateinit var reportTextArea: JBTextArea
     private lateinit var exportButton: JButton

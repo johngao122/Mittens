@@ -26,6 +26,14 @@ class KnitSourceAnalyzer(private val project: Project) {
      * Main entry point for project analysis - automatically chooses between knit.json and source analysis
      */
     fun analyzeProject(): List<KnitComponent> {
+        val result = analyzeProjectWithMetadata()
+        return result.components
+    }
+    
+    /**
+     * Analyze project and return components with analysis metadata
+     */
+    fun analyzeProjectWithMetadata(): AnalysisWithMetadata {
         val gradleService = project.getService(KnitGradleService::class.java)
         
         // Try knit.json analysis first if available
@@ -34,13 +42,23 @@ class KnitSourceAnalyzer(private val project: Project) {
             val jsonComponents = analyzeFromKnitJson()
             if (jsonComponents.isNotEmpty()) {
                 // Enhance with source file information for better UI support
-                return enhanceWithSourceInfo(jsonComponents)
+                val enhancedComponents = enhanceWithSourceInfo(jsonComponents)
+                return AnalysisWithMetadata(
+                    components = enhancedComponents,
+                    analysisMethod = AnalysisMethod.KNIT_JSON_ANALYSIS,
+                    knitJsonPath = gradleService.getKnitJsonPath()
+                )
             }
         }
         
         // Fall back to traditional source analysis
         logger.info("Using traditional source-based analysis")
-        return analyzeFromSource()
+        val sourceComponents = analyzeFromSource()
+        return AnalysisWithMetadata(
+            components = sourceComponents,
+            analysisMethod = AnalysisMethod.SOURCE_ANALYSIS,
+            knitJsonPath = null
+        )
     }
 
     /**
@@ -599,3 +617,12 @@ class KnitSourceAnalyzer(private val project: Project) {
         return elementPositionInLine > commentIndex
     }
 }
+
+/**
+ * Result of project analysis including metadata about the analysis method used
+ */
+data class AnalysisWithMetadata(
+    val components: List<KnitComponent>,
+    val analysisMethod: AnalysisMethod,
+    val knitJsonPath: String?
+)

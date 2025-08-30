@@ -86,19 +86,13 @@ class KnitAnalysisService(private val project: Project) {
 
                 logger.info("Knit project detected - Version: ${detectionResult.knitVersion ?: "Unknown"}")
 
-                // Determine analysis approach based on knit.json availability
-                val gradleService = project.service<KnitGradleService>()
-                val useKnitJson = gradleService.hasKnitJsonFile()
+                // Get components with analysis metadata
+                progressIndicator?.text = "Analyzing project components..."
+                progressIndicator?.fraction = 0.2
                 
-                val mergedComponents = if (useKnitJson) {
-                    // Use knit.json-based analysis (faster and more accurate)
-                    logger.info("Using knit.json-based analysis approach")
-                    analyzeWithKnitJson(progressIndicator)
-                } else {
-                    // Fall back to source-based analysis when knit.json not available
-                    logger.info("knit.json not available, using source-based analysis")
-                    analyzeWithSourceOnly(progressIndicator)
-                }
+                val sourceAnalyzer = project.service<KnitSourceAnalyzer>()
+                val analysisWithMetadata = sourceAnalyzer.analyzeProjectWithMetadata()
+                val mergedComponents = analysisWithMetadata.components
                 val dependencyGraph = buildDependencyGraph(mergedComponents)
                 val detectedIssues = detectIssues(mergedComponents, dependencyGraph)
 
@@ -139,7 +133,9 @@ class KnitAnalysisService(private val project: Project) {
                         bytecodeFilesScanned = 0, // Not used in current analysis approach
                         sourceFilesScanned = mergedComponents.size,
                         validationTimeMs = validationTime,
-                        deduplicationTimeMs = 0 
+                        deduplicationTimeMs = 0,
+                        analysisMethod = analysisWithMetadata.analysisMethod,
+                        knitJsonPath = analysisWithMetadata.knitJsonPath
                     ),
                     accuracyMetrics = accuracyMetrics
                 )

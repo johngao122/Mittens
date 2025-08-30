@@ -368,7 +368,6 @@ class AdvancedIssueDetector(private val project: Project) {
         val typeToProviders = mutableMapOf<String, MutableList<Pair<String, KnitProvider>>>()
 
         components.forEach { component ->
-
             val validProviders = component.providers.filter { provider ->
                 isProviderActive(component, provider)
             }
@@ -382,7 +381,6 @@ class AdvancedIssueDetector(private val project: Project) {
                 }
 
                 val providerId = "${component.packageName}.${component.className}.${provider.methodName}"
-
 
                 logger.debug("Phase 2: Indexing active provider - $providerId for type $providedType")
 
@@ -721,16 +719,69 @@ class AdvancedIssueDetector(private val project: Project) {
 
     /**
      * Detect unresolved dependencies with component exclusion support
+     * Excludes components as consumers (to avoid reporting their own circular dependency issues)
+     * but keeps them as providers (so other components can still resolve dependencies to them)
      */
     fun detectImprovedUnresolvedDependencies(
         components: List<KnitComponent>, 
         excludedComponents: Set<String>
     ): List<KnitIssue> {
-        val filteredComponents = components.filter { component ->
+        val issues = mutableListOf<KnitIssue>()
+        
+        // Build provider index from ALL components (including excluded ones)
+        val providerIndex = buildProviderIndex(components)
+
+        // Only check dependencies for non-excluded components
+        components.forEach { component ->
             val fullName = "${component.packageName}.${component.className}"
-            fullName !in excludedComponents
+            
+            // Skip dependency checking for excluded components (they're in circular dependencies)
+            if (fullName in excludedComponents) {
+                return@forEach
+            }
+            
+            component.dependencies.forEach { dependency ->
+                val matchResult = findEnhancedProviderMatches(
+                    dependency.targetType,
+                    dependency.namedQualifier,
+                    providerIndex,
+                    components
+                )
+
+                if (matchResult.isEmpty()) {
+                    val suggestions = generateUnresolvedDependencySuggestions(
+                        dependency.targetType,
+                        dependency.namedQualifier,
+                        providerIndex
+                    )
+
+                    val message = if (dependency.isNamed) {
+                        "No provider found for dependency: ${dependency.targetType} with qualifier '@Named(${dependency.namedQualifier})'"
+                    } else {
+                        "No provider found for dependency: ${dependency.targetType}"
+                    }
+
+                    issues.add(
+                        KnitIssue(
+                            type = IssueType.UNRESOLVED_DEPENDENCY,
+                            severity = Severity.ERROR,
+                            message = message,
+                            componentName = "${component.packageName}.${component.className}",
+                            sourceLocation = component.sourceFile,
+                            suggestedFix = suggestions,
+                            metadata = mapOf(
+                                "targetType" to dependency.targetType,
+                                "namedQualifier" to (dependency.namedQualifier ?: ""),
+                                "isNamed" to dependency.isNamed,
+                                "propertyName" to dependency.propertyName
+                            )
+                        )
+                    )
+                }
+            }
         }
-        return detectImprovedUnresolvedDependencies(filteredComponents)
+
+        return issues
     }
 
     /**

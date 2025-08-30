@@ -24,7 +24,19 @@ class DetailedAnalysisReportTest {
             componentsWithIssues = 0
         )
         
-        val report = DetailedAnalysisReport(summary)
+        val analysisResult = AnalysisResult(
+            components = emptyList(),
+            dependencyGraph = DependencyGraph(emptyList(), emptyList()),
+            issues = emptyList(),
+            timestamp = System.currentTimeMillis(),
+            projectName = "test-project",
+            metadata = AnalysisMetadata(
+                analysisTimeMs = summary.analysisTime,
+                sourceFilesScanned = summary.filesScanned,
+                analysisMethod = AnalysisMethod.SOURCE_ANALYSIS
+            )
+        )
+        val report = DetailedAnalysisReport(analysisResult)
         val message = report.generateNotificationMessage()
         
         assertContains(message, "Knit Analysis Complete!")
@@ -72,7 +84,19 @@ class DetailedAnalysisReportTest {
             componentsWithIssues = 3
         )
         
-        val report = DetailedAnalysisReport(summary)
+        val analysisResult = AnalysisResult(
+            components = emptyList(),
+            dependencyGraph = DependencyGraph(emptyList(), emptyList()),
+            issues = emptyList(),
+            timestamp = System.currentTimeMillis(),
+            projectName = "test-project",
+            metadata = AnalysisMetadata(
+                analysisTimeMs = summary.analysisTime,
+                sourceFilesScanned = summary.filesScanned,
+                analysisMethod = AnalysisMethod.SOURCE_ANALYSIS
+            )
+        )
+        val report = DetailedAnalysisReport(analysisResult)
         val message = report.generateNotificationMessage()
         
         assertContains(message, "ISSUES FOUND (5 total)")
@@ -110,7 +134,19 @@ class DetailedAnalysisReportTest {
             componentsWithIssues = 2
         )
         
-        val report = DetailedAnalysisReport(summary)
+        val analysisResult = AnalysisResult(
+            components = emptyList(),
+            dependencyGraph = DependencyGraph(emptyList(), emptyList()),
+            issues = emptyList(),
+            timestamp = System.currentTimeMillis(),
+            projectName = "test-project",
+            metadata = AnalysisMetadata(
+                analysisTimeMs = summary.analysisTime,
+                sourceFilesScanned = summary.filesScanned,
+                analysisMethod = AnalysisMethod.SOURCE_ANALYSIS
+            )
+        )
+        val report = DetailedAnalysisReport(analysisResult)
         val expandedDetails = report.generateExpandedDetails()
         
         assertContains(expandedDetails, "=== Knit Analysis Detailed Report ===")

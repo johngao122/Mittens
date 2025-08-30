@@ -52,7 +52,19 @@ object EnhancedNotificationDemo {
             componentsWithIssues = 6
         )
         
-        val report = DetailedAnalysisReport(summary)
+        val analysisResult = AnalysisResult(
+            components = emptyList(),
+            dependencyGraph = DependencyGraph(emptyList(), emptyList()),
+            issues = emptyList(),
+            timestamp = System.currentTimeMillis(),
+            projectName = "demo-project",
+            metadata = AnalysisMetadata(
+                analysisTimeMs = summary.analysisTime,
+                sourceFilesScanned = summary.filesScanned,
+                analysisMethod = AnalysisMethod.SOURCE_ANALYSIS
+            )
+        )
+        val report = DetailedAnalysisReport(analysisResult)
         return report.generateNotificationMessage()
     }
     
@@ -72,7 +84,19 @@ object EnhancedNotificationDemo {
             componentsWithIssues = 0
         )
         
-        val report = DetailedAnalysisReport(summary)
+        val analysisResult = AnalysisResult(
+            components = emptyList(),
+            dependencyGraph = DependencyGraph(emptyList(), emptyList()),
+            issues = emptyList(),
+            timestamp = System.currentTimeMillis(),
+            projectName = "demo-project",
+            metadata = AnalysisMetadata(
+                analysisTimeMs = summary.analysisTime,
+                sourceFilesScanned = summary.filesScanned,
+                analysisMethod = AnalysisMethod.SOURCE_ANALYSIS
+            )
+        )
+        val report = DetailedAnalysisReport(analysisResult)
         return report.generateNotificationMessage()
     }
     
@@ -105,7 +129,19 @@ object EnhancedNotificationDemo {
             componentsWithIssues = 3
         )
         
-        val report = DetailedAnalysisReport(summary)
+        val analysisResult = AnalysisResult(
+            components = emptyList(),
+            dependencyGraph = DependencyGraph(emptyList(), emptyList()),
+            issues = emptyList(),
+            timestamp = System.currentTimeMillis(),
+            projectName = "demo-project",
+            metadata = AnalysisMetadata(
+                analysisTimeMs = summary.analysisTime,
+                sourceFilesScanned = summary.filesScanned,
+                analysisMethod = AnalysisMethod.SOURCE_ANALYSIS
+            )
+        )
+        val report = DetailedAnalysisReport(analysisResult)
         return report.generateExpandedDetails()
     }
 }
