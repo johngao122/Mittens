@@ -21,12 +21,13 @@ import { NetworkData, D3Node, D3Link } from "../../../../lib/knit-data-parser";
 // CONFIGURATION CONSTANTS
 // ========================================
 const FORCE_CONFIG = {
-    LINK_DISTANCE: 170,           // Base distance between connected nodes
-    LINK_STRENGTH: 0.5,           // Base strength of link forces
-    REPEL_STRENGTH: -100,         // Node repulsion strength (negative = repel)
-    COLLISION_PADDING: 5,         // Padding around nodes for collision detection
-    CLUSTER_STRENGTH: 0.1,        // Strength of package clustering force
-    SIDE_PANEL_WIDTH_RATIO: 1,    // Reserved space ratio for side panels
+    // Wider spacing between nodes
+    LINK_DISTANCE: 300,           // Longer links to reduce crowding
+    LINK_STRENGTH: 0.5,
+    REPEL_STRENGTH: -450,         // Stronger repulsion
+    COLLISION_PADDING: 18,        // Larger no-overlap buffer
+    CLUSTER_STRENGTH: 0.05,       // Keep clusters looser
+    SIDE_PANEL_WIDTH_RATIO: 1,
 } as const;
 
 const ANIMATION_DURATIONS = {
@@ -211,16 +212,23 @@ export default function D3Network({
             return "#10b981"; // Green for healthy
         };
 
-        // Helper function to get node size based on dependency count
-        const getNodeSize = (node: D3Node) => {
-            const baseSize = 20;
-            const maxSize = 50;
-            const dependencyCount = node.metadata.dependencyCount || 0;
-            // Scale node size based on dependency count (logarithmic scale for better visualization)
-            return Math.min(
-                baseSize + Math.log(dependencyCount + 1) * 8,
-                maxSize
-            );
+        // Rounded-rectangle sizing based on node metadata
+        const getNodeDims = (node: D3Node) => {
+            const dep = node.metadata.dependencyCount || 0;
+            const baseW = 120;  // bigger base width
+            const baseH = 44;   // bigger base height
+            const maxW = 260;   // allow large nodes for important items
+            const maxH = 96;
+            const scale = Math.log(dep + 1);
+            const width = Math.min(baseW + scale * 28, maxW);
+            const height = Math.min(baseH + scale * 8, maxH);
+            return { width, height };
+        };
+
+        // Approximate collision radius using half of rectangle diagonal
+        const getCollisionRadius = (node: D3Node) => {
+            const { width, height } = getNodeDims(node);
+            return 0.5 * Math.sqrt(width * width + height * height);
         };
 
         const clusters: Record<string, { x: number; y: number }> = {};
@@ -385,11 +393,18 @@ export default function D3Network({
                         return baseStrength;
                     })
             )
-            .force("charge", d3.forceManyBody().strength(FORCE_CONFIG.REPEL_STRENGTH))
+            .force(
+                "charge",
+                d3
+                    .forceManyBody()
+                    .strength(FORCE_CONFIG.REPEL_STRENGTH)
+                    .distanceMin(40)
+                    .distanceMax(Math.max(numericWidth, numericHeight))
+            )
             .force("center", forceCustomCenter as any)
             .force(
                 "collision",
-                d3.forceCollide().radius((d) => getNodeSize(d as D3Node) + FORCE_CONFIG.COLLISION_PADDING)
+                d3.forceCollide().radius((d) => getCollisionRadius(d as D3Node) + FORCE_CONFIG.COLLISION_PADDING)
             )
             .force("cluster", forceCluster as any)
             .force("anchor", forceAnchor as any);
@@ -416,14 +431,19 @@ export default function D3Network({
         // Store reference for later highlighting updates
         linksRef.current = link;
 
-        // Create nodes (interactive circles)
+        // Create nodes (rounded rectangles)
         const node = container
             .selectAll(".node")
             .data(nodes)
             .enter()
-            .append("circle")
+            .append("rect")
             .attr("class", "node")
-            .attr("r", (d: any) => getNodeSize(d as D3Node))
+            .attr("width", (d: any) => getNodeDims(d as D3Node).width)
+            .attr("height", (d: any) => getNodeDims(d as D3Node).height)
+            .attr("x", (d: any) => -getNodeDims(d as D3Node).width / 2)
+            .attr("y", (d: any) => -getNodeDims(d as D3Node).height / 2)
+            .attr("rx", (d: any) => Math.min(10, getNodeDims(d as D3Node).height / 2))
+            .attr("ry", (d: any) => Math.min(10, getNodeDims(d as D3Node).height / 2))
             .attr("fill", (d: any) => getNodeColor(d as D3Node))
             .attr("stroke", isDarkMode ? "#ffffff" : "#374151")
             .attr("stroke-width", 2.5)
@@ -434,7 +454,7 @@ export default function D3Network({
                 // ========================================
                 // Smart drag system: nodes stay where placed, elastic following during drag
                 d3
-                    .drag<SVGCircleElement, D3Node>()
+                    .drag<SVGRectElement, D3Node>()
                     .on("start", (event, d) => {
                         // Clear click-locked status when dragging starts
                         delete (d as any)._clickLocked;
@@ -490,11 +510,44 @@ export default function D3Network({
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
             .attr("fill", isDarkMode ? "#ffffff" : "#1f2937")
-            .attr("font-size", "12px")
+            .attr("font-size", "15px")
+            .attr("font-family", "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans'")
             .attr("font-weight", "bold")
             .attr("pointer-events", "none")
             .style("text-shadow", isDarkMode ? "2px 2px 4px rgba(0,0,0,0.9)" : "1px 1px 2px rgba(255,255,255,0.8)")
-            .text((d: any) => d.label);
+            .text((d: any) => d.label)
+            .each(function(d: any) {
+                // Dynamically fit labels inside their node circles
+                const el = this as SVGTextElement;
+                (d as any)._origLabel = d.label;
+                const dims = getNodeDims(d as D3Node);
+                const maxWidth = Math.max(24, dims.width - 16); // padding inside the rectangle
+                const baseSize = 15;
+
+                const measure = () => el.getComputedTextLength();
+
+                // Start from base and scale down to fit
+                el.setAttribute('font-size', `${baseSize}px`);
+                let width = measure();
+                if (width > 0) {
+                    const scale = Math.min(1, maxWidth / width);
+                    const size = Math.max(12, Math.floor(baseSize * scale));
+                    el.setAttribute('font-size', `${size}px`);
+                }
+
+                // If still wider than the circle, ellipsize
+                width = measure();
+                if (width > maxWidth) {
+                    const text = (d as any)._origLabel as string;
+                    const ratio = maxWidth / width;
+                    const keep = Math.max(3, Math.floor(text.length * ratio) - 1);
+                    const truncated = text.length > keep ? `${text.slice(0, keep)}…` : text;
+                    el.textContent = truncated;
+                    // ensure a readable minimum
+                    const current = parseInt(el.getAttribute('font-size') || '15', 10);
+                    el.setAttribute('font-size', `${Math.max(12, current)}px`);
+                }
+            });
 
         // Store references for theme updates
         labelsRef.current = labels;
@@ -572,7 +625,11 @@ export default function D3Network({
                     return Math.min(baseOpacity + (stretchFactor - 1) * 0.3, maxOpacity);
                 });
 
-            node.attr("cx", (d: any) => d.x).attr("cy", (d: any) => d.y);
+            node
+                .attr("x", (d: any) => d.x - getNodeDims(d as D3Node).width / 2)
+                .attr("y", (d: any) => d.y - getNodeDims(d as D3Node).height / 2)
+                .attr("width", (d: any) => getNodeDims(d as D3Node).width)
+                .attr("height", (d: any) => getNodeDims(d as D3Node).height);
 
             labels.attr("x", (d: any) => d.x).attr("y", (d: any) => d.y);
         });
@@ -598,7 +655,7 @@ export default function D3Network({
                 .attr("stroke-width", 2.5);
             labelsSel
                 .attr("opacity", 1)
-                .attr("font-size", "12px");
+                .attr("font-size", "15px");
             if (linksSel) {
                 linksSel
                     .attr("stroke-opacity", 0.8)
@@ -613,7 +670,7 @@ export default function D3Network({
             .attr("stroke-width", (d: any) => (d.id === selectedNode.id ? 4 : 2));
         labelsSel
             .attr("opacity", (d: any) => (d.id === selectedNode.id ? 1 : 0.35))
-            .attr("font-size", (d: any) => (d.id === selectedNode.id ? "14px" : "12px"));
+            .attr("font-size", (d: any) => (d.id === selectedNode.id ? "18px" : "15px"));
 
         if (linksSel) {
             linksSel

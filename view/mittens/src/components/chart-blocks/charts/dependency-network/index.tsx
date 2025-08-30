@@ -701,12 +701,20 @@ export default function DependencyNetwork() {
                                         <div className="bg-purple-100 dark:bg-purple-900/30 rounded-md p-3 border-l-4 border-purple-400">
                                             <div className="text-purple-700 dark:text-purple-300 text-sm leading-relaxed">
                                                 {networkData.errorContext.issueDetails
-                                                    .filter(
-                                                        (issue) =>
-                                                            issue.type ==
-                                                            "CIRCULAR_DEPENDENCY"
+                                                    .filter((issue) => {
+                                                        // Only show circular issues relevant to the selected node
+                                                        if (issue.type !== "CIRCULAR_DEPENDENCY") return false;
+                                                        const affectsNode = issue.affectedNodes?.includes(selectedNode.id);
+                                                        const affectsEdge = Array.isArray(issue.affectedEdges)
+                                                            ? issue.affectedEdges.some((edgeId: string) => selectedNodeLinkIds.has(edgeId))
+                                                            : false;
+                                                        return Boolean(affectsNode || affectsEdge);
+                                                    })
+                                                    // De-duplicate identical suggestions
+                                                    .filter((issue, idx, arr) =>
+                                                        arr.findIndex((i: any) => i.suggestedFix === issue.suggestedFix) === idx
                                                     )
-                                                    .map((issue) => {
+                                                    .map((issue, issueIndex) => {
                                                         // Format the suggested fix with proper line breaks
                                                         const formattedFix =
                                                             issue.suggestedFix
@@ -728,16 +736,14 @@ export default function DependencyNetwork() {
                                                                 );
 
                                                         return (
-                                                            <div key="circular-fix">
+                                                            <div key={`circular-fix-${issueIndex}`}>
                                                                 {formattedFix.map(
                                                                     (
                                                                         line,
                                                                         lineIndex
                                                                     ) => (
                                                                         <div
-                                                                            key={
-                                                                                lineIndex
-                                                                            }
+                                                                            key={`circular-fix-${issueIndex}-line-${lineIndex}`}
                                                                             className={
                                                                                 lineIndex ===
                                                                                 0
