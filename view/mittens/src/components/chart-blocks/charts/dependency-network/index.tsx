@@ -167,9 +167,9 @@ export default function DependencyNetwork() {
         >
           {/* Simple Component Column */}
           <td className="py-4 px-6">
-            <div className="flex items-center gap-3" style={{ marginLeft: depth * 20 }}>
+            <div className="flex items-center gap-3">
               {/* Always reserve space for expand button to maintain alignment */}
-              <div className="w-5 h-5 flex items-center justify-center">
+              <div className="w-5 h-5 flex items-center justify-center" style={{ marginLeft: depth * 20 }}>
                 {hasProvidees ? (
                   <button
                     onClick={e => { e.stopPropagation(); toggleExpand(node.id); }}
@@ -191,22 +191,21 @@ export default function DependencyNetwork() {
                   <div className="w-5 h-5"></div>
                 )}
               </div>
-              <span className="text-lg transition-transform group-hover:scale-110">{statusIcon}</span>
               <span className="text-gray-900 dark:text-white font-medium group-hover:text-gray-700 dark:group-hover:text-gray-200">{node.label}</span>
             </div>
-          </td>
-          
-          {/* Enhanced Package Column */}
-          <td className="py-4 px-6">
-            <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-300 border border-white dark:border-gray-600 shadow-sm">
-              {node.packageName}
-            </span>
           </td>
           
           {/* Enhanced Status Column */}
           <td className="py-4 px-6 text-center">
             <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 shadow-sm ${statusColor}`}>
               {statusText}
+            </span>
+          </td>
+          
+          {/* Enhanced Package Column */}
+          <td className="py-4 px-6 text-center">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 text-gray-700 dark:text-gray-300 border border-white dark:border-gray-600 shadow-sm">
+              {node.packageName}
             </span>
           </td>
           
@@ -360,7 +359,7 @@ export default function DependencyNetwork() {
                       Suggested Fix
                     </p>
                     <div className="bg-purple-100 dark:bg-purple-900/30 rounded-md p-3 border-l-4 border-purple-400">
-                      <p className="text-purple-700 dark:text-purple-300 text-sm leading-relaxed">
+                      <div className="text-purple-700 dark:text-purple-300 text-sm leading-relaxed">
                         {networkData.errorContext.issueDetails
                           .filter(issue => issue.type == "CIRCULAR_DEPENDENCY")
                           .map(issue => {
@@ -381,7 +380,7 @@ export default function DependencyNetwork() {
                               </div>
                             );
                           })}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -514,14 +513,14 @@ export default function DependencyNetwork() {
             {/* Beautiful Table Header */}
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800">
               <tr className="border-b-2 border-gray-200 dark:border-slate-600">
-                <th className="text-left py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
-                  Component
-                </th>
-                <th className="text-left py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
-                  Package
+                <th className="text-left py-5 pl-14 pr-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
+                  Components
                 </th>
                 <th className="text-center py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
                   Status
+                </th>
+                <th className="text-center py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
+                  Packages
                 </th>
                 <th className="text-center py-5 px-6 text-gray-800 dark:text-gray-200 font-bold tracking-wide text-xs uppercase">
                   Dependencies
@@ -535,7 +534,27 @@ export default function DependencyNetwork() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-700/50">
-              {filteredRoots.map(node => renderTreeRows(node))}
+              {filteredRoots.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
+                        <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">No Components Found</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          No components match the current filter criteria.
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredRoots.map(node => renderTreeRows(node))
+              )}
             </tbody>
           </table>
         </div>
