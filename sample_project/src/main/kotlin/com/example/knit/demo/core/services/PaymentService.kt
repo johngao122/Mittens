@@ -9,25 +9,17 @@ import knit.di
 @Provides
 class PaymentService {
     
-    // private val paymentGateway: PaymentGateway by di // Commented to avoid unresolved error
+    private val paymentGateway: PaymentGateway by di // Now resolved via SimplePaymentGateway
     
     fun processOrderPayment(order: Order, cardToken: String): PaymentResult {
         println("💳 PaymentService: Processing payment for order ${order.id}")
         
-        return PaymentResult(
-            success = false,
-            transactionId = null,
-            errorMessage = "PaymentGateway not available (unresolved dependency)"
-        )
+        return paymentGateway.processPayment(order.id, order.totalAmount, cardToken)
     }
     
     fun refundOrder(order: Order): PaymentResult {
         println("🔄 PaymentService: Processing refund for order ${order.id}")
         
-        return PaymentResult(
-            success = false,
-            transactionId = null,
-            errorMessage = "PaymentGateway not available (unresolved dependency)"
-        )
+        return paymentGateway.refund(order.id, order.totalAmount)
     }
 }

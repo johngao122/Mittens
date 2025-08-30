@@ -11,6 +11,8 @@ class ProductService {
     
     // Simple injection without named qualifiers
     private val productRepository: ProductRepository by di
+    // CIRCULAR_DEPENDENCY: ProductService depends on OrderService which depends on ProductService
+    private val orderService: OrderService by di
     
     fun findProduct(productId: Long): Product? {
         println("ProductService: Finding product $productId")
@@ -40,6 +42,18 @@ class ProductService {
     fun createProduct(product: Product): Product {
         println("ProductService: Creating new product ${product.name}")
         return productRepository.save(product)
+    }
+    
+    fun getProductOrderHistory(productId: Long): Map<String, Any> {
+        // CIRCULAR_DEPENDENCY: This method would need to access OrderService to get order history
+        // For demo purposes, we'll just call a method that triggers the dependency
+        println("ProductService: Getting order history for product $productId - this would use OrderService")
+        // Note: In a real implementation, this would cause infinite recursion
+        // We're just demonstrating the circular dependency for Knit to detect
+        return mapOf(
+            "productId" to productId,
+            "hasOrderService" to (orderService != null)
+        )
     }
 }
 

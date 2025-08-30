@@ -9,11 +9,13 @@ import knit.di
 class UserService {
     
     private val userRepository: UserRepository by di
-    // MISSING_COMPONENT_ANNOTATION: Trying to inject ValidationService but it lacks @Provides
     private val validationService: ValidationService by di
+    // CIRCULAR_DEPENDENCY: UserService depends on AuditService which will depend on UserService
+    private val auditService: AuditService by di
     
     fun findUser(userId: Long): User? {
         println("UserService: Finding user $userId")
+        auditService.logUserAction(userId, "find_user")
         return userRepository.findById(userId)
     }
     
@@ -38,7 +40,9 @@ class UserService {
             throw IllegalArgumentException("User validation failed: ${validation.getErrorMessage()}")
         }
         
-        return userRepository.save(user)
+        val savedUser = userRepository.save(user)
+        auditService.logUserAction(savedUser.id, "register_user", mapOf("email" to email, "name" to name))
+        return savedUser
     }
     
     fun updateUser(user: User): User {
