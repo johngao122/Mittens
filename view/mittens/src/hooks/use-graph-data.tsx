@@ -110,6 +110,47 @@ export function useGraphData(): GraphDataHook {
     refreshData();
   }, [refreshData]);
 
+  // Live updates via Server-Sent Events (SSE)
+  useEffect(() => {
+    let es: EventSource | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const connect = () => {
+      // Ensure previous is closed
+      if (es) {
+        try { es.close(); } catch (_) {}
+        es = null;
+      }
+      es = new EventSource('/api/stream');
+
+      // On any message, refresh data
+      es.onmessage = () => {
+        refreshData();
+      };
+
+      // Specifically handle graph-update events (more explicit)
+      es.addEventListener('graph-update', () => {
+        refreshData();
+      });
+
+      // Reconnect on error after small delay
+      es.onerror = () => {
+        if (es) { try { es.close(); } catch (_) {} }
+        es = null;
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(connect, 2000);
+      };
+    };
+
+    connect();
+
+    return () => {
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (es) { try { es.close(); } catch (_) {} }
+      es = null;
+    };
+  }, [refreshData]);
+
   return {
     data,
     loading,

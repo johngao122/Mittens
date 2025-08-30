@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import { broadcast } from '@/lib/sse';
 
 // Global variable to store the latest imported data
 let latestGraphData: any = null;
@@ -19,6 +20,18 @@ export async function POST(request: NextRequest) {
 
     // Store the data globally for retrieval
     latestGraphData = data;
+    
+    // Notify connected clients via SSE that new data is available
+    try {
+      broadcast('graph-update', {
+        nodeCount: data.graph.nodes.length,
+        edgeCount: data.graph.edges.length,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (e) {
+      // Non-fatal if broadcasting fails
+      console.warn('SSE broadcast failed:', e);
+    }
     
     // Optionally, also save to a file for persistence
     const dataDir = path.join(process.cwd(), 'src', 'data');
