@@ -86,45 +86,19 @@ class KnitAnalysisService(private val project: Project) {
 
                 logger.info("Knit project detected - Version: ${detectionResult.knitVersion ?: "Unknown"}")
 
-                progressIndicator?.text = "Analyzing source code..."
-                progressIndicator?.fraction = 0.3
-
-
-                val sourceAnalyzer = project.service<KnitSourceAnalyzer>()
-                val sourceComponents = sourceAnalyzer.analyzeProject()
-
-                logger.info("Found ${sourceComponents.size} components in source analysis")
-
-                progressIndicator?.text = "Compiling project with Knit transformations..."
-                progressIndicator?.fraction = 0.5
-
-
-                val gradleRunner = project.service<GradleTaskRunner>()
-                val compilationResult = gradleRunner.executeKnitCompilation(progressIndicator)
-
-                if (!compilationResult.success) {
-                    logger.warn("Gradle compilation had issues: ${compilationResult.errorOutput}")
-                }
-
-                progressIndicator?.text = "Analyzing bytecode..."
-                progressIndicator?.fraction = 0.7
-
-
-                val bytecodeAnalyzer = project.service<KnitBytecodeAnalyzer>()
-                val classesDir = gradleRunner.getExpectedClassesDirectory()
-
-                val bytecodeResult = if (classesDir != null) {
-                    bytecodeAnalyzer.analyzeBytecode(classesDir)
+                // Determine analysis approach based on knit.json availability
+                val gradleService = project.service<KnitGradleService>()
+                val useKnitJson = gradleService.hasKnitJsonFile()
+                
+                val mergedComponents = if (useKnitJson) {
+                    // Use knit.json-based analysis (faster and more accurate)
+                    logger.info("Using knit.json-based analysis approach")
+                    analyzeWithKnitJson(progressIndicator)
                 } else {
-                    logger.warn("Classes directory not found, skipping bytecode analysis")
-                    KnitBytecodeAnalyzer.BytecodeAnalysisResult(emptyList(), emptyList(), emptyList())
+                    // Fall back to traditional ASM-based analysis
+                    logger.info("knit.json not available, using traditional ASM-based analysis")
+                    analyzeWithASM(progressIndicator)
                 }
-
-                progressIndicator?.text = "Building dependency graph..."
-                progressIndicator?.fraction = 0.9
-
-
-                val mergedComponents = mergeAnalysisResults(sourceComponents, bytecodeResult.detectedComponents)
                 val dependencyGraph = buildDependencyGraph(mergedComponents)
                 val detectedIssues = detectIssues(mergedComponents, dependencyGraph)
 
@@ -162,8 +136,8 @@ class KnitAnalysisService(private val project: Project) {
                     knitVersion = detectionResult.knitVersion,
                     metadata = AnalysisMetadata(
                         analysisTimeMs = totalAnalysisTime,
-                        bytecodeFilesScanned = bytecodeResult.detectedComponents.size,
-                        sourceFilesScanned = sourceComponents.size,
+                        bytecodeFilesScanned = 0, // Not used in knit.json analysis
+                        sourceFilesScanned = mergedComponents.size,
                         validationTimeMs = validationTime,
                         deduplicationTimeMs = 0 
                     ),
@@ -205,6 +179,71 @@ class KnitAnalysisService(private val project: Project) {
     fun clearCache() {
         lastAnalysisResult = null
         logger.info("Analysis cache cleared")
+    }
+
+    /**
+     * Analyze project using knit.json - much faster than ASM analysis
+     */
+    private suspend fun analyzeWithKnitJson(progressIndicator: ProgressIndicator?): List<KnitComponent> {
+        progressIndicator?.text = "Loading dependency tree from knit.json..."
+        progressIndicator?.fraction = 0.3
+        
+        val sourceAnalyzer = project.service<KnitSourceAnalyzer>()
+        val components = sourceAnalyzer.analyzeFromKnitJson()
+        
+        if (components.isEmpty()) {
+            logger.warn("No components found in knit.json, falling back to source analysis")
+            progressIndicator?.text = "Analyzing source code as fallback..."
+            progressIndicator?.fraction = 0.5
+            return sourceAnalyzer.analyzeFromSource()
+        }
+        
+        progressIndicator?.text = "Dependency analysis complete"
+        progressIndicator?.fraction = 0.9
+        
+        logger.info("knit.json analysis complete: ${components.size} components loaded")
+        return components
+    }
+
+    /**
+     * Traditional ASM-based analysis (preserved for backward compatibility)
+     */
+    private suspend fun analyzeWithASM(progressIndicator: ProgressIndicator?): List<KnitComponent> {
+        progressIndicator?.text = "Analyzing source code..."
+        progressIndicator?.fraction = 0.3
+
+        val sourceAnalyzer = project.service<KnitSourceAnalyzer>()
+        val sourceComponents = sourceAnalyzer.analyzeFromSource()
+
+        logger.info("Found ${sourceComponents.size} components in source analysis")
+
+        progressIndicator?.text = "Compiling project with Knit transformations..."
+        progressIndicator?.fraction = 0.5
+
+        val gradleRunner = project.service<GradleTaskRunner>()
+        val compilationResult = gradleRunner.executeKnitCompilation(progressIndicator)
+
+        if (!compilationResult.success) {
+            logger.warn("Gradle compilation had issues: ${compilationResult.errorOutput}")
+        }
+
+        progressIndicator?.text = "Analyzing bytecode..."
+        progressIndicator?.fraction = 0.7
+
+        val bytecodeAnalyzer = project.service<KnitBytecodeAnalyzer>()
+        val classesDir = gradleRunner.getExpectedClassesDirectory()
+
+        val bytecodeResult = if (classesDir != null) {
+            bytecodeAnalyzer.analyzeBytecode(classesDir)
+        } else {
+            logger.warn("Classes directory not found, skipping bytecode analysis")
+            KnitBytecodeAnalyzer.BytecodeAnalysisResult(emptyList(), emptyList(), emptyList())
+        }
+
+        progressIndicator?.text = "Merging analysis results..."
+        progressIndicator?.fraction = 0.9
+
+        return mergeAnalysisResults(sourceComponents, bytecodeResult.detectedComponents)
     }
 
     private fun mergeAnalysisResults(
