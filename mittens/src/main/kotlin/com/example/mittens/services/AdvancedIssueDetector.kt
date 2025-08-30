@@ -786,44 +786,83 @@ class AdvancedIssueDetector(private val project: Project) {
 
     /**
      * Detect ambiguous providers with component exclusion support
+     * Excludes components as consumers but keeps them as providers to avoid hiding real ambiguity issues
      */
     fun detectEnhancedAmbiguousProviders(
         components: List<KnitComponent>,
         excludedComponents: Set<String>
     ): List<KnitIssue> {
-        val filteredComponents = components.filter { component ->
-            val fullName = "${component.packageName}.${component.className}"
-            fullName !in excludedComponents
-        }
-        return detectEnhancedAmbiguousProviders(filteredComponents)
+        // For ambiguous provider detection, we need ALL components as providers
+        // but we can exclude components from being analyzed for their own ambiguity issues
+        // However, since this analyzer looks at provider conflicts globally, 
+        // we should include all components to detect all potential ambiguities
+        return detectEnhancedAmbiguousProviders(components)
     }
 
     /**
      * Detect singleton violations with component exclusion support
+     * Keeps all components as providers to detect all potential singleton conflicts
      */
     fun detectAdvancedSingletonViolations(
         components: List<KnitComponent>,
         excludedComponents: Set<String>
     ): List<KnitIssue> {
-        val filteredComponents = components.filter { component ->
-            val fullName = "${component.packageName}.${component.className}"
-            fullName !in excludedComponents
-        }
-        return detectAdvancedSingletonViolations(filteredComponents)
+        // For singleton violation detection, we need ALL components as providers
+        // to detect all potential singleton conflicts across the entire system
+        return detectAdvancedSingletonViolations(components)
     }
 
     /**
      * Detect named qualifier mismatches with component exclusion support
+     * Excludes components as consumers but keeps them as providers for qualifier matching
      */
     fun detectEnhancedNamedQualifierMismatches(
         components: List<KnitComponent>,
         excludedComponents: Set<String>
     ): List<KnitIssue> {
-        val filteredComponents = components.filter { component ->
-            val fullName = "${component.packageName}.${component.className}"
-            fullName !in excludedComponents
+        // We need ALL components as providers for qualifier matching
+        // but only check dependencies for non-excluded components
+        val issues = mutableListOf<KnitIssue>()
+        val qualifierAnalysis = analyzeQualifierUsage(components)
+
+        // Filter out mismatches from excluded components (they're in circular dependencies)
+        val filteredMismatches = qualifierAnalysis.mismatches.filter { mismatch ->
+            mismatch.consumerComponent !in excludedComponents
         }
-        return detectEnhancedNamedQualifierMismatches(filteredComponents)
+
+        filteredMismatches.forEach { mismatch ->
+            val suggestions = generateQualifierSuggestions(
+                mismatch.requestedQualifier,
+                mismatch.availableQualifiers
+            )
+
+            issues.add(
+                KnitIssue(
+                    type = IssueType.NAMED_QUALIFIER_MISMATCH,
+                    severity = Severity.ERROR,
+                    message = "Named qualifier '@Named(${mismatch.requestedQualifier})' not found for type: ${mismatch.dependencyType}",
+                    componentName = mismatch.consumerComponent,
+                    sourceLocation = mismatch.sourceFile,
+                    suggestedFix = if (suggestions.isNotEmpty()) {
+                        "Did you mean: ${suggestions.joinToString(", ") { "'$it'" }}? Available qualifiers: ${
+                            mismatch.availableQualifiers.joinToString(
+                                ", "
+                            ) { "'$it'" }
+                        }"
+                    } else {
+                        "Add a provider with qualifier '@Named(${mismatch.requestedQualifier})' for type ${mismatch.dependencyType}, or check if the qualifier name is correct."
+                    },
+                    metadata = mapOf(
+                        "requestedQualifier" to mismatch.requestedQualifier,
+                        "dependencyType" to mismatch.dependencyType,
+                        "availableQualifiers" to mismatch.availableQualifiers,
+                        "suggestions" to suggestions
+                    )
+                )
+            )
+        }
+
+        return issues
     }
 
     /**
