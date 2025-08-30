@@ -21,7 +21,6 @@
         <li>Interactive dependency graph visualization</li>
         <li>Detection of circular dependencies and ambiguous providers</li>
         <li>Issue highlighting and quick-fix suggestions</li>
-        <li>Export capabilities for CI/CD integration</li>
     </ul>
     <em>Supports Knit framework version 0.1.4+</em>
   ]]></description>
@@ -31,6 +30,9 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
     <depends>org.jetbrains.kotlin</depends>
+    <!-- Declare compatibility with both Kotlin plugin modes -->
+    <depends optional="true">org.jetbrains.kotlin.plugin.mode.k1</depends>
+    <depends optional="true">org.jetbrains.kotlin.plugin.mode.k2</depends>
     <depends>org.jetbrains.plugins.gradle</depends>
 
     <!-- Extension points defined by the plugin.

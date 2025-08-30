@@ -7,7 +7,7 @@ interface GraphDataHook {
   loading: boolean;
   error: string | null;
   uploadFile: (file: File) => Promise<boolean>;
-  refreshData: () => Promise<void>;
+  refreshData: (opts?: { fromSse?: boolean }) => Promise<void>;
   importData: (data: any) => Promise<boolean>;
 }
 
@@ -16,13 +16,12 @@ export function useGraphData(): GraphDataHook {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshData = useCallback(async () => {
+  const fetchLatest = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
       const response = await fetch('/api/import-data');
-      
       if (response.ok) {
         const result = await response.json();
         setData(result.data);
@@ -38,6 +37,45 @@ export function useGraphData(): GraphDataHook {
       setLoading(false);
     }
   }, []);
+
+  const refreshData = useCallback(async (opts?: { fromSse?: boolean }) => {
+    // If called from SSE, only fetch latest data; do not trigger builds
+    if (opts?.fromSse) {
+      await fetchLatest();
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const bridge = (typeof window !== 'undefined' && (window as any).mittensBridge) || null;
+      if (bridge?.refresh) {
+        // Ask IntelliJ plugin to build and push data; SSE should update us.
+        try { bridge.refresh(); } catch (_) {}
+        // Safety fallback: poll once after a short delay
+        setTimeout(() => { fetchLatest(); }, 1500);
+        return;
+      }
+
+      // Fallback for browser-only use: run local server-side build route
+      const refreshResp = await fetch('/api/refresh', { method: 'POST' });
+      if (refreshResp.ok) {
+        const result = await refreshResp.json();
+        if (result?.data) {
+          setData(result.data);
+          return;
+        }
+      }
+
+      // As a last resort, just fetch whatever is available
+      await fetchLatest();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchLatest]);
 
   const uploadFile = useCallback(async (file: File): Promise<boolean> => {
     try {
@@ -107,8 +145,8 @@ export function useGraphData(): GraphDataHook {
 
   // Load data on mount
   useEffect(() => {
-    refreshData();
-  }, [refreshData]);
+    fetchLatest();
+  }, [fetchLatest]);
 
   // Live updates via Server-Sent Events (SSE)
   useEffect(() => {
@@ -125,12 +163,12 @@ export function useGraphData(): GraphDataHook {
 
       // On any message, refresh data
       es.onmessage = () => {
-        refreshData();
+        refreshData({ fromSse: true });
       };
 
       // Specifically handle graph-update events (more explicit)
       es.addEventListener('graph-update', () => {
-        refreshData();
+        refreshData({ fromSse: true });
       });
 
       // Reconnect on error after small delay

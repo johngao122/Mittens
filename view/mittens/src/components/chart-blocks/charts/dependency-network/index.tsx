@@ -72,9 +72,9 @@ export default function DependencyNetwork() {
     // ========================================
     // EVENT HANDLERS
     // ========================================
-  const handleNodeClick = (node: D3Node | null) => {
-    setSelectedNode(node);
-  };
+    const handleNodeClick = (node: D3Node | null) => {
+        setSelectedNode(node);
+    };
 
     // ========================================
     // LAYOUT & RESPONSIVE BEHAVIOR
@@ -474,7 +474,7 @@ export default function DependencyNetwork() {
                         </label>
 
                         <button
-                            onClick={refreshData}
+                            onClick={() => refreshData()}
                             disabled={loading}
                             className="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
                         >
@@ -703,63 +703,94 @@ export default function DependencyNetwork() {
                                                 {networkData.errorContext.issueDetails
                                                     .filter((issue) => {
                                                         // Only show circular issues relevant to the selected node
-                                                        if (issue.type !== "CIRCULAR_DEPENDENCY") return false;
-                                                        const affectsNode = issue.affectedNodes?.includes(selectedNode.id);
-                                                        const affectsEdge = Array.isArray(issue.affectedEdges)
-                                                            ? issue.affectedEdges.some((edgeId: string) => selectedNodeLinkIds.has(edgeId))
-                                                            : false;
-                                                        return Boolean(affectsNode || affectsEdge);
+                                                        if (
+                                                            issue.type !==
+                                                            "CIRCULAR_DEPENDENCY"
+                                                        )
+                                                            return false;
+                                                        const affectsNode =
+                                                            issue.affectedNodes?.includes(
+                                                                selectedNode.id
+                                                            );
+                                                        const affectsEdge =
+                                                            Array.isArray(
+                                                                issue.affectedEdges
+                                                            )
+                                                                ? issue.affectedEdges.some(
+                                                                      (
+                                                                          edgeId: string
+                                                                      ) =>
+                                                                          selectedNodeLinkIds.has(
+                                                                              edgeId
+                                                                          )
+                                                                  )
+                                                                : false;
+                                                        return Boolean(
+                                                            affectsNode ||
+                                                                affectsEdge
+                                                        );
                                                     })
                                                     // De-duplicate identical suggestions
-                                                    .filter((issue, idx, arr) =>
-                                                        arr.findIndex((i: any) => i.suggestedFix === issue.suggestedFix) === idx
+                                                    .filter(
+                                                        (issue, idx, arr) =>
+                                                            arr.findIndex(
+                                                                (i: any) =>
+                                                                    i.suggestedFix ===
+                                                                    issue.suggestedFix
+                                                            ) === idx
                                                     )
-                                                    .map((issue, issueIndex) => {
-                                                        // Format the suggested fix with proper line breaks
-                                                        const formattedFix =
-                                                            issue.suggestedFix
-                                                                .replace(
-                                                                    /(\d\))/g,
-                                                                    "\n$1"
-                                                                )
-                                                                .split("\n")
-                                                                .filter(
-                                                                    (line) =>
-                                                                        line.trim()
-                                                                )
-                                                                .map(
-                                                                    (
-                                                                        line,
-                                                                        index
-                                                                    ) =>
-                                                                        line.trim()
-                                                                );
-
-                                                        return (
-                                                            <div key={`circular-fix-${issueIndex}`}>
-                                                                {formattedFix.map(
-                                                                    (
-                                                                        line,
-                                                                        lineIndex
-                                                                    ) => (
-                                                                        <div
-                                                                            key={`circular-fix-${issueIndex}-line-${lineIndex}`}
-                                                                            className={
-                                                                                lineIndex ===
-                                                                                0
-                                                                                    ? "mb-2"
-                                                                                    : "ml-0 mb-1"
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                line
-                                                                            }
-                                                                        </div>
+                                                    .map(
+                                                        (issue, issueIndex) => {
+                                                            // Format the suggested fix with proper line breaks
+                                                            const formattedFix =
+                                                                issue.suggestedFix
+                                                                    .replace(
+                                                                        /(\d\))/g,
+                                                                        "\n$1"
                                                                     )
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
+                                                                    .split("\n")
+                                                                    .filter(
+                                                                        (
+                                                                            line
+                                                                        ) =>
+                                                                            line.trim()
+                                                                    )
+                                                                    .map(
+                                                                        (
+                                                                            line,
+                                                                            index
+                                                                        ) =>
+                                                                            line.trim()
+                                                                    );
+
+                                                            return (
+                                                                <div
+                                                                    key={`circular-fix-${issueIndex}`}
+                                                                >
+                                                                    {formattedFix.map(
+                                                                        (
+                                                                            line,
+                                                                            lineIndex
+                                                                        ) => (
+                                                                            <div
+                                                                                key={`circular-fix-${issueIndex}-line-${lineIndex}`}
+                                                                                className={
+                                                                                    lineIndex ===
+                                                                                    0
+                                                                                        ? "mb-2"
+                                                                                        : "ml-0 mb-1"
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    line
+                                                                                }
+                                                                            </div>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        }
+                                                    )}
                                             </div>
                                         </div>
                                     </div>
@@ -777,7 +808,7 @@ export default function DependencyNetwork() {
             </div>
 
             {/* ===== COMPONENT DATA TABLE ===== */}
-            {/* Enhanced Component Inventory Table */}
+            {/* Enhanced Component Table */}
             <div className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden">
                 <div className="bg-gradient-to-r from-gray-100 to-gray-50 dark:from-slate-700 dark:to-slate-800 px-6 py-4 border-b border-gray-200 dark:border-slate-600">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -787,7 +818,7 @@ export default function DependencyNetwork() {
                                 <span className="text-blue-500 dark:text-blue-400">
                                     📊
                                 </span>
-                                Component Inventory
+                                Component Directory
                             </h4>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                 Complete overview of all components and their

@@ -12,10 +12,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefBrowser
+import com.intellij.ui.jcef.JBCefBrowserBuilder
+import com.intellij.ui.jcef.JBCefClient
 import com.intellij.util.ui.JBUI
 import com.example.mittens.services.KnitAnalysisService
 import com.example.mittens.export.GraphExportService
+import com.example.mittens.services.GradleTaskRunner
+import com.example.mittens.services.KnitSourceAnalyzer
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.ui.jcef.JBCefJSQuery
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.io.File
@@ -27,8 +34,10 @@ class KnitWebViewFileEditor(private val project: Project, private val virtualFil
     
     private val logger = thisLogger()
     private var browser: JBCefBrowser? = null
+    private var cefClient: JBCefClient? = null
     private lateinit var mainPanel: JPanel
     private lateinit var statusLabel: JLabel
+    private var refreshQuery: JBCefJSQuery? = null
     
     // Default URL for the Next.js dependency graph page
     private val defaultUrl = "http://localhost:3000/dependency"
@@ -87,7 +96,17 @@ class KnitWebViewFileEditor(private val project: Project, private val virtualFil
     
     private fun initializeBrowser() {
         try {
-            browser = JBCefBrowser(defaultUrl)
+            // Create a dedicated client so we can configure properties before browser creation
+            cefClient = JBCefApp.getInstance().createClient().apply {
+                // Allow creating JS queries after the browser is created (required for our bridge)
+                try { this.setProperty(JBCefClient.Properties.JS_QUERY_POOL_SIZE, 4) } catch (_: Throwable) {}
+            }
+
+            val client = cefClient ?: return
+            browser = JBCefBrowserBuilder()
+                .setClient(client)
+                .setUrl(defaultUrl)
+                .build()
             browser?.let { browserInstance ->
                 mainPanel.add(browserInstance.component, BorderLayout.CENTER)
                 statusLabel.text = "Loading web view..."
@@ -104,6 +123,8 @@ class KnitWebViewFileEditor(private val project: Project, private val virtualFil
                             } else {
                                 "Connection error (HTTP $httpStatusCode)"
                             }
+                            // Re-inject JS mapping after load using existing query
+                            injectJsMapping()
                         }
                     }
 
@@ -120,10 +141,46 @@ class KnitWebViewFileEditor(private val project: Project, private val virtualFil
                         }
                     }
                 }, browserInstance.cefBrowser)
+
+                // Create the JS bridge once and inject mapping
+                installJsBridge()
             }
         } catch (e: Exception) {
             logger.error("Failed to initialize JCEF browser", e)
             showBrowserError()
+        }
+    }
+
+    private fun installJsBridge() {
+        val browserInstance = browser ?: return
+        if (refreshQuery == null) {
+            refreshQuery = JBCefJSQuery.create(browserInstance)
+            refreshQuery?.addHandler { _ ->
+                // Trigger build + export on background thread
+                ApplicationManager.getApplication().executeOnPooledThread {
+                    try {
+                        runBuildAndExportToWeb()
+                    } catch (e: Exception) {
+                        logger.warn("Bridge refresh failed", e)
+                    }
+                }
+                null
+            }
+        }
+        injectJsMapping()
+    }
+
+    private fun injectJsMapping() {
+        val browserInstance = browser ?: return
+        val injected = refreshQuery?.inject("refresh") ?: return
+        val js = """
+            window.mittensBridge = window.mittensBridge || {};
+            window.mittensBridge.refresh = function() { $injected };
+        """.trimIndent()
+        try {
+            browserInstance.cefBrowser.executeJavaScript(js, browserInstance.cefBrowser.url, 0)
+        } catch (e: Exception) {
+            logger.warn("Failed to inject JS bridge", e)
         }
     }
     
@@ -161,6 +218,70 @@ class KnitWebViewFileEditor(private val project: Project, private val virtualFil
         browser?.let { browser ->
             browser.loadURL(defaultUrl)
             statusLabel.text = "Refreshing..."
+        }
+    }
+
+    private fun runBuildAndExportToWeb() {
+        SwingUtilities.invokeLater { statusLabel.text = "Running Gradle: shadowJarWithKnit..." }
+
+        val gradle = project.getService(GradleTaskRunner::class.java)
+        val result = gradle.runShadowJarWithKnit()
+        if (!result.success) {
+            SwingUtilities.invokeLater {
+                statusLabel.text = "Gradle failed"
+                Messages.showErrorDialog(project, "Gradle failed: ${result.errorOutput.take(4000)}", "Gradle Error")
+            }
+            return
+        }
+
+        try {
+            SwingUtilities.invokeLater { statusLabel.text = "Analyzing + exporting graph..." }
+
+            // Use knit.json if present (analyzer prefers it) and export consistent JSON
+            val analysisService = project.getService(KnitAnalysisService::class.java)
+            // Run analysis synchronously
+            val analysisResult = kotlinx.coroutines.runBlocking {
+                analysisService.runAnalysis()
+            }
+
+            val exportService = project.getService(GraphExportService::class.java)
+            val graphJson = exportService.exportToJson(analysisResult)
+
+            // POST to Next.js API
+            postJsonToWebApp(graphJson)
+
+            // Reload the web view to surface any UI changes; SSE will also update
+            SwingUtilities.invokeLater {
+                statusLabel.text = "Build + export complete"
+                refreshBrowser()
+            }
+        } catch (e: Exception) {
+            logger.error("Export to web failed", e)
+            SwingUtilities.invokeLater {
+                statusLabel.text = "Export failed"
+                Messages.showErrorDialog(project, "Export failed: ${e.message}", "Export Error")
+            }
+        }
+    }
+
+    private fun postJsonToWebApp(payload: Any) {
+        val objectMapper = com.fasterxml.jackson.databind.ObjectMapper()
+            .registerModule(com.fasterxml.jackson.module.kotlin.KotlinModule.Builder().build())
+        val jsonBytes = objectMapper.writeValueAsBytes(payload)
+
+        val url = java.net.URL("http://localhost:3000/api/import-data")
+        val conn = (url.openConnection() as java.net.HttpURLConnection).apply {
+            requestMethod = "POST"
+            doOutput = true
+            setRequestProperty("Content-Type", "application/json")
+            connectTimeout = 5000
+            readTimeout = 15000
+        }
+        conn.outputStream.use { it.write(jsonBytes) }
+        val code = conn.responseCode
+        if (code !in 200..299) {
+            val err = conn.errorStream?.bufferedReader()?.readText()
+            throw RuntimeException("Web app import failed (HTTP $code): ${err ?: ""}")
         }
     }
     
