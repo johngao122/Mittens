@@ -264,24 +264,42 @@ export default function D3Network({
         function forceAnchor(alpha: number) {
             nodes.forEach((node: any) => {
                 if (node._manuallyPositioned && node._targetX !== undefined && node._targetY !== undefined) {
+                    // Skip anchor force if node is currently being dragged
+                    if (node.fx !== null || node.fy !== null) return;
+                    
+                    // Check if any connected node is being dragged - if so, reduce anchor force
+                    const connectedLinks = links.filter(link => {
+                        const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+                        const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
+                        return sourceId === node.id || targetId === node.id;
+                    });
+                    
+                    const hasConnectedDraggedNode = connectedLinks.some(link => {
+                        const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
+                        const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
+                        const sourceNode = nodes.find(n => n.id === sourceId);
+                        const targetNode = nodes.find(n => n.id === targetId);
+                        return (sourceNode && sourceNode.fx !== null) || (targetNode && targetNode.fx !== null);
+                    });
+                    
                     // Calculate distance from target
                     const dx = node._targetX - node.x;
                     const dy = node._targetY - node.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    // Check if this is a recently positioned node (within last 10 seconds)
-                    const isRecentlyPositioned = node._positionedAt && (Date.now() - node._positionedAt < 10000);
+                    // Check if this is a recently positioned node (within last 5 seconds)
+                    const isRecentlyPositioned = node._positionedAt && (Date.now() - node._positionedAt < 5000);
                     
                     if (isRecentlyPositioned) {
-                        // Extremely strong anchor for recently positioned nodes - acts like fixed positioning
-                        const anchorStrength = 0.99; // Almost completely locked
+                        // Reduce anchor strength if connected node is being dragged
+                        let anchorStrength = hasConnectedDraggedNode ? 0.2 : 0.8;
                         node.vx += dx * anchorStrength;
                         node.vy += dy * anchorStrength;
                     } else {
-                        // Normal anchor force for older positioned nodes
+                        // Weaker anchor force for older positioned nodes
                         const maxDistance = 50;
-                        const strengthMultiplier = Math.max(0, (distance - 5) / maxDistance);
-                        const anchorStrength = 0.8 * strengthMultiplier;
+                        const strengthMultiplier = Math.max(0, Math.min(1, distance / maxDistance));
+                        const anchorStrength = 0.3 * strengthMultiplier;
                         
                         if (distance > 5) {
                             node.vx += dx * anchorStrength * alpha;
@@ -298,8 +316,9 @@ export default function D3Network({
         // Create force simulation with multiple physics forces
         const simulation = d3
             .forceSimulation(nodes)
-            .alphaDecay(0.0228) // Normal decay rate to prevent excessive motion
-            .velocityDecay(0.4) // Normal velocity decay for stable motion
+            .alphaDecay(0.02) // Moderate decay to prevent over-activity
+            .velocityDecay(0.7) // Higher velocity decay for quicker settling
+            .alpha(0.6) // Moderate initial energy
             .force(
                 "link",
                 d3
@@ -318,8 +337,8 @@ export default function D3Network({
                         const targetBeingDragged = targetNode && (targetNode.fx !== null);
                         
                         if (sourceBeingDragged || targetBeingDragged) {
-                            // Much shorter rest length for maximum stretch and smooth following
-                            return baseDistance * 0.2;
+                            // Smoother elastic behavior with gradual distance reduction
+                            return baseDistance * 0.3; // Increased from 0.2 for smoother following
                         }
                         
                         // If either node is manually positioned, slightly flexible
@@ -327,7 +346,7 @@ export default function D3Network({
                         const targetManuallyPositioned = targetNode && targetNode._manuallyPositioned;
                         
                         if (sourceManuallyPositioned || targetManuallyPositioned) {
-                            return baseDistance * 0.7;
+                            return baseDistance * 0.8; // Increased from 0.7 for smoother connections
                         }
                         
                         return baseDistance;
@@ -345,35 +364,38 @@ export default function D3Network({
                         const targetBeingDragged = targetNode && (targetNode.fx !== null);
                         
                         if (sourceBeingDragged || targetBeingDragged) {
-                            return baseStrength * 0.8; // Higher strength for connected nodes to follow
+                            // OVERRIDE all other positioning states when actively dragging
+                            // This ensures positioned nodes can still be pulled by dragged nodes
+                            return baseStrength * 1.8; // Very high strength to pull positioned nodes
                         }
                         
-                        // COMPLETELY disable link forces for click-locked nodes
-                        const sourceClickLocked = sourceNode && (sourceNode as any)._clickLocked;
-                        const targetClickLocked = targetNode && (targetNode as any)._clickLocked;
+                        // Only disable link forces for click-locked nodes that are NOT being dragged
+                        const sourceClickLocked = sourceNode && (sourceNode as any)._clickLocked && !sourceBeingDragged;
+                        const targetClickLocked = targetNode && (targetNode as any)._clickLocked && !targetBeingDragged;
                         
                         if (sourceClickLocked || targetClickLocked) {
-                            return 0; // No link force for click-locked nodes
+                            return baseStrength * 0.2; // Slightly higher for smoother connections
                         }
                         
-                        // Special handling for drag-positioned nodes (keep them more fluid)
-                        const sourceDragPositioned = sourceNode && (sourceNode as any)._dragPositioned;
-                        const targetDragPositioned = targetNode && (targetNode as any)._dragPositioned;
-                        
-                        if (sourceDragPositioned || targetDragPositioned) {
-                            return baseStrength * 0.8; // High strength to maintain fluidity while preventing slingback
-                        }
-                        
-                        // If either node is manually positioned, keep reasonable strength for fluid motion
+                        // Reduce anchor influence for manually positioned nodes to allow easier dragging
                         const sourceManuallyPositioned = sourceNode && sourceNode._manuallyPositioned;
                         const targetManuallyPositioned = targetNode && targetNode._manuallyPositioned;
                         
+                        // Check if this is a recently positioned node (within last 5 seconds)
+                        const sourceRecentlyPositioned = sourceNode && sourceNode._positionedAt && (Date.now() - sourceNode._positionedAt < 5000);
+                        const targetRecentlyPositioned = targetNode && targetNode._positionedAt && (Date.now() - targetNode._positionedAt < 5000);
+                        
+                        // If either node was recently positioned, use very weak link force to prevent slingback
+                        if (sourceRecentlyPositioned || targetRecentlyPositioned) {
+                            return baseStrength * 0.05; // Very weak to prevent pulling back to dependencies
+                        }
+                        
                         if (sourceManuallyPositioned && targetManuallyPositioned) {
-                            return baseStrength * 0.4; // Keep reasonable strength between positioned nodes
+                            return baseStrength * 0.1; // Very weak between positioned nodes
                         }
                         
                         if (sourceManuallyPositioned || targetManuallyPositioned) {
-                            return baseStrength * 0.7; // Strong for mixed connections to maintain fluid motion
+                            return baseStrength * 0.2; // Weak for mixed connections to prevent pulling
                         }
                         
                         return baseStrength;
@@ -427,18 +449,16 @@ export default function D3Network({
                 d3
                     .drag<SVGCircleElement, D3Node>()
                     .on("start", (event, d) => {
-                        // Clear click-locked status when dragging starts
+                        // Clear all positioning flags to ensure free movement
                         delete (d as any)._clickLocked;
-                        
-                        // Don't clear manually positioned status - keep it for connected nodes
-                        // Only clear it for the dragged node to ensure it moves freely
                         delete (d as any)._manuallyPositioned;
                         delete (d as any)._targetX;
                         delete (d as any)._targetY;
                         delete (d as any)._dragPositioned;
+                        delete (d as any)._positionedAt;
                         
-                        // Higher simulation activity for responsive following
-                        if (!event.active) simulation.alphaTarget(0.5).restart();
+                        // Higher simulation activity for smooth dragging
+                        if (!event.active) simulation.alphaTarget(0.6).restart();
                         
                         // Fix only the dragged node position during drag
                         d.fx = d.x;
@@ -449,25 +469,30 @@ export default function D3Network({
                         d.fx = event.x;
                         d.fy = event.y;
                         
-                        // Active simulation during drag for responsive following
-                        simulation.alphaTarget(0.5);
+                        // Maintain moderate simulation activity for smooth following
+                        simulation.alphaTarget(0.6);
                     })
                     .on("end", (event, d) => {
-                        // Mark as manually positioned to prevent slingback, but keep it draggable
+                        // Mark as manually positioned with strong anchoring
                         (d as any)._manuallyPositioned = true;
                         (d as any)._targetX = event.x;
                         (d as any)._targetY = event.y;
-                        (d as any)._dragPositioned = true; // Flag to distinguish from click-positioned
-                        (d as any)._positionedAt = Date.now(); // Timestamp for recent positioning
+                        (d as any)._dragPositioned = true;
+                        (d as any)._positionedAt = Date.now();
                         
-                        // Set final position and release from fixed positioning immediately
+                        // Set final position firmly
                         d.x = event.x;
                         d.y = event.y;
-                        d.fx = null; // Release fixed positioning to prevent phase-through
-                        d.fy = null; // Release fixed positioning to prevent phase-through
+                        d.fx = null;
+                        d.fy = null;
                         
-                        // Use very low simulation activity and rely on strong anchor force
-                        simulation.alphaTarget(0.02);
+                        // Use higher simulation activity initially to establish position against link forces
+                        simulation.alphaTarget(0.3);
+                        
+                        // Quick cooldown after establishing position
+                        setTimeout(() => {
+                            simulation.alphaTarget(0.02);
+                        }, 300);
                     })
             );
 

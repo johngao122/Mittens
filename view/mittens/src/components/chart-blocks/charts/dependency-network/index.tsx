@@ -241,7 +241,7 @@ export default function DependencyNetwork() {
           {/* Enhanced Dependencies Column */}
           <td className="py-4 px-6 text-center">
             <div className="flex items-center justify-center">
-              <span className="inline-flex items-center justify-center w-10 h-8 bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 text-purple-700 dark:text-purple-300 rounded-lg text-sm font-bold border border-purple-200 dark:border-purple-700/50 shadow-sm">
+              <span className="inline-flex items-center justify-center w-10 h-8 bg-gradient-to-r from-emerald-100 to-emerald-200 dark:from-emerald-900/30 dark:to-emerald-800/30 text-emerald-700 dark:text-emerald-300 rounded-lg text-sm font-bold border border-emerald-200 dark:border-emerald-700/50 shadow-sm">
                 {node.metadata.dependencyCount}
               </span>
             </div>
@@ -259,7 +259,7 @@ export default function DependencyNetwork() {
           {/* Enhanced Connections Column */}
           <td className="py-4 px-6 text-center">
             <div className="flex items-center justify-center">
-              <span className="inline-flex items-center justify-center w-10 h-8 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-900/30 dark:to-slate-800/30 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold border border-slate-300 dark:border-slate-600 shadow-sm">
+              <span className="inline-flex items-center justify-center w-10 h-8 bg-gradient-to-r from-rose-100 to-rose-200 dark:from-rose-900/30 dark:to-rose-800/30 text-rose-700 dark:text-rose-300 rounded-lg text-sm font-bold border border-rose-200 dark:border-rose-700/50 shadow-sm">
                 {connectionCount}
               </span>
             </div>
