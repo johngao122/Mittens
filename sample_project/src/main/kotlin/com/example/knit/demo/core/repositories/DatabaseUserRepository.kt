@@ -3,7 +3,7 @@ package com.example.knit.demo.core.repositories
 import com.example.knit.demo.core.models.User
 import knit.Provides
 
-@Provides(UserRepository::class)
+// @Provides(UserRepository::class) - Removed to fix ambiguous provider issue
 class DatabaseUserRepository : UserRepository {
     
     private val database = mutableMapOf<Long, User>()

@@ -1,16 +1,18 @@
+import tiktok.knit.plugin.KnitExtension
+
 buildscript {
     repositories {
         mavenCentral()
         gradlePluginPortal()
     }
     dependencies {
-        classpath("io.github.tiktok.knit:knit-plugin:0.1.4")
+        classpath("io.github.tiktok.knit:knit-plugin:0.1.5")
     }
 }
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.1.0"
+    id("org.jetbrains.kotlin.jvm") version "2.1.20"
     id("com.gradleup.shadow") version "8.3.6"
     id("application")
 }
@@ -20,12 +22,16 @@ apply(plugin = "io.github.tiktok.knit.plugin")
 group = "com.example.knit"
 version = "1.0.0"
 
+extensions.getByType<KnitExtension>().apply {
+    dependencyTreeOutputPath.set("build/knit.json")
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("io.github.tiktok.knit:knit:0.1.4")
+    implementation("io.github.tiktok.knit:knit:0.1.5")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     
     // Optional: For better logging
@@ -35,20 +41,20 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.example.knit.demo.main.MainApplicationKt")
+    mainClass.set("com.example.knit.demo.main.SimpleECommerceApplicationKt")
 }
 
 tasks {
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "17"
+            jvmTarget = "21"
             freeCompilerArgs = listOf("-Xjsr305=strict")
         }
     }
     
     withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
     }
 
     shadowJar {
@@ -68,5 +74,5 @@ tasks {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }

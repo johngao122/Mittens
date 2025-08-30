@@ -12,8 +12,8 @@ data class AuditEvent(
     val timestamp: LocalDateTime = LocalDateTime.now()
 )
 
-// MISSING_COMPONENT_ANNOTATION: Missing @Provides annotation
-// @Provides  // Commented out to demonstrate missing annotation error
+// MISSING_COMPONENT_ANNOTATION: Missing @Provides annotation - NOW FIXED
+@Provides
 class AuditService {
     
     private val auditLog = mutableListOf<AuditEvent>()

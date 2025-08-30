@@ -6,7 +6,7 @@ import knit.Provides
 // AMBIGUOUS_PROVIDER: Third implementation of UserRepository interface
 // Now we have DatabaseUserRepository, InMemoryUserRepository, and CachedUserRepository
 // all providing UserRepository::class
-@Provides(UserRepository::class)
+// @Provides(UserRepository::class) - Removed to fix ambiguous provider issue
 class CachedUserRepository : UserRepository {
     
     private val cache = mutableMapOf<Long, User>()
@@ -61,7 +61,7 @@ class CachedUserRepository : UserRepository {
 }
 
 // AMBIGUOUS_PROVIDER: Yet another UserRepository implementation to make it even more ambiguous
-@Provides(UserRepository::class)
+// @Provides(UserRepository::class) - Removed to fix ambiguous provider issue
 class RemoteUserRepository : UserRepository {
     
     override fun findById(id: Long): User? {

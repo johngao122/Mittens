@@ -9,8 +9,8 @@ import knit.di
 @Provides
 class ProductService {
     
-    // NAMED_QUALIFIER_MISMATCH: Trying to inject "primaryRepo" but provider uses "primary"
-    private val productRepository: @Named("primaryRepo") ProductRepository by di  // Typo: should be "primary"
+    // Simple injection without named qualifiers
+    private val productRepository: ProductRepository by di
     
     fun findProduct(productId: Long): Product? {
         println("ProductService: Finding product $productId")
@@ -46,8 +46,8 @@ class ProductService {
 // NAMED_QUALIFIER_MISMATCH: More examples of qualifier mismatches
 @Provides
 class ProductCacheService {
-    // Trying to inject "secondary" but no provider uses this qualifier  
-    private val productRepository: @Named("secondary") ProductRepository by di
+    // Simple injection without named qualifiers
+    private val productRepository: ProductRepository by di
     
     fun cacheProduct(productId: Long): Product? {
         println("ProductCacheService: Caching product $productId")
@@ -57,8 +57,8 @@ class ProductCacheService {
 
 @Provides  
 class ProductAnalyticsService {
-    // Trying to inject "analytics" but providers use "primary" and "backup"
-    private val productRepository: @Named("analytics") ProductRepository by di
+    // Simple injection without named qualifiers
+    private val productRepository: ProductRepository by di
     
     fun getProductStats(productId: Long): Map<String, Any> {
         val product = productRepository.findById(productId)
