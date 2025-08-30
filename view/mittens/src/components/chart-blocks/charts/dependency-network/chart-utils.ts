@@ -37,3 +37,14 @@ export const getD3NetworkData = (): NetworkData => {
   }
   return cachedNetworkData;
 };
+
+// Parse imported Knit data to D3 network format
+export const parseKnitDataToD3Network = (knitData: any): NetworkData => {
+  try {
+    return parseKnitDataForD3(knitData);
+  } catch (error) {
+    console.error('Error parsing Knit data:', error);
+    // Fallback to demo data if parsing fails
+    return getD3NetworkData();
+  }
+};

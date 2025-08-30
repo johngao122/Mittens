@@ -11,9 +11,10 @@
  */
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { getD3NetworkData } from './chart-utils';
+import { getD3NetworkData, parseKnitDataToD3Network } from './chart-utils';
 import D3Network from './d3-network';
 import { D3Node } from '../../../../lib/knit-data-parser';
+import { useGraphData } from '../../../../hooks/use-graph-data';
 
 export default function DependencyNetwork() {
   // ========================================
@@ -23,11 +24,23 @@ export default function DependencyNetwork() {
   const detailsRef = useRef<HTMLDivElement | null>(null);
   const [detailsHeight, setDetailsHeight] = useState<number | null>(null);
   const [componentTypeFilter, setComponentTypeFilter] = useState<string>('all');
+  
+  // ========================================
+  // DYNAMIC DATA MANAGEMENT
+  // ========================================
+  const { data: importedData, loading, error, uploadFile, refreshData } = useGraphData();
 
   // ========================================
   // DATA INITIALIZATION
   // ========================================
-  const networkData = getD3NetworkData();
+  const networkData = useMemo(() => {
+    if (importedData) {
+      console.log('Using imported data:', importedData);
+      return parseKnitDataToD3Network(importedData);
+    }
+    console.log('Using sample data');
+    return getD3NetworkData();
+  }, [importedData]);
 
   // ========================================
   // EVENT HANDLERS
@@ -275,10 +288,80 @@ export default function DependencyNetwork() {
   };
 
   // ========================================
+  // FILE UPLOAD HANDLERS
+  // ========================================
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const success = await uploadFile(file);
+      if (success) {
+        setSelectedNode(null); // Clear selection when new data is loaded
+      }
+    }
+    // Reset the input
+    event.target.value = '';
+  };
+
+  // ========================================
   // MAIN COMPONENT RENDER
   // ========================================
   return (
     <div className="w-full">
+      
+      {/* ===== DATA SOURCE SECTION ===== */}
+      <div className="mb-6 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900 dark:to-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              Data Source: {importedData ? 'Imported from Plugin' : 'Sample Data'}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {importedData 
+                ? 'Using analysis data exported from IntelliJ plugin' 
+                : 'Showing sample Knit dependency analysis data'}
+            </p>
+            {error && (
+              <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+                Error: {error}
+              </p>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {loading && (
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full"></div>
+                Loading...
+              </div>
+            )}
+            
+            <label className="cursor-pointer inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              Upload JSON
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={loading}
+              />
+            </label>
+            
+            <button
+              onClick={refreshData}
+              disabled={loading}
+              className="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+      </div>
       
       {/* ===== SUMMARY STATISTICS SECTION ===== */}
       {/* Enhanced Summary Statistics */}

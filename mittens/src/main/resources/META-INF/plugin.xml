@@ -46,6 +46,7 @@
         <projectService serviceImplementation="com.example.mittens.services.GradleTaskRunner"/>
         <projectService serviceImplementation="com.example.mittens.services.IssueValidator"/>
         <applicationService serviceImplementation="com.example.mittens.services.StatisticalAccuracyService"/>
+        <projectService serviceImplementation="com.example.mittens.export.GraphExportService"/>
         
         <!-- Settings page -->
         <applicationConfigurable 
@@ -56,6 +57,9 @@
             
         <!-- Notification groups -->
         <notificationGroup id="Knit Analysis" displayType="BALLOON"/>
+        
+        <!-- File Editor Provider for Web View -->
+        <fileEditorProvider implementation="com.example.mittens.ui.KnitWebViewFileEditorProvider"/>
     </extensions>
     
     <actions>
@@ -69,6 +73,13 @@
                     text="Run Knit Analysis" 
                     description="Analyze Knit dependency injection in the current project">
                 <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt K"/>
+            </action>
+            
+            <action id="OpenKnitWebViewAction" 
+                    class="com.example.mittens.actions.OpenKnitWebViewAction" 
+                    text="Open Knit Dependency Graph" 
+                    description="Open the interactive dependency graph web view">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt G"/>
             </action>
         </group>
     </actions>

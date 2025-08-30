@@ -1,0 +1,4859 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "com.example.knit.demo.core.config.LocalDatabaseService",
+        "label": "LocalDatabaseService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.config",
+        "className": "LocalDatabaseService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/config/DatabaseService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.config.LocalDatabaseService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.config.LocalDatabaseService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.config",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.config.TestDatabaseService",
+        "label": "TestDatabaseService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.config",
+        "className": "TestDatabaseService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/config/DatabaseService.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.config.TestDatabaseService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.config.TestDatabaseService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.config",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.config.DatabaseService",
+        "label": "DatabaseService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.config",
+        "className": "DatabaseService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/config/DatabaseService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.config.DatabaseService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.config.DatabaseService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.config",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.config.AppConfigService",
+        "label": "AppConfigService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.config",
+        "className": "AppConfigService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/config/AppConfigService.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.config.AppConfigService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.config.AppConfigService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.config",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.repositories.InMemoryProductRepository",
+        "label": "InMemoryProductRepository",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.repositories",
+        "className": "InMemoryProductRepository",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/repositories/InMemoryProductRepository.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.repositories.InMemoryProductRepository.<init>",
+        "label": "<init>(): com.example.knit.demo.core.repositories.ProductRepository",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.repositories",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.repositories.InMemoryUserRepository",
+        "label": "InMemoryUserRepository",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.repositories",
+        "className": "InMemoryUserRepository",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/repositories/InMemoryUserRepository.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.repositories.InMemoryUserRepository.<init>",
+        "label": "<init>(): com.example.knit.demo.core.repositories.UserRepository",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.repositories",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.InventoryService",
+        "label": "InventoryService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "InventoryService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/InventoryService.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.InventoryService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.InventoryService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.CacheService",
+        "label": "CacheService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "CacheService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/CacheService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.CacheService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.CacheService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.NotificationTemplateService",
+        "label": "NotificationTemplateService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "NotificationTemplateService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/NotificationTemplateService.kt",
+          "dependencyCount": 2,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.NotificationTemplateService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.NotificationTemplateService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.ProductAnalyticsService",
+        "label": "ProductAnalyticsService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "ProductAnalyticsService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/ProductService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.ProductAnalyticsService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.ProductAnalyticsService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.LoggingService",
+        "label": "LoggingService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "LoggingService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/LoggingService.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.LoggingService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.LoggingService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.UserService",
+        "label": "UserService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "UserService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/UserService.kt",
+          "dependencyCount": 3,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": true,
+          "cycleId": "cycle_1",
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.UserService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.UserService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.EmailChannel",
+        "label": "EmailChannel",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "EmailChannel",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/NotificationService.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.EmailChannel.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.EmailChannel",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.NotificationManager",
+        "label": "NotificationManager",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "NotificationManager",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/NotificationManager.kt",
+          "dependencyCount": 3,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.NotificationManager.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.NotificationManager",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.ValidationService",
+        "label": "ValidationService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "ValidationService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/ValidationService.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.ValidationService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.ValidationService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.NotificationService",
+        "label": "NotificationService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "NotificationService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/NotificationService.kt",
+          "dependencyCount": 0,
+          "providerCount": 3,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.NotificationService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.NotificationService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.NotificationService.provideEmailChannel",
+        "label": "provideEmailChannel(): com.example.knit.demo.core.services.EmailChannel",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "provideEmailChannel",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.NotificationService.provideSmsChannel",
+        "label": "provideSmsChannel(): com.example.knit.demo.core.services.SmsChannel",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "provideSmsChannel",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.OrderService",
+        "label": "OrderService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "OrderService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/OrderService.kt",
+          "dependencyCount": 2,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": true,
+          "cycleId": "cycle_2",
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.OrderService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.OrderService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.ProductDataService",
+        "label": "ProductDataService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "ProductDataService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/ProductDataService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.ProductDataService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.ProductDataService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.PaymentService",
+        "label": "PaymentService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "PaymentService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/PaymentService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.PaymentService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.PaymentService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.ProductCacheService",
+        "label": "ProductCacheService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "ProductCacheService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/ProductService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.ProductCacheService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.ProductCacheService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.ProductService",
+        "label": "ProductService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "ProductService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/ProductService.kt",
+          "dependencyCount": 2,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": true,
+          "cycleId": "cycle_2",
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.ProductService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.ProductService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.SmsChannel",
+        "label": "SmsChannel",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "SmsChannel",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/NotificationService.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.SmsChannel.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.SmsChannel",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.EmailValidationService",
+        "label": "EmailValidationService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "EmailValidationService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/ValidationService.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.EmailValidationService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.EmailValidationService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.CartService",
+        "label": "CartService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "CartService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/CartService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.CartService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.CartService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.AuditService",
+        "label": "AuditService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "AuditService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/AuditService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": true,
+          "cycleId": "cycle_1",
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.AuditService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.AuditService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.OrderHistoryService",
+        "label": "OrderHistoryService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "OrderHistoryService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/OrderHistoryService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.OrderHistoryService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.OrderHistoryService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.RedisCacheProvider",
+        "label": "RedisCacheProvider",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "RedisCacheProvider",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/CacheService.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.RedisCacheProvider.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.CacheProvider",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.SessionManager",
+        "label": "SessionManager",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "SessionManager",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/UserAuthService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.SessionManager.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.SessionManager",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.UserAuthService",
+        "label": "UserAuthService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "UserAuthService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/UserAuthService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.UserAuthService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.UserAuthService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.SessionService",
+        "label": "SessionService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "SessionService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/SessionService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.SessionService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.SessionService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.CacheManagerService",
+        "label": "CacheManagerService",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "CacheManagerService",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/core/services/CacheService.kt",
+          "dependencyCount": 1,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.core.services.CacheManagerService.<init>",
+        "label": "<init>(): com.example.knit.demo.core.services.CacheManagerService",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.core.services",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.payment.SimplePaymentGateway",
+        "label": "SimplePaymentGateway",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.payment",
+        "className": "SimplePaymentGateway",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/payment/SimplePaymentGateway.kt",
+          "dependencyCount": 0,
+          "providerCount": 1,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.payment.SimplePaymentGateway.<init>",
+        "label": "<init>(): com.example.knit.demo.payment.PaymentGateway",
+        "type": "PROVIDER",
+        "packageName": "com.example.knit.demo.payment",
+        "className": "<init>",
+        "metadata": {
+          "sourceFile": null,
+          "dependencyCount": 0,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "label": "SimpleECommerceApplication",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.main",
+        "className": "SimpleECommerceApplication",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/main/SimpleECommerceApplication.kt",
+          "dependencyCount": 12,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com.example.knit.demo.main.ECommerceApplication",
+        "label": "ECommerceApplication",
+        "type": "COMPONENT",
+        "packageName": "com.example.knit.demo.main",
+        "className": "ECommerceApplication",
+        "metadata": {
+          "sourceFile": "/Users/johngao/Desktop/Projects/Mittens/sample_project/src/main/kotlin/com/example/knit/demo/main/MainApplication.kt",
+          "dependencyCount": 13,
+          "providerCount": 0,
+          "issueCount": 0
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#f8fff9",
+            "borderWidth": 1,
+            "color": null,
+            "width": null,
+            "style": null,
+            "classes": [
+              "healthy-node"
+            ]
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "com_example_knit_demo_core_config_LocalDatabaseService_to_com_example_knit_demo_core_config_LocalDatabaseService_<init>",
+        "source": "com.example.knit.demo.core.config.LocalDatabaseService",
+        "target": "com.example.knit.demo.core.config.LocalDatabaseService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_config_TestDatabaseService_to_com_example_knit_demo_core_config_TestDatabaseService_<init>",
+        "source": "com.example.knit.demo.core.config.TestDatabaseService",
+        "target": "com.example.knit.demo.core.config.TestDatabaseService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_config_DatabaseService_to_com_example_knit_demo_core_config_DatabaseService_<init>",
+        "source": "com.example.knit.demo.core.config.DatabaseService",
+        "target": "com.example.knit.demo.core.config.DatabaseService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_config_AppConfigService_to_com_example_knit_demo_core_config_AppConfigService_<init>",
+        "source": "com.example.knit.demo.core.config.AppConfigService",
+        "target": "com.example.knit.demo.core.config.AppConfigService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_repositories_InMemoryProductRepository_to_com_example_knit_demo_core_repositories_InMemoryProductRepository_<init>",
+        "source": "com.example.knit.demo.core.repositories.InMemoryProductRepository",
+        "target": "com.example.knit.demo.core.repositories.InMemoryProductRepository.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_repositories_InMemoryUserRepository_to_com_example_knit_demo_core_repositories_InMemoryUserRepository_<init>",
+        "source": "com.example.knit.demo.core.repositories.InMemoryUserRepository",
+        "target": "com.example.knit.demo.core.repositories.InMemoryUserRepository.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_InventoryService_to_com_example_knit_demo_core_services_InventoryService_<init>",
+        "source": "com.example.knit.demo.core.services.InventoryService",
+        "target": "com.example.knit.demo.core.services.InventoryService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_CacheService_to_com_example_knit_demo_core_services_CacheService_<init>",
+        "source": "com.example.knit.demo.core.services.CacheService",
+        "target": "com.example.knit.demo.core.services.CacheService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_NotificationTemplateService_to_com_example_knit_demo_core_services_NotificationTemplateService_<init>",
+        "source": "com.example.knit.demo.core.services.NotificationTemplateService",
+        "target": "com.example.knit.demo.core.services.NotificationTemplateService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_ProductAnalyticsService_to_com_example_knit_demo_core_services_ProductAnalyticsService_<init>",
+        "source": "com.example.knit.demo.core.services.ProductAnalyticsService",
+        "target": "com.example.knit.demo.core.services.ProductAnalyticsService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_LoggingService_to_com_example_knit_demo_core_services_LoggingService_<init>",
+        "source": "com.example.knit.demo.core.services.LoggingService",
+        "target": "com.example.knit.demo.core.services.LoggingService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_UserService_to_com_example_knit_demo_core_services_UserService_<init>",
+        "source": "com.example.knit.demo.core.services.UserService",
+        "target": "com.example.knit.demo.core.services.UserService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_EmailChannel_to_com_example_knit_demo_core_services_EmailChannel_<init>",
+        "source": "com.example.knit.demo.core.services.EmailChannel",
+        "target": "com.example.knit.demo.core.services.EmailChannel.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_NotificationManager_to_com_example_knit_demo_core_services_NotificationManager_<init>",
+        "source": "com.example.knit.demo.core.services.NotificationManager",
+        "target": "com.example.knit.demo.core.services.NotificationManager.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_ValidationService_to_com_example_knit_demo_core_services_ValidationService_<init>",
+        "source": "com.example.knit.demo.core.services.ValidationService",
+        "target": "com.example.knit.demo.core.services.ValidationService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_NotificationService_to_com_example_knit_demo_core_services_NotificationService_<init>",
+        "source": "com.example.knit.demo.core.services.NotificationService",
+        "target": "com.example.knit.demo.core.services.NotificationService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_NotificationService_to_com_example_knit_demo_core_services_NotificationService_provideEmailChannel",
+        "source": "com.example.knit.demo.core.services.NotificationService",
+        "target": "com.example.knit.demo.core.services.NotificationService.provideEmailChannel",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_NotificationService_to_com_example_knit_demo_core_services_NotificationService_provideSmsChannel",
+        "source": "com.example.knit.demo.core.services.NotificationService",
+        "target": "com.example.knit.demo.core.services.NotificationService.provideSmsChannel",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_OrderService_to_com_example_knit_demo_core_services_OrderService_<init>",
+        "source": "com.example.knit.demo.core.services.OrderService",
+        "target": "com.example.knit.demo.core.services.OrderService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_ProductDataService_to_com_example_knit_demo_core_services_ProductDataService_<init>",
+        "source": "com.example.knit.demo.core.services.ProductDataService",
+        "target": "com.example.knit.demo.core.services.ProductDataService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_PaymentService_to_com_example_knit_demo_core_services_PaymentService_<init>",
+        "source": "com.example.knit.demo.core.services.PaymentService",
+        "target": "com.example.knit.demo.core.services.PaymentService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_ProductCacheService_to_com_example_knit_demo_core_services_ProductCacheService_<init>",
+        "source": "com.example.knit.demo.core.services.ProductCacheService",
+        "target": "com.example.knit.demo.core.services.ProductCacheService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_ProductService_to_com_example_knit_demo_core_services_ProductService_<init>",
+        "source": "com.example.knit.demo.core.services.ProductService",
+        "target": "com.example.knit.demo.core.services.ProductService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_SmsChannel_to_com_example_knit_demo_core_services_SmsChannel_<init>",
+        "source": "com.example.knit.demo.core.services.SmsChannel",
+        "target": "com.example.knit.demo.core.services.SmsChannel.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_EmailValidationService_to_com_example_knit_demo_core_services_EmailValidationService_<init>",
+        "source": "com.example.knit.demo.core.services.EmailValidationService",
+        "target": "com.example.knit.demo.core.services.EmailValidationService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_CartService_to_com_example_knit_demo_core_services_CartService_<init>",
+        "source": "com.example.knit.demo.core.services.CartService",
+        "target": "com.example.knit.demo.core.services.CartService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_AuditService_to_com_example_knit_demo_core_services_AuditService_<init>",
+        "source": "com.example.knit.demo.core.services.AuditService",
+        "target": "com.example.knit.demo.core.services.AuditService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_OrderHistoryService_to_com_example_knit_demo_core_services_OrderHistoryService_<init>",
+        "source": "com.example.knit.demo.core.services.OrderHistoryService",
+        "target": "com.example.knit.demo.core.services.OrderHistoryService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_RedisCacheProvider_to_com_example_knit_demo_core_services_RedisCacheProvider_<init>",
+        "source": "com.example.knit.demo.core.services.RedisCacheProvider",
+        "target": "com.example.knit.demo.core.services.RedisCacheProvider.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_SessionManager_to_com_example_knit_demo_core_services_SessionManager_<init>",
+        "source": "com.example.knit.demo.core.services.SessionManager",
+        "target": "com.example.knit.demo.core.services.SessionManager.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_UserAuthService_to_com_example_knit_demo_core_services_UserAuthService_<init>",
+        "source": "com.example.knit.demo.core.services.UserAuthService",
+        "target": "com.example.knit.demo.core.services.UserAuthService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_SessionService_to_com_example_knit_demo_core_services_SessionService_<init>",
+        "source": "com.example.knit.demo.core.services.SessionService",
+        "target": "com.example.knit.demo.core.services.SessionService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_CacheManagerService_to_com_example_knit_demo_core_services_CacheManagerService_<init>",
+        "source": "com.example.knit.demo.core.services.CacheManagerService",
+        "target": "com.example.knit.demo.core.services.CacheManagerService.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_payment_SimplePaymentGateway_to_com_example_knit_demo_payment_SimplePaymentGateway_<init>",
+        "source": "com.example.knit.demo.payment.SimplePaymentGateway",
+        "target": "com.example.knit.demo.payment.SimplePaymentGateway.<init>",
+        "type": "PROVIDES",
+        "label": "provides",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": false,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_config_LocalDatabaseService_to_com_example_knit_demo_core_config_DatabaseService",
+        "source": "com.example.knit.demo.core.config.LocalDatabaseService",
+        "target": "com.example.knit.demo.core.config.DatabaseService",
+        "type": "SINGLETON",
+        "label": "getDatabaseService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_config_DatabaseService_to_com_example_knit_demo_core_config_AppConfigService",
+        "source": "com.example.knit.demo.core.config.DatabaseService",
+        "target": "com.example.knit.demo.core.config.AppConfigService",
+        "type": "SINGLETON",
+        "label": "getAppConfigService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_CacheService_to_com_example_knit_demo_core_services_RedisCacheProvider",
+        "source": "com.example.knit.demo.core.services.CacheService",
+        "target": "com.example.knit.demo.core.services.RedisCacheProvider",
+        "type": "SINGLETON",
+        "label": "getCache",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_NotificationTemplateService_to_com_example_knit_demo_core_services_NotificationManager",
+        "source": "com.example.knit.demo.core.services.NotificationTemplateService",
+        "target": "com.example.knit.demo.core.services.NotificationManager",
+        "type": "SINGLETON",
+        "label": "getNotificationManager",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_NotificationTemplateService_to_com_example_knit_demo_core_services_LoggingService",
+        "source": "com.example.knit.demo.core.services.NotificationTemplateService",
+        "target": "com.example.knit.demo.core.services.LoggingService",
+        "type": "SINGLETON",
+        "label": "getLoggingService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_ProductAnalyticsService_to_com_example_knit_demo_core_repositories_InMemoryProductRepository",
+        "source": "com.example.knit.demo.core.services.ProductAnalyticsService",
+        "target": "com.example.knit.demo.core.repositories.InMemoryProductRepository",
+        "type": "SINGLETON",
+        "label": "getProductRepository",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_UserService_to_com_example_knit_demo_core_services_ValidationService",
+        "source": "com.example.knit.demo.core.services.UserService",
+        "target": "com.example.knit.demo.core.services.ValidationService",
+        "type": "SINGLETON",
+        "label": "getValidationService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_UserService_to_com_example_knit_demo_core_repositories_InMemoryUserRepository",
+        "source": "com.example.knit.demo.core.services.UserService",
+        "target": "com.example.knit.demo.core.repositories.InMemoryUserRepository",
+        "type": "SINGLETON",
+        "label": "getUserRepository",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_UserService_to_com_example_knit_demo_core_services_AuditService",
+        "source": "com.example.knit.demo.core.services.UserService",
+        "target": "com.example.knit.demo.core.services.AuditService",
+        "type": "SINGLETON",
+        "label": "getAuditService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": true,
+          "errorSeverity": "ERROR",
+          "errorTypes": [
+            "CIRCULAR_DEPENDENCY"
+          ],
+          "isPartOfCycle": true,
+          "cycleId": "cycle_1",
+          "visualHints": {
+            "borderColor": "#ff0000",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#ff0000",
+            "width": 3,
+            "style": "solid",
+            "classes": [
+              "error-edge",
+              "cycle-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_NotificationManager_to_com_example_knit_demo_core_services_NotificationService",
+        "source": "com.example.knit.demo.core.services.NotificationManager",
+        "target": "com.example.knit.demo.core.services.NotificationService",
+        "type": "SINGLETON",
+        "label": "getNotificationService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_NotificationManager_to_com_example_knit_demo_core_services_LoggingService",
+        "source": "com.example.knit.demo.core.services.NotificationManager",
+        "target": "com.example.knit.demo.core.services.LoggingService",
+        "type": "SINGLETON",
+        "label": "getLoggingService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_NotificationManager_to_com_example_knit_demo_core_services_AuditService",
+        "source": "com.example.knit.demo.core.services.NotificationManager",
+        "target": "com.example.knit.demo.core.services.AuditService",
+        "type": "SINGLETON",
+        "label": "getAuditService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_OrderService_to_com_example_knit_demo_core_services_InventoryService",
+        "source": "com.example.knit.demo.core.services.OrderService",
+        "target": "com.example.knit.demo.core.services.InventoryService",
+        "type": "SINGLETON",
+        "label": "getInventoryService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_OrderService_to_com_example_knit_demo_core_services_ProductService",
+        "source": "com.example.knit.demo.core.services.OrderService",
+        "target": "com.example.knit.demo.core.services.ProductService",
+        "type": "SINGLETON",
+        "label": "getProductService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": true,
+          "errorSeverity": "ERROR",
+          "errorTypes": [
+            "CIRCULAR_DEPENDENCY"
+          ],
+          "isPartOfCycle": true,
+          "cycleId": "cycle_2",
+          "visualHints": {
+            "borderColor": "#ff0000",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#ff0000",
+            "width": 3,
+            "style": "solid",
+            "classes": [
+              "error-edge",
+              "cycle-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_ProductDataService_to_com_example_knit_demo_core_repositories_InMemoryProductRepository",
+        "source": "com.example.knit.demo.core.services.ProductDataService",
+        "target": "com.example.knit.demo.core.repositories.InMemoryProductRepository",
+        "type": "SINGLETON",
+        "label": "getProductRepository",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_PaymentService_to_com_example_knit_demo_payment_SimplePaymentGateway",
+        "source": "com.example.knit.demo.core.services.PaymentService",
+        "target": "com.example.knit.demo.payment.SimplePaymentGateway",
+        "type": "SINGLETON",
+        "label": "getPaymentGateway",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_ProductCacheService_to_com_example_knit_demo_core_repositories_InMemoryProductRepository",
+        "source": "com.example.knit.demo.core.services.ProductCacheService",
+        "target": "com.example.knit.demo.core.repositories.InMemoryProductRepository",
+        "type": "SINGLETON",
+        "label": "getProductRepository",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_ProductService_to_com_example_knit_demo_core_repositories_InMemoryProductRepository",
+        "source": "com.example.knit.demo.core.services.ProductService",
+        "target": "com.example.knit.demo.core.repositories.InMemoryProductRepository",
+        "type": "SINGLETON",
+        "label": "getProductRepository",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_ProductService_to_com_example_knit_demo_core_services_OrderService",
+        "source": "com.example.knit.demo.core.services.ProductService",
+        "target": "com.example.knit.demo.core.services.OrderService",
+        "type": "SINGLETON",
+        "label": "getOrderService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": true,
+          "errorSeverity": "ERROR",
+          "errorTypes": [
+            "CIRCULAR_DEPENDENCY"
+          ],
+          "isPartOfCycle": true,
+          "cycleId": "cycle_2",
+          "visualHints": {
+            "borderColor": "#ff0000",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#ff0000",
+            "width": 3,
+            "style": "solid",
+            "classes": [
+              "error-edge",
+              "cycle-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_CartService_to_com_example_knit_demo_core_services_ProductService",
+        "source": "com.example.knit.demo.core.services.CartService",
+        "target": "com.example.knit.demo.core.services.ProductService",
+        "type": "SINGLETON",
+        "label": "getProductService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_AuditService_to_com_example_knit_demo_core_services_UserService",
+        "source": "com.example.knit.demo.core.services.AuditService",
+        "target": "com.example.knit.demo.core.services.UserService",
+        "type": "SINGLETON",
+        "label": "getUserService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": true,
+          "errorSeverity": "ERROR",
+          "errorTypes": [
+            "CIRCULAR_DEPENDENCY"
+          ],
+          "isPartOfCycle": true,
+          "cycleId": "cycle_1",
+          "visualHints": {
+            "borderColor": "#ff0000",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#ff0000",
+            "width": 3,
+            "style": "solid",
+            "classes": [
+              "error-edge",
+              "cycle-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_OrderHistoryService_to_com_example_knit_demo_core_services_OrderService",
+        "source": "com.example.knit.demo.core.services.OrderHistoryService",
+        "target": "com.example.knit.demo.core.services.OrderService",
+        "type": "SINGLETON",
+        "label": "getOrderService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_SessionManager_to_com_example_knit_demo_core_services_UserAuthService",
+        "source": "com.example.knit.demo.core.services.SessionManager",
+        "target": "com.example.knit.demo.core.services.UserAuthService",
+        "type": "SINGLETON",
+        "label": "getUserAuthService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_UserAuthService_to_com_example_knit_demo_core_services_UserService",
+        "source": "com.example.knit.demo.core.services.UserAuthService",
+        "target": "com.example.knit.demo.core.services.UserService",
+        "type": "SINGLETON",
+        "label": "getUserService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_SessionService_to_com_example_knit_demo_core_services_UserService",
+        "source": "com.example.knit.demo.core.services.SessionService",
+        "target": "com.example.knit.demo.core.services.UserService",
+        "type": "SINGLETON",
+        "label": "getUserService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_core_services_CacheManagerService_to_com_example_knit_demo_core_services_RedisCacheProvider",
+        "source": "com.example.knit.demo.core.services.CacheManagerService",
+        "target": "com.example.knit.demo.core.services.RedisCacheProvider",
+        "type": "SINGLETON",
+        "label": "getDbCache",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_ValidationService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.ValidationService",
+        "type": "SINGLETON",
+        "label": "getValidationService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_OrderHistoryService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.OrderHistoryService",
+        "type": "SINGLETON",
+        "label": "getOrderHistoryService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_CartService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.CartService",
+        "type": "SINGLETON",
+        "label": "getCartService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_ProductDataService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.ProductDataService",
+        "type": "SINGLETON",
+        "label": "getProductDataService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_PaymentService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.PaymentService",
+        "type": "SINGLETON",
+        "label": "getPaymentService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_SessionService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.SessionService",
+        "type": "SINGLETON",
+        "label": "getSessionService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_InventoryService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.InventoryService",
+        "type": "SINGLETON",
+        "label": "getInventoryService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_payment_SimplePaymentGateway",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.payment.SimplePaymentGateway",
+        "type": "SINGLETON",
+        "label": "getPaymentGateway",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_ProductService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.ProductService",
+        "type": "SINGLETON",
+        "label": "getProductService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_OrderService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.OrderService",
+        "type": "SINGLETON",
+        "label": "getOrderService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_AuditService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.AuditService",
+        "type": "SINGLETON",
+        "label": "getAuditService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_SimpleECommerceApplication_to_com_example_knit_demo_core_services_UserService",
+        "source": "com.example.knit.demo.main.SimpleECommerceApplication",
+        "target": "com.example.knit.demo.core.services.UserService",
+        "type": "SINGLETON",
+        "label": "getUserService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_config_DatabaseService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.config.DatabaseService",
+        "type": "SINGLETON",
+        "label": "getDatabaseService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_services_PaymentService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.services.PaymentService",
+        "type": "SINGLETON",
+        "label": "getPaymentService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_config_AppConfigService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.config.AppConfigService",
+        "type": "SINGLETON",
+        "label": "getAppConfigService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_services_NotificationManager",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.services.NotificationManager",
+        "type": "SINGLETON",
+        "label": "getNotificationManager",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_services_UserService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.services.UserService",
+        "type": "SINGLETON",
+        "label": "getUserService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_repositories_InMemoryUserRepository",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.repositories.InMemoryUserRepository",
+        "type": "SINGLETON",
+        "label": "getUserRepository",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_services_InventoryService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.services.InventoryService",
+        "type": "SINGLETON",
+        "label": "getInventoryService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_services_ProductService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.services.ProductService",
+        "type": "SINGLETON",
+        "label": "getProductService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_services_OrderService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.services.OrderService",
+        "type": "SINGLETON",
+        "label": "getOrderService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_services_NotificationTemplateService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.services.NotificationTemplateService",
+        "type": "SINGLETON",
+        "label": "getNotificationTemplateService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_services_AuditService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.services.AuditService",
+        "type": "SINGLETON",
+        "label": "getAuditService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_services_LoggingService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.services.LoggingService",
+        "type": "SINGLETON",
+        "label": "getLoggingService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      },
+      {
+        "id": "com_example_knit_demo_main_ECommerceApplication_to_com_example_knit_demo_core_services_UserAuthService",
+        "source": "com.example.knit.demo.main.ECommerceApplication",
+        "target": "com.example.knit.demo.core.services.UserAuthService",
+        "type": "SINGLETON",
+        "label": "getUserAuthService",
+        "metadata": {
+          "isNamed": false,
+          "namedQualifier": null,
+          "isSingleton": true,
+          "isFactory": false
+        },
+        "errorHighlight": {
+          "hasErrors": false,
+          "errorSeverity": null,
+          "errorTypes": [],
+          "isPartOfCycle": false,
+          "cycleId": null,
+          "visualHints": {
+            "borderColor": "#28a745",
+            "backgroundColor": "#ffffff",
+            "borderWidth": 1,
+            "color": "#28a745",
+            "width": 1,
+            "style": "solid",
+            "classes": [
+              "healthy-edge"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "errorContext": {
+    "totalErrors": 4,
+    "totalWarnings": 0,
+    "cycles": [
+      {
+        "id": "cycle_1",
+        "path": [
+          "com.example.knit.demo.core.services.AuditService",
+          "com.example.knit.demo.core.services.UserService"
+        ],
+        "nodeIds": [
+          "com.example.knit.demo.core.services.AuditService",
+          "com.example.knit.demo.core.services.UserService"
+        ],
+        "edgeIds": [
+          "com_example_knit_demo_core_services_AuditService_to_com_example_knit_demo_core_services_UserService",
+          "com_example_knit_demo_core_services_UserService_to_com_example_knit_demo_core_services_AuditService"
+        ],
+        "severity": "ERROR"
+      },
+      {
+        "id": "cycle_2",
+        "path": [
+          "com.example.knit.demo.core.services.OrderService",
+          "com.example.knit.demo.core.services.ProductService"
+        ],
+        "nodeIds": [
+          "com.example.knit.demo.core.services.OrderService",
+          "com.example.knit.demo.core.services.ProductService"
+        ],
+        "edgeIds": [
+          "com_example_knit_demo_core_services_OrderService_to_com_example_knit_demo_core_services_ProductService",
+          "com_example_knit_demo_core_services_ProductService_to_com_example_knit_demo_core_services_OrderService"
+        ],
+        "severity": "ERROR"
+      }
+    ],
+    "issueDetails": [
+      {
+        "id": "issue_1",
+        "type": "AMBIGUOUS_PROVIDER",
+        "severity": "ERROR",
+        "message": "Multiple providers found for type: com.example.knit.demo.core.services.EmailChannel without qualifiers",
+        "affectedNodes": [
+          "com.example.knit.demo.core.services.EmailChannel.<init>, com.example.knit.demo.core.services.NotificationService.provideEmailChannel"
+        ],
+        "affectedEdges": [],
+        "suggestedFix": "Use @Named qualifiers to distinguish between providers:\n  @Named(\"EmailChannel_0\") com.example.knit.demo.core.services.EmailChannel.<init>\n  @Named(\"EmailChannel_1\") com.example.knit.demo.core.services.NotificationService.provideEmailChannel",
+        "confidenceScore": 0.95
+      },
+      {
+        "id": "issue_2",
+        "type": "AMBIGUOUS_PROVIDER",
+        "severity": "ERROR",
+        "message": "Multiple providers found for type: com.example.knit.demo.core.services.SmsChannel without qualifiers",
+        "affectedNodes": [
+          "com.example.knit.demo.core.services.NotificationService.provideSmsChannel, com.example.knit.demo.core.services.SmsChannel.<init>"
+        ],
+        "affectedEdges": [],
+        "suggestedFix": "Use @Named qualifiers to distinguish between providers:\n  @Named(\"SmsChannel_0\") com.example.knit.demo.core.services.NotificationService.provideSmsChannel\n  @Named(\"SmsChannel_1\") com.example.knit.demo.core.services.SmsChannel.<init>",
+        "confidenceScore": 0.95
+      },
+      {
+        "id": "issue_3",
+        "type": "CIRCULAR_DEPENDENCY",
+        "severity": "ERROR",
+        "message": "Circular dependency detected: com.example.knit.demo.core.services.AuditService → com.example.knit.demo.core.services.UserService → com.example.knit.demo.core.services.AuditService",
+        "affectedNodes": [
+          "com.example.knit.demo.core.services.AuditService, com.example.knit.demo.core.services.UserService"
+        ],
+        "affectedEdges": [],
+        "suggestedFix": "Break the cycle by: 1) Using dependency injection interfaces, 2) Introducing a mediator component, or 3) Restructuring component relationships",
+        "confidenceScore": 0.98
+      },
+      {
+        "id": "issue_4",
+        "type": "CIRCULAR_DEPENDENCY",
+        "severity": "ERROR",
+        "message": "Circular dependency detected: com.example.knit.demo.core.services.OrderService → com.example.knit.demo.core.services.ProductService → com.example.knit.demo.core.services.OrderService",
+        "affectedNodes": [
+          "com.example.knit.demo.core.services.OrderService, com.example.knit.demo.core.services.ProductService"
+        ],
+        "affectedEdges": [],
+        "suggestedFix": "Break the cycle by: 1) Using dependency injection interfaces, 2) Introducing a mediator component, or 3) Restructuring component relationships",
+        "confidenceScore": 0.98
+      }
+    ]
+  },
+  "metadata": {
+    "projectName": "knit-demo",
+    "analysisTimestamp": 1756541828657,
+    "totalComponents": 34,
+    "totalDependencies": 85,
+    "knitVersion": "0.1.5",
+    "pluginVersion": "1.0.0"
+  }
+}

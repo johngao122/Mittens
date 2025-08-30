@@ -8,7 +8,11 @@ import com.example.mittens.model.IssuePreview
 import com.example.mittens.model.Severity
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
@@ -19,6 +23,13 @@ import java.awt.*
 import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionEvent
 import java.io.File
+import com.intellij.util.io.HttpRequests
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.nio.file.Files
+import java.time.Duration
 import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 
@@ -33,6 +44,7 @@ class KnitAnalysisReportDialog(
     private lateinit var exportButton: JButton
     private lateinit var copyButton: JButton
     private lateinit var exportGraphButton: JButton
+    private lateinit var exportToWebViewButton: JButton
 
     init {
         title = "Knit Analysis - Detailed Report"
@@ -226,9 +238,13 @@ class KnitAnalysisReportDialog(
         exportGraphButton = JButton("Export Graph JSON")
         exportGraphButton.addActionListener { exportGraphToFile() }
 
+        exportToWebViewButton = JButton("Export to Web View")
+        exportToWebViewButton.addActionListener { exportToWebView() }
+
         panel.add(copyButton)
         panel.add(exportButton)
         panel.add(exportGraphButton)
+        panel.add(exportToWebViewButton)
 
         return panel
     }
@@ -443,6 +459,234 @@ class KnitAnalysisReportDialog(
                     appendLine()
                 }
             }
+        }
+    }
+    
+    private fun exportToWebView() {
+        try {
+            val graphExportService = project.service<GraphExportService>()
+            val graphExport = graphExportService.exportToJson(analysisResult)
+            
+            // Convert the graph export to JSON string for HTTP POST
+            val objectMapper = jacksonObjectMapper()
+            val jsonString = objectMapper.writeValueAsString(graphExport)
+            
+            // Run HTTP POST in background thread with progress indicator
+            ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Exporting to Web View", true) {
+                override fun run(indicator: ProgressIndicator) {
+                    indicator.text = "Connecting to web view server..."
+                    indicator.fraction = 0.3
+                    
+                    val webViewUrl = "http://localhost:3000"
+                    val httpResult = sendDataToWebViewBackground(jsonString, webViewUrl, indicator)
+                    
+                    // Update UI on EDT after background operation
+                    ApplicationManager.getApplication().invokeLater {
+                        handleExportResult(httpResult, graphExport, objectMapper)
+                    }
+                }
+                
+                override fun onCancel() {
+                    ApplicationManager.getApplication().invokeLater {
+                        Messages.showInfoMessage(
+                            project,
+                            "Export to web view was cancelled.",
+                            "Export Cancelled"
+                        )
+                    }
+                }
+            })
+            
+        } catch (e: Exception) {
+            Messages.showErrorDialog(
+                project,
+                "Failed to start export to web view: ${e.message}",
+                "Export Failed"
+            )
+        }
+    }
+    
+    private data class HttpResult(
+        val success: Boolean,
+        val errorMessage: String? = null,
+        val statusCode: Int? = null
+    )
+    
+    private fun handleExportResult(httpResult: HttpResult, graphExport: Any, objectMapper: ObjectMapper) {
+        try {
+            if (httpResult.success) {
+                // Save to a temporary file for backup/reference
+                val tempDir = Files.createTempDirectory("knit-webview").toFile()
+                val jsonFile = File(tempDir, "dependency-graph.json")
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, graphExport)
+                
+                // Open the web view in a new editor tab
+                val virtualFile = KnitWebViewVirtualFile()
+                val fileEditorManager = com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project)
+                
+                // Open the file in the editor
+                fileEditorManager.openFile(virtualFile, true)
+                
+                Messages.showInfoMessage(
+                    project,
+                    "Analysis data successfully sent to web view!\nFile backup: ${jsonFile.absolutePath}\n\nThe dependency graph has been opened and data is available.",
+                    "Export to Web View Successful"
+                )
+            } else {
+                // Fallback: just save to file and show instructions
+                val tempDir = Files.createTempDirectory("knit-webview").toFile()
+                val jsonFile = File(tempDir, "dependency-graph.json")
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(jsonFile, graphExport)
+                
+                val errorDetails = if (httpResult.statusCode != null) {
+                    "HTTP ${httpResult.statusCode}: ${httpResult.errorMessage ?: "Unknown error"}"
+                } else {
+                    httpResult.errorMessage ?: "Connection failed"
+                }
+                
+                Messages.showInfoMessage(
+                    project,
+                    "Could not connect to web view ($errorDetails).\nData exported to file: ${jsonFile.absolutePath}\n\nTo start web server: cd view/mittens && npm run dev",
+                    "Export to File"
+                )
+            }
+        } catch (e: Exception) {
+            Messages.showErrorDialog(
+                project,
+                "Failed to handle export result: ${e.message}",
+                "Export Failed"
+            )
+        }
+    }
+    
+    private fun sendDataToWebViewBackground(jsonData: String, webViewUrl: String, indicator: ProgressIndicator): HttpResult {
+        // First try IntelliJ's HTTP client (more compatible with plugin environment)
+        val intellijResult = tryIntellijHttpClient(jsonData, webViewUrl, indicator)
+        if (intellijResult.success) {
+            return intellijResult
+        }
+        
+        // Fallback to standard Java HTTP client
+        return tryStandardHttpClient(jsonData, webViewUrl, indicator)
+    }
+    
+    private fun tryIntellijHttpClient(jsonData: String, webViewUrl: String, indicator: ProgressIndicator): HttpResult {
+        return try {
+            indicator.text = "Using IntelliJ HTTP client..."
+            indicator.fraction = 0.4
+
+            val url = "$webViewUrl/api/import-data"
+
+            indicator.text = "Sending data to web view..."
+            indicator.fraction = 0.7
+
+            val response = HttpRequests
+                .post(url, "application/json")
+                .userAgent("IntelliJ-Knit-Plugin")
+                .connectTimeout(10000)  // 10 seconds
+                .readTimeout(15000)     // 15 seconds
+                .connect { request ->
+                    request.write(jsonData)
+                    request.readString()
+                }
+
+            indicator.text = "Processing response..."
+            indicator.fraction = 0.9
+
+            // If we got here without exception, the request was successful
+            indicator.text = "Export completed successfully!"
+            indicator.fraction = 1.0
+            HttpResult(success = true)
+
+        } catch (e: java.net.ConnectException) {
+            HttpResult(
+                success = false,
+                errorMessage = "Connection refused - server may not be running"
+            )
+        } catch (e: java.net.SocketTimeoutException) {
+            HttpResult(
+                success = false,
+                errorMessage = "Connection timeout - server may be slow to respond"
+            )
+        } catch (e: java.io.IOException) {
+            if (e.message?.contains("Connection refused") == true) {
+                HttpResult(
+                    success = false,
+                    errorMessage = "Connection refused - server may not be running"
+                )
+            } else {
+                HttpResult(
+                    success = false,
+                    errorMessage = "IO error: ${e.message}"
+                )
+            }
+        } catch (e: Exception) {
+            HttpResult(
+                success = false,
+                errorMessage = "IntelliJ HTTP client error: ${e.message}"
+            )
+        }
+    }
+    
+    private fun tryStandardHttpClient(jsonData: String, webViewUrl: String, indicator: ProgressIndicator): HttpResult {
+        return try {
+            indicator.text = "Trying standard HTTP client..."
+            indicator.fraction = 0.5
+            
+            val client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build()
+            
+            indicator.text = "Sending data to web view..."
+            indicator.fraction = 0.7
+            
+            val request = HttpRequest.newBuilder()
+                .uri(URI.create("$webViewUrl/api/import-data"))
+                .header("Content-Type", "application/json")
+                .header("User-Agent", "IntelliJ-Knit-Plugin")
+                .timeout(Duration.ofSeconds(15))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonData))
+                .build()
+            
+            val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+            
+            indicator.text = "Processing response..."
+            indicator.fraction = 0.9
+            
+            val success = response.statusCode() in 200..299
+            
+            if (success) {
+                indicator.text = "Export completed successfully!"
+                indicator.fraction = 1.0
+                HttpResult(success = true)
+            } else {
+                HttpResult(
+                    success = false,
+                    statusCode = response.statusCode(),
+                    errorMessage = response.body()
+                )
+            }
+            
+        } catch (e: java.net.ConnectException) {
+            HttpResult(
+                success = false,
+                errorMessage = "Connection refused - server may not be running"
+            )
+        } catch (e: java.net.SocketTimeoutException) {
+            HttpResult(
+                success = false,
+                errorMessage = "Connection timeout - server may be slow to respond"
+            )
+        } catch (e: java.net.UnknownHostException) {
+            HttpResult(
+                success = false,
+                errorMessage = "Cannot resolve hostname: ${e.message}"
+            )
+        } catch (e: Exception) {
+            HttpResult(
+                success = false,
+                errorMessage = "Standard HTTP client error: ${e.message}"
+            )
         }
     }
     
