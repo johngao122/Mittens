@@ -42,7 +42,7 @@ interface D3NetworkProps {
     data: NetworkData;
     width?: number | string;
     height?: number | string;
-    onNodeClick?: (node: D3Node) => void;
+    onNodeClick?: (node: D3Node | null) => void;
     onLinkClick?: (link: D3Link) => void;
     showZoomControls?: boolean;
     selectedNode?: D3Node | null;
@@ -80,6 +80,7 @@ export default function D3Network({
     const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 800, height: 400 });
     const labelsRef = useRef<any>(null); // Store reference to labels for theme updates
     const nodesRef = useRef<any>(null); // Store reference to nodes for theme updates
+    const linksRef = useRef<any>(null); // Store reference to links for selection highlighting
     const hasSelectionRef = useRef<boolean>(false); // Track if a node is currently selected
 
     // ========================================
@@ -178,6 +179,11 @@ export default function D3Network({
 
         svg.call(zoom);
         zoomRef.current = zoom;
+
+        // Clicking on empty space (background) clears selection
+        svg.on("click", () => {
+            onNodeClick?.(null);
+        });
 
         // ========================================
         // DATA PREPARATION
@@ -407,6 +413,9 @@ export default function D3Network({
                 d.errorInfo.hasErrors ? "5,5" : "0"
             );
 
+        // Store reference for later highlighting updates
+        linksRef.current = link;
+
         // Create nodes (interactive circles)
         const node = container
             .selectAll(".node")
@@ -573,6 +582,53 @@ export default function D3Network({
             simulation.stop();
         };
     }, [mounted, data, width, height]);
+
+    // Highlight selection: emphasize selected node and its links; dim others
+    useEffect(() => {
+        if (!mounted) return;
+        const nodesSel = nodesRef.current;
+        const labelsSel = labelsRef.current;
+        const linksSel = linksRef.current;
+        if (!nodesSel || !labelsSel) return;
+
+        if (!selectedNode) {
+            // Reset styling
+            nodesSel
+                .attr("opacity", 1)
+                .attr("stroke-width", 2.5);
+            labelsSel
+                .attr("opacity", 1)
+                .attr("font-size", "12px");
+            if (linksSel) {
+                linksSel
+                    .attr("stroke-opacity", 0.8)
+                    .attr("stroke-width", 3);
+            }
+            return;
+        }
+
+        // Dim non-selected nodes/labels and emphasize the selected one
+        nodesSel
+            .attr("opacity", (d: any) => (d.id === selectedNode.id ? 1 : 0.25))
+            .attr("stroke-width", (d: any) => (d.id === selectedNode.id ? 4 : 2));
+        labelsSel
+            .attr("opacity", (d: any) => (d.id === selectedNode.id ? 1 : 0.35))
+            .attr("font-size", (d: any) => (d.id === selectedNode.id ? "14px" : "12px"));
+
+        if (linksSel) {
+            linksSel
+                .attr("stroke-opacity", (d: any) => {
+                    const srcId = typeof d.source === 'object' ? d.source.id : d.source;
+                    const tgtId = typeof d.target === 'object' ? d.target.id : d.target;
+                    return srcId === selectedNode.id || tgtId === selectedNode.id ? 0.9 : 0.1;
+                })
+                .attr("stroke-width", (d: any) => {
+                    const srcId = typeof d.source === 'object' ? d.source.id : d.source;
+                    const tgtId = typeof d.target === 'object' ? d.target.id : d.target;
+                    return srcId === selectedNode.id || tgtId === selectedNode.id ? 5 : 2;
+                });
+        }
+    }, [mounted, selectedNode]);
 
     // Handle container resize without recreating the entire network
     useEffect(() => {

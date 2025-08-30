@@ -42,8 +42,10 @@ object EnhancedNotificationDemo {
             hasCycles = true,
             analysisTime = 1234,
             issueBreakdown = mapOf(
-                IssueType.CIRCULAR_DEPENDENCY to 5,
-                IssueType.AMBIGUOUS_PROVIDER to 4
+                IssueType.CIRCULAR_DEPENDENCY to 2,
+                IssueType.CIRCULAR_DEPENDENCY to 3,
+                IssueType.AMBIGUOUS_PROVIDER to 2,
+                IssueType.AMBIGUOUS_PROVIDER to 2
             ),
             topIssues = topIssues,
             filesScanned = 15,
