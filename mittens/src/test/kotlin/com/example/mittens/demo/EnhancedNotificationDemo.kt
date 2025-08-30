@@ -17,14 +17,14 @@ object EnhancedNotificationDemo {
                 componentName = "com.example.service.UserService"
             ),
             IssuePreview(
-                type = IssueType.UNRESOLVED_DEPENDENCY,
+                type = IssueType.CIRCULAR_DEPENDENCY,
                 severity = Severity.ERROR,
                 message = "DatabaseService provider missing for OrderProcessor",
                 componentName = "com.example.processor.OrderProcessor",
                 suggestedFix = "Create a provider with @Provides annotation returning DatabaseService"
             ),
             IssuePreview(
-                type = IssueType.SINGLETON_VIOLATION,
+                type = IssueType.AMBIGUOUS_PROVIDER,
                 severity = Severity.ERROR,
                 message = "Multiple @Singleton CacheService providers found",
                 componentName = "Multiple components",
@@ -42,10 +42,8 @@ object EnhancedNotificationDemo {
             hasCycles = true,
             analysisTime = 1234,
             issueBreakdown = mapOf(
-                IssueType.CIRCULAR_DEPENDENCY to 2,
-                IssueType.UNRESOLVED_DEPENDENCY to 3,
-                IssueType.SINGLETON_VIOLATION to 2,
-                IssueType.NAMED_QUALIFIER_MISMATCH to 2
+                IssueType.CIRCULAR_DEPENDENCY to 5,
+                IssueType.AMBIGUOUS_PROVIDER to 4
             ),
             topIssues = topIssues,
             filesScanned = 15,
@@ -122,7 +120,7 @@ object EnhancedNotificationDemo {
             analysisTime = 1500,
             issueBreakdown = mapOf(
                 IssueType.CIRCULAR_DEPENDENCY to 1,
-                IssueType.NAMED_QUALIFIER_MISMATCH to 2
+                IssueType.AMBIGUOUS_PROVIDER to 2
             ),
             topIssues = topIssues,
             filesScanned = 20,

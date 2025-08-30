@@ -166,27 +166,6 @@ class DetailedAnalysisReport(val analysisResult: AnalysisResult) {
         appendLine("   • Implement mediator or event-driven patterns")
         appendLine()
 
-        appendLine("❓ Unresolved Dependencies:")
-        appendLine("   • Add @Provides annotation to provider classes/methods")
-        appendLine("   • Check import statements and class visibility")
-        appendLine("   • Verify @Named qualifiers match exactly (case-sensitive)")
-        appendLine("   • Ensure return types match dependency types")
-        appendLine()
-
-        appendLine("🔁 Singleton Violations:")
-        appendLine("   • Use @Singleton annotation consistently")
-        appendLine("   • Avoid multiple providers for the same type")
-        appendLine("   • Consider component scope appropriateness")
-        appendLine("   • Review lifecycle management requirements")
-        appendLine()
-
-        appendLine("🏷️ Named Qualifier Issues:")
-        appendLine("   • Double-check qualifier names for typos")
-        appendLine("   • Ensure @Named annotations match between providers and consumers")
-        appendLine("   • Consider using type-safe qualifiers with annotation classes")
-        appendLine("   • Verify qualifier uniqueness within scope")
-        appendLine()
-
         appendLine("🎯 Ambiguous Providers:")
         appendLine("   • Use @Named qualifiers to distinguish providers")
         appendLine("   • Remove duplicate or unnecessary providers")
@@ -269,10 +248,6 @@ class DetailedAnalysisReport(val analysisResult: AnalysisResult) {
         return when (type) {
             IssueType.CIRCULAR_DEPENDENCY -> "Circular Dependencies"
             IssueType.AMBIGUOUS_PROVIDER -> "Ambiguous Providers"
-            IssueType.UNRESOLVED_DEPENDENCY -> "Unresolved Dependencies"
-            IssueType.SINGLETON_VIOLATION -> "Singleton Violations"
-            IssueType.NAMED_QUALIFIER_MISMATCH -> "Qualifier Mismatches"
-            IssueType.MISSING_COMPONENT_ANNOTATION -> "Missing Annotations"
         }
     }
 
@@ -280,10 +255,6 @@ class DetailedAnalysisReport(val analysisResult: AnalysisResult) {
         return when (type) {
             IssueType.CIRCULAR_DEPENDENCY -> "Circular"
             IssueType.AMBIGUOUS_PROVIDER -> "Ambiguous"
-            IssueType.UNRESOLVED_DEPENDENCY -> "Unresolved"
-            IssueType.SINGLETON_VIOLATION -> "Singletons"
-            IssueType.NAMED_QUALIFIER_MISMATCH -> "Qualifiers"
-            IssueType.MISSING_COMPONENT_ANNOTATION -> "Annotations"
         }
     }
 
@@ -299,10 +270,6 @@ class DetailedAnalysisReport(val analysisResult: AnalysisResult) {
         return when (type) {
             IssueType.CIRCULAR_DEPENDENCY -> "🔄"
             IssueType.AMBIGUOUS_PROVIDER -> "🎯"
-            IssueType.UNRESOLVED_DEPENDENCY -> "❓"
-            IssueType.SINGLETON_VIOLATION -> "🔁"
-            IssueType.NAMED_QUALIFIER_MISMATCH -> "🏷️"
-            IssueType.MISSING_COMPONENT_ANNOTATION -> "📝"
         }
     }
 
@@ -310,10 +277,6 @@ class DetailedAnalysisReport(val analysisResult: AnalysisResult) {
         return when (type) {
             IssueType.CIRCULAR_DEPENDENCY -> "Prevents compilation, can cause runtime stack overflow"
             IssueType.AMBIGUOUS_PROVIDER -> "Runtime injection failure, unclear dependency resolution"
-            IssueType.UNRESOLVED_DEPENDENCY -> "Compilation failure, missing required dependencies"
-            IssueType.SINGLETON_VIOLATION -> "Unexpected multiple instances, potential memory/performance issues"
-            IssueType.NAMED_QUALIFIER_MISMATCH -> "Runtime injection failure, dependency not found"
-            IssueType.MISSING_COMPONENT_ANNOTATION -> "Component not registered, injection will fail"
         }
     }
 
@@ -328,10 +291,6 @@ class DetailedAnalysisReport(val analysisResult: AnalysisResult) {
             val typeDescription = when (issue.type) {
                 IssueType.CIRCULAR_DEPENDENCY -> "Components depend on each other in a cycle"
                 IssueType.AMBIGUOUS_PROVIDER -> "Multiple providers found for the same dependency"
-                IssueType.UNRESOLVED_DEPENDENCY -> "No provider found for this dependency"
-                IssueType.SINGLETON_VIOLATION -> "Singleton lifecycle not properly maintained"
-                IssueType.NAMED_QUALIFIER_MISMATCH -> "Named qualifier doesn't match any provider"
-                IssueType.MISSING_COMPONENT_ANNOTATION -> "Component missing required annotation"
             }
 
             return "[$severity] $typeDescription: ${issue.message}"

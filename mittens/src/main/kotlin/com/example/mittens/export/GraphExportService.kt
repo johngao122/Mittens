@@ -121,17 +121,7 @@ class GraphExportService(private val project: Project) {
                 severity = "ERROR" 
             )
         }
-        
-        val unresolvedDeps = issues
-            .filter { it.type == IssueType.UNRESOLVED_DEPENDENCY }
-            .map { issue ->
-                UnresolvedDependency(
-                    fromNodeId = findNodeIdForComponent(issue.componentName),
-                    targetType = extractTargetType(issue.message),
-                    issue = issue.message,
-                    namedQualifier = extractNamedQualifierFromIssue(issue)
-                )
-            }
+
         
         val issueDetails = issues.mapIndexed { index, issue ->
             IssueDetail(
@@ -150,7 +140,6 @@ class GraphExportService(private val project: Project) {
             totalErrors = issues.count { it.severity == Severity.ERROR },
             totalWarnings = issues.count { it.severity == Severity.WARNING },
             cycles = cycles,
-            unresolvedDependencies = unresolvedDeps,
             issueDetails = issueDetails
         )
     }

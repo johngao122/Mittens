@@ -31,7 +31,7 @@ class CircularDependencyAdvancedTest : BasePlatformTestCase() {
         val components = listOf(componentA, componentB)
         val graph = createTestGraph(components)
         
-        val issues = advancedDetector.detectAdvancedCircularDependencies(components, graph)
+        val issues = advancedDetector.detectAdvancedCircularDependencies(graph)
         
         assertEquals("Should detect 1 circular dependency", 1, issues.size)
         val issue = issues.first()
@@ -60,7 +60,7 @@ class CircularDependencyAdvancedTest : BasePlatformTestCase() {
         val components = listOf(componentA, componentB, componentC)
         val graph = createTestGraph(components)
         
-        val issues = advancedDetector.detectAdvancedCircularDependencies(components, graph)
+        val issues = advancedDetector.detectAdvancedCircularDependencies(graph)
         
         assertTrue("Should detect at least 1 circular dependency", issues.isNotEmpty())
         val cycleIssue = issues.first { it.type == IssueType.CIRCULAR_DEPENDENCY }
@@ -83,7 +83,7 @@ class CircularDependencyAdvancedTest : BasePlatformTestCase() {
         val components = listOf(componentA)
         val graph = createTestGraphWithSelfLoop(componentA)
         
-        val issues = advancedDetector.detectAdvancedCircularDependencies(components, graph)
+        val issues = advancedDetector.detectAdvancedCircularDependencies(graph)
         
         assertTrue("Should detect self-referential dependency", issues.isNotEmpty())
         val issue = issues.first()
@@ -118,7 +118,7 @@ class CircularDependencyAdvancedTest : BasePlatformTestCase() {
         val components = listOf(componentA, componentB, componentC, componentD, componentE, componentF)
         val graph = createTestGraph(components)
         
-        val issues = advancedDetector.detectAdvancedCircularDependencies(components, graph)
+        val issues = advancedDetector.detectAdvancedCircularDependencies(graph)
         
         val cycleIssues = issues.filter { it.type == IssueType.CIRCULAR_DEPENDENCY }
         assertTrue("Should detect multiple cycles", cycleIssues.size >= 2)
@@ -168,7 +168,7 @@ class CircularDependencyAdvancedTest : BasePlatformTestCase() {
         val sccSizes = stronglyConnectedComponents.map { it.size }
         assertTrue("Should have SCCs of size 3", sccSizes.contains(3))
         
-        val issues = advancedDetector.detectAdvancedCircularDependencies(components, graph)
+        val issues = advancedDetector.detectAdvancedCircularDependencies(graph)
         val sccIssues = issues.filter { it.message.contains("strongly connected") }
         assertTrue("Should detect strongly connected components", sccIssues.isNotEmpty())
     }
@@ -233,7 +233,7 @@ class CircularDependencyAdvancedTest : BasePlatformTestCase() {
         assertFalse("Cycle report should show no cycles", cycleReport.hasCycles)
         assertEquals("Should have 0 cycles", 0, cycleReport.cycleCount)
         
-        val issues = advancedDetector.detectAdvancedCircularDependencies(components, graph)
+        val issues = advancedDetector.detectAdvancedCircularDependencies(graph)
         val cycleIssues = issues.filter { it.type == IssueType.CIRCULAR_DEPENDENCY }
         assertTrue("Should not detect any circular dependencies", cycleIssues.isEmpty())
     }
@@ -256,7 +256,7 @@ class CircularDependencyAdvancedTest : BasePlatformTestCase() {
         val graph = createTestGraph(components)
         
         val startTime = System.currentTimeMillis()
-        val issues = advancedDetector.detectAdvancedCircularDependencies(components, graph)
+        val issues = advancedDetector.detectAdvancedCircularDependencies(graph)
         val detectionTime = System.currentTimeMillis() - startTime
         
         // Performance assertion - should complete in reasonable time

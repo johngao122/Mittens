@@ -102,19 +102,7 @@ class ErrorHighlightService {
                 }
             }
         }
-        
-        
-        val unresolvedIssues = issues.filter { it.type == IssueType.UNRESOLVED_DEPENDENCY }
-        unresolvedIssues.forEach { issue ->
-            
-            val sourceNodeId = convertComponentNameToNodeId(issue.componentName)
-            val relatedEdges = dependencyGraph.edges.filter { it.from == sourceNodeId }
-            
-            relatedEdges.forEach { edge ->
-                val edgeId = generateEdgeId(edge.from, edge.to)
-                edgeIssues.getOrPut(edgeId) { mutableListOf() }.add(issue)
-            }
-        }
+
         
         return edgeIssues
     }

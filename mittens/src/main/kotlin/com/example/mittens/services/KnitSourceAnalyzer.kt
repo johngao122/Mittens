@@ -339,19 +339,7 @@ class KnitSourceAnalyzer(private val project: Project) {
             else -> ComponentType.COMPONENT 
         }
 
-        
-        if (dependencies.isNotEmpty() && !hasComponent && !hasProvides) {
-            issues.add(
-                KnitIssue(
-                    type = IssueType.MISSING_COMPONENT_ANNOTATION,
-                    severity = Severity.WARNING,
-                    message = "Class has 'by di' properties but missing @Component annotation",
-                    componentName = "$packageName.$className",
-                    sourceLocation = filePath,
-                    suggestedFix = "Add @Component annotation to class $className"
-                )
-            )
-        }
+
 
         return KnitComponent(
             className = className,

@@ -349,39 +349,9 @@ class KnitAnalysisReportDialog(
                         appendLine("   • Consider using mediator pattern for complex cycles")
                     }
                     
-                    com.example.mittens.model.IssueType.UNRESOLVED_DEPENDENCY -> {
-                        appendLine("   💡 Specific Actions:")
-                        issues.forEach { issue ->
-                            appendLine("   • ${issue.componentName}: ${issue.suggestedFix ?: "Add provider for missing dependency"}")
-                        }
-                        appendLine("   📋 General Approach:")
-                        appendLine("   • Add @Provides methods for missing dependencies")
-                        appendLine("   • Check import statements and package visibility")
-                        appendLine("   • Verify component registration in your DI setup")
-                    }
-                    
-                    com.example.mittens.model.IssueType.SINGLETON_VIOLATION -> {
-                        appendLine("   💡 Specific Actions:")
-                        issues.forEach { issue ->
-                            appendLine("   • ${issue.componentName}: ${issue.suggestedFix ?: "Ensure consistent singleton usage"}")
-                        }
-                        appendLine("   📋 General Approach:")
-                        appendLine("   • Use @Singleton annotation consistently")
-                        appendLine("   • Remove duplicate providers for same type")
-                        appendLine("   • Review component lifecycle requirements")
-                    }
-                    
-                    com.example.mittens.model.IssueType.NAMED_QUALIFIER_MISMATCH -> {
-                        appendLine("   💡 Specific Actions:")
-                        issues.forEach { issue ->
-                            appendLine("   • ${issue.componentName}: ${issue.suggestedFix ?: "Check @Named qualifier spelling"}")
-                        }
-                        appendLine("   📋 General Approach:")
-                        appendLine("   • Verify @Named annotations match exactly between providers and consumers")
-                        appendLine("   • Use constants or enum for qualifier names to avoid typos")
-                        appendLine("   • Consider using type-safe qualifiers")
-                    }
-                    
+
+
+
                     com.example.mittens.model.IssueType.AMBIGUOUS_PROVIDER -> {
                         appendLine("   💡 Specific Actions:")
                         issues.forEach { issue ->
@@ -393,16 +363,7 @@ class KnitAnalysisReportDialog(
                         appendLine("   • Consider using @Primary for default provider")
                     }
                     
-                    com.example.mittens.model.IssueType.MISSING_COMPONENT_ANNOTATION -> {
-                        appendLine("   💡 Specific Actions:")
-                        issues.forEach { issue ->
-                            appendLine("   • ${issue.componentName}: ${issue.suggestedFix ?: "Add appropriate component annotation"}")
-                        }
-                        appendLine("   📋 General Approach:")
-                        appendLine("   • Add @Component annotation to classes that provide dependencies")
-                        appendLine("   • Ensure all components are properly registered")
-                        appendLine("   • Review component scanning configuration")
-                    }
+
                 }
                 
                 appendLine()
@@ -420,11 +381,7 @@ class KnitAnalysisReportDialog(
     private fun getIssueTypeIcon(type: com.example.mittens.model.IssueType): String {
         return when (type) {
             com.example.mittens.model.IssueType.CIRCULAR_DEPENDENCY -> "🔄"
-            com.example.mittens.model.IssueType.UNRESOLVED_DEPENDENCY -> "❓"
-            com.example.mittens.model.IssueType.SINGLETON_VIOLATION -> "🔁"
-            com.example.mittens.model.IssueType.NAMED_QUALIFIER_MISMATCH -> "🏷️"
             com.example.mittens.model.IssueType.AMBIGUOUS_PROVIDER -> "🎯"
-            com.example.mittens.model.IssueType.MISSING_COMPONENT_ANNOTATION -> "📝"
         }
     }
     
@@ -501,10 +458,6 @@ class KnitAnalysisReportDialog(
         return when (type) {
             com.example.mittens.model.IssueType.CIRCULAR_DEPENDENCY -> "Circular Dependencies"
             com.example.mittens.model.IssueType.AMBIGUOUS_PROVIDER -> "Ambiguous Providers"
-            com.example.mittens.model.IssueType.UNRESOLVED_DEPENDENCY -> "Unresolved Dependencies"
-            com.example.mittens.model.IssueType.SINGLETON_VIOLATION -> "Singleton Violations"
-            com.example.mittens.model.IssueType.NAMED_QUALIFIER_MISMATCH -> "Qualifier Mismatches"
-            com.example.mittens.model.IssueType.MISSING_COMPONENT_ANNOTATION -> "Missing Annotations"
         }
     }
 

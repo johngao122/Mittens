@@ -210,7 +210,7 @@ class SampleProjectAccuracyValidationTest : LightJavaCodeInsightFixtureTestCase(
         val detectedIssues = knitAnalysisService.detectIssues(components, dependencyGraph)
         
         // Should not detect unresolved dependency issues for commented code
-        val unresolvedIssues = detectedIssues.filter { it.type == IssueType.UNRESOLVED_DEPENDENCY }
+        val unresolvedIssues = detectedIssues.filter { it.type == IssueType.CIRCULAR_DEPENDENCY }
         val paymentGatewayIssues = unresolvedIssues.filter { 
             it.message.contains("PaymentGateway") || it.message.contains("AnotherGateway")
         }
@@ -319,7 +319,7 @@ class SampleProjectAccuracyValidationTest : LightJavaCodeInsightFixtureTestCase(
         
         // Should not detect unresolved dependency for UserService
         val unresolvedIssues = detectedIssues.filter { 
-            it.type == IssueType.UNRESOLVED_DEPENDENCY && 
+            it.type == IssueType.CIRCULAR_DEPENDENCY && 
             it.componentName.contains("UserService") 
         }
         

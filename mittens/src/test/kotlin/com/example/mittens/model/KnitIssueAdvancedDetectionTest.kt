@@ -7,25 +7,25 @@ class KnitIssueAdvancedDetectionTest {
     
     @Test
     fun testIssueInstancesForAdvancedCases() {
-        // Singleton violation
-        val singletonViolationIssue = KnitIssue(
-            type = IssueType.SINGLETON_VIOLATION,
+        // Circular dependency issue
+        val circularDependencyIssue = KnitIssue(
+            type = IssueType.CIRCULAR_DEPENDENCY,
             severity = Severity.ERROR,
-            message = "Multiple singleton providers found for type: DatabaseService",
-            componentName = "com.example.DatabaseProvider1, com.example.DatabaseProvider2"
+            message = "Circular dependency detected: ServiceA -> ServiceB -> ServiceA",
+            componentName = "com.example.ServiceA"
         )
-        assertEquals(IssueType.SINGLETON_VIOLATION, singletonViolationIssue.type)
-        assertEquals(Severity.ERROR, singletonViolationIssue.severity)
+        assertEquals(IssueType.CIRCULAR_DEPENDENCY, circularDependencyIssue.type)
+        assertEquals(Severity.ERROR, circularDependencyIssue.severity)
         
-        // Named qualifier mismatch
-        val qualifierMismatchIssue = KnitIssue(
-            type = IssueType.NAMED_QUALIFIER_MISMATCH,
+        // Another ambiguous provider test
+        val ambiguousProviderIssue2 = KnitIssue(
+            type = IssueType.AMBIGUOUS_PROVIDER,
             severity = Severity.ERROR,
-            message = "Named qualifier '@Named(secondary)' not found for type: EmailClient",
-            componentName = "com.example.UserService"
+            message = "Multiple providers found for DatabaseService type",
+            componentName = "com.example.DatabaseProvider1"
         )
-        assertEquals(IssueType.NAMED_QUALIFIER_MISMATCH, qualifierMismatchIssue.type)
-        assertTrue(qualifierMismatchIssue.message.contains("@Named(secondary)"))
+        assertEquals(IssueType.AMBIGUOUS_PROVIDER, ambiguousProviderIssue2.type)
+        assertTrue(ambiguousProviderIssue2.message.contains("Multiple providers"))
         
         // Ambiguous provider with qualifier awareness
         val ambiguousProviderIssue = KnitIssue(

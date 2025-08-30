@@ -19,11 +19,7 @@ class KnitAnalysisService(private val project: Project) {
      */
     private enum class IssuePriority(val issueType: IssueType) {
         CRITICAL_CIRCULAR(IssueType.CIRCULAR_DEPENDENCY),
-        HIGH_UNRESOLVED(IssueType.UNRESOLVED_DEPENDENCY),
-        MEDIUM_AMBIGUOUS(IssueType.AMBIGUOUS_PROVIDER),
-        LOW_SINGLETON(IssueType.SINGLETON_VIOLATION),
-        LOW_QUALIFIER(IssueType.NAMED_QUALIFIER_MISMATCH),
-        INFO_ANNOTATION(IssueType.MISSING_COMPONENT_ANNOTATION);
+        MEDIUM_AMBIGUOUS(IssueType.AMBIGUOUS_PROVIDER);
 
         companion object {
             fun getPriority(issueType: IssueType): IssuePriority? {
@@ -32,29 +28,7 @@ class KnitAnalysisService(private val project: Project) {
         }
     }
 
-    /**
-     * Data class to track which components should be excluded from detection
-     */
-    private data class ComponentExclusionSet(
-        val excludedComponents: Set<String> = emptySet(),
-        val componentPairs: Set<Pair<String, String>> = emptySet()
-    ) {
-        fun shouldExcludeComponent(componentName: String): Boolean {
-            return componentName in excludedComponents
-        }
 
-        fun shouldExcludeComponentPair(comp1: String, comp2: String): Boolean {
-            return Pair(comp1, comp2) in componentPairs || Pair(comp2, comp1) in componentPairs
-        }
-
-        fun addExcludedComponent(componentName: String): ComponentExclusionSet {
-            return copy(excludedComponents = excludedComponents + componentName)
-        }
-
-        fun addExcludedComponentPair(comp1: String, comp2: String): ComponentExclusionSet {
-            return copy(componentPairs = componentPairs + Pair(comp1, comp2))
-        }
-    }
 
 
     private var lastAnalysisMetrics: AnalysisMetrics? = null
@@ -431,72 +405,22 @@ class KnitAnalysisService(private val project: Project) {
         val advancedDetector = project.service<AdvancedIssueDetector>()
 
         try {
-            
-            var exclusionSet = ComponentExclusionSet()
-
-            
+            // Detect circular dependencies
             logger.debug("Phase 1: Detecting circular dependencies...")
-            val circularIssues = advancedDetector.detectAdvancedCircularDependencies(components, dependencyGraph)
+            val circularIssues = advancedDetector.detectAdvancedCircularDependencies(dependencyGraph)
             issues.addAll(circularIssues)
-            
-            
-            circularIssues.forEach { issue ->
-                if (issue.type == IssueType.CIRCULAR_DEPENDENCY) {
-                    
-                    val componentNames = issue.componentName.split(", ")
-                    componentNames.forEach { compName ->
-                        exclusionSet = exclusionSet.addExcludedComponent(compName.trim())
-                    }
-                }
-            }
-            logger.debug("Phase 1: Found ${circularIssues.size} circular dependency issues. Excluded ${exclusionSet.excludedComponents.size} components from further analysis.")
+            logger.debug("Phase 1: Found ${circularIssues.size} circular dependency issues.")
 
-            
-            logger.debug("Phase 2: Detecting unresolved dependencies (excluding ${exclusionSet.excludedComponents.size} circular dependency components)...")
-            val unresolvedIssues = advancedDetector.detectImprovedUnresolvedDependencies(components, exclusionSet.excludedComponents)
-            issues.addAll(unresolvedIssues)
-            
-            
-            unresolvedIssues.forEach { issue ->
-                if (issue.type == IssueType.UNRESOLVED_DEPENDENCY) {
-                    exclusionSet = exclusionSet.addExcludedComponent(issue.componentName)
-                }
-            }
-            logger.debug("Phase 2: Found ${unresolvedIssues.size} unresolved dependency issues. Total excluded components: ${exclusionSet.excludedComponents.size}")
-
-            
-            logger.debug("Phase 3: Detecting ambiguous providers (excluding ${exclusionSet.excludedComponents.size} components)...")
-            val ambiguousIssues = advancedDetector.detectEnhancedAmbiguousProviders(components, exclusionSet.excludedComponents)
+            // Detect ambiguous providers
+            logger.debug("Phase 2: Detecting ambiguous providers...")
+            val ambiguousIssues = advancedDetector.detectEnhancedAmbiguousProviders(components)
             issues.addAll(ambiguousIssues)
-            
-            
-            ambiguousIssues.forEach { issue ->
-                if (issue.type == IssueType.AMBIGUOUS_PROVIDER) {
-                    
-                    val componentNames = issue.componentName.split(", ")
-                    componentNames.forEach { compName ->
-                        exclusionSet = exclusionSet.addExcludedComponent(compName.trim())
-                    }
-                }
-            }
-            logger.debug("Phase 3: Found ${ambiguousIssues.size} ambiguous provider issues. Total excluded components: ${exclusionSet.excludedComponents.size}")
+            logger.debug("Phase 2: Found ${ambiguousIssues.size} ambiguous provider issues.")
 
-            
-            logger.debug("Phase 4: Detecting singleton violations (excluding ${exclusionSet.excludedComponents.size} components)...")
-            val singletonIssues = advancedDetector.detectAdvancedSingletonViolations(components, exclusionSet.excludedComponents)
-            issues.addAll(singletonIssues)
-            logger.debug("Phase 4: Found ${singletonIssues.size} singleton violation issues.")
-
-            
-            logger.debug("Phase 5: Detecting named qualifier mismatches (excluding ${exclusionSet.excludedComponents.size} components)...")
-            val qualifierIssues = advancedDetector.detectEnhancedNamedQualifierMismatches(components, exclusionSet.excludedComponents)
-            issues.addAll(qualifierIssues)
-            logger.debug("Phase 5: Found ${qualifierIssues.size} qualifier mismatch issues.")
-
-            logger.info("Priority-based detection complete. Total issues before deduplication: ${issues.size}")
+            logger.info("Issue detection complete. Total issues before deduplication: ${issues.size}")
 
         } catch (e: Exception) {
-            logger.error("Error during advanced issue detection, falling back to basic detection", e)
+            logger.error("Error during issue detection, falling back to basic detection", e)
             issues.addAll(basicIssueDetection(components, dependencyGraph))
         }
 
@@ -525,7 +449,7 @@ class KnitAnalysisService(private val project: Project) {
     ): List<KnitIssue> {
         val issues = mutableListOf<KnitIssue>()
 
-
+        // Only detect circular dependencies in basic mode
         if (dependencyGraph.hasCycles()) {
             issues.add(
                 KnitIssue(
@@ -538,136 +462,15 @@ class KnitAnalysisService(private val project: Project) {
             )
         }
 
-
-        issues.addAll(detectSingletonViolations(components))
-
-
-        issues.addAll(detectNamedQualifierMismatches(components))
-
         return issues
     }
 
-    /**
-     * Detect singleton violations 
-     */
-    private fun detectSingletonViolations(components: List<KnitComponent>): List<KnitIssue> {
-        val issues = mutableListOf<KnitIssue>()
-        val singletonTypes = mutableMapOf<String, MutableList<String>>()
 
 
-        components.forEach { component ->
-            component.providers.filter { it.isSingleton }.forEach { provider ->
-                val providedType = provider.providesType ?: provider.returnType
-                val providerPath = "${component.packageName}.${component.className}.${provider.methodName}"
 
-                singletonTypes.getOrPut(providedType) { mutableListOf() }.add(providerPath)
-            }
-
-
-            component.dependencies.filter { it.isSingleton }.forEach { dependency ->
-                val dependencyType = dependency.targetType
-                val dependencyPath = "${component.packageName}.${component.className}.${dependency.propertyName}"
-
-
-                val nonSingletonProviders = components.flatMap { comp ->
-                    comp.providers.filter { prov ->
-                        (prov.providesType ?: prov.returnType) == dependencyType && !prov.isSingleton
-                    }.map { "${comp.packageName}.${comp.className}.${it.methodName}" }
-                }
-
-                if (nonSingletonProviders.isNotEmpty()) {
-                    issues.add(
-                        KnitIssue(
-                            type = IssueType.SINGLETON_VIOLATION,
-                            severity = Severity.WARNING,
-                            message = "Singleton dependency '${dependency.targetType}' is provided by non-singleton providers",
-                            componentName = "${component.packageName}.${component.className}",
-                            sourceLocation = component.sourceFile,
-                            suggestedFix = "Mark providers as @Singleton: ${nonSingletonProviders.joinToString()}"
-                        )
-                    )
-                }
-            }
-        }
-
-
-        singletonTypes.forEach { (type, providers) ->
-            if (providers.size > 1) {
-                issues.add(
-                    KnitIssue(
-                        type = IssueType.SINGLETON_VIOLATION,
-                        severity = Severity.ERROR,
-                        message = "Multiple singleton providers found for type: $type",
-                        componentName = providers.joinToString(", "),
-                        suggestedFix = "Remove duplicate singleton providers or use different types/qualifiers"
-                    )
-                )
-            }
-        }
-
-        return issues
-    }
-
-    /**
-     * Detect named qualifier mismatches between providers and consumers
-     */
-    private fun detectNamedQualifierMismatches(components: List<KnitComponent>): List<KnitIssue> {
-        val issues = mutableListOf<KnitIssue>()
-
-
-        val availableProviders = mutableMapOf<String, MutableSet<String?>>()
-        components.forEach { component ->
-            component.providers.forEach { provider ->
-                val providedType = provider.providesType ?: provider.returnType
-                availableProviders.getOrPut(providedType) { mutableSetOf() }.add(
-                    if (provider.isNamed) provider.namedQualifier else null
-                )
-            }
-        }
-
-
-        components.forEach { component ->
-            component.dependencies.filter { it.isNamed }.forEach { dependency ->
-                val targetType = dependency.targetType
-                val requestedQualifier = dependency.namedQualifier
-                val availableQualifiers = availableProviders[targetType]
-
-                if (availableQualifiers != null) {
-
-                    if (requestedQualifier !in availableQualifiers) {
-                        val availableQualifiersList = availableQualifiers.filterNotNull()
-
-                        issues.add(
-                            KnitIssue(
-                                type = IssueType.NAMED_QUALIFIER_MISMATCH,
-                                severity = Severity.ERROR,
-                                message = "Named qualifier '@Named($requestedQualifier)' not found for type: $targetType",
-                                componentName = "${component.packageName}.${component.className}",
-                                sourceLocation = component.sourceFile,
-                                suggestedFix = if (availableQualifiersList.isNotEmpty()) {
-                                    "Available qualifiers: ${availableQualifiersList.joinToString()}"
-                                } else {
-                                    "Create a provider with @Named($requestedQualifier) for $targetType"
-                                }
-                            )
-                        )
-                    }
-                }
-            }
-        }
-
-        return issues
-    }
 
     fun dispose() {
         coroutineScope.cancel()
-
-
-        try {
-            project.service<AdvancedIssueDetector>().clearCaches()
-        } catch (e: Exception) {
-            logger.debug("Failed to clear advanced detector caches", e)
-        }
     }
 }
 

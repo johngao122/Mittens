@@ -37,11 +37,7 @@ class IssueValidator(private val project: Project) {
             try {
                 when (issue.type) {
                     IssueType.CIRCULAR_DEPENDENCY -> validateCircularDependency(issue, components)
-                    IssueType.UNRESOLVED_DEPENDENCY -> validateUnresolvedDependency(issue, components)
                     IssueType.AMBIGUOUS_PROVIDER -> validateAmbiguousProvider(issue, components)
-                    IssueType.SINGLETON_VIOLATION -> validateSingletonViolation(issue, components)
-                    IssueType.NAMED_QUALIFIER_MISMATCH -> validateNamedQualifierMismatch(issue, components)
-                    IssueType.MISSING_COMPONENT_ANNOTATION -> validateMissingComponentAnnotation(issue, components)
                 }
             } catch (e: Exception) {
                 logger.warn("Failed to validate issue ${issue.type} for ${issue.componentName}", e)

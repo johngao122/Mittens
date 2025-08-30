@@ -177,9 +177,6 @@ data class ErrorContext(
     @JsonProperty("cycles")
     val cycles: List<CycleInfo>,
     
-    @JsonProperty("unresolvedDependencies")
-    val unresolvedDependencies: List<UnresolvedDependency>,
-    
     @JsonProperty("issueDetails")
     val issueDetails: List<IssueDetail>
 )
@@ -204,22 +201,7 @@ data class CycleInfo(
     val severity: String 
 )
 
-/**
- * Information about an unresolved dependency
- */
-data class UnresolvedDependency(
-    @JsonProperty("fromNodeId")
-    val fromNodeId: String,
-    
-    @JsonProperty("targetType")
-    val targetType: String,
-    
-    @JsonProperty("issue")
-    val issue: String,
-    
-    @JsonProperty("namedQualifier")
-    val namedQualifier: String? = null
-)
+
 
 /**
  * Detailed information about a specific issue
