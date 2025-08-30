@@ -64,22 +64,25 @@ class RunKnitAnalysisAction :
             return
         }
 
-        val detectionResult = try {
-            projectDetector.detectKnitProject()
-        } catch (e: Exception) {
-            showNotification(project, "Failed to detect Knit project: ${e.message}", NotificationType.ERROR)
-            return
-        }
-
-        if (!detectionResult.isKnitProject) {
-            showNotification(project, "This project does not use the Knit framework", NotificationType.ERROR)
-            return
-        }
-
-
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Running Knit Analysis", true) {
             override fun run(indicator: ProgressIndicator) {
                 try {
+                    indicator.text = "Detecting Knit project..."
+                    indicator.fraction = 0.05
+
+                    // Run project detection off the EDT to satisfy Kotlin Analysis API constraints
+                    val detectionResult = try {
+                        projectDetector.detectKnitProject()
+                    } catch (e: Exception) {
+                        showNotification(project, "Failed to detect Knit project: ${e.message}", NotificationType.ERROR)
+                        return
+                    }
+
+                    if (!detectionResult.isKnitProject) {
+                        showNotification(project, "This project does not use the Knit framework", NotificationType.ERROR)
+                        return
+                    }
+
                     indicator.text = "Starting Knit analysis..."
                     indicator.fraction = 0.1
                     logger.info("Starting analysis for Knit version: ${detectionResult.knitVersion ?: "Unknown"}")

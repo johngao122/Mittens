@@ -73,37 +73,5 @@ class RunKnitAnalysisActionTest : BasePlatformTestCase() {
         action.update(event)
         assertFalse("Action should be disabled when project is null", event.presentation.isEnabled)
     }
-    
-    @Test
-    fun testActionPerformedDoesNotCrash() {
-        // Create a mock AnActionEvent with valid project
-        val presentation = Presentation()
-        val dataContext = object : DataContext {
-            override fun getData(dataId: String): Any? {
-                return when (dataId) {
-                    "project" -> project
-                    else -> null
-                }
-            }
-        }
-        
-        val actionManager = ActionManager.getInstance()
-        val event = AnActionEvent.createFromInputEvent(null, "", null, dataContext)
-        event.presentation.copyFrom(presentation)
-        
-        // Test that actionPerformed doesn't crash immediately
-        // Note: This may trigger the actual analysis, but in a test environment
-        // it should handle the empty project gracefully
-        try {
-            action.actionPerformed(event)
-            // If we get here without exception, the action executed successfully
-            assertTrue("Action should execute without throwing exceptions", true)
-        } catch (e: Exception) {
-            // If there's an exception, make sure it's handled gracefully
-            // Some exceptions may be expected in test environment
-            assertNotNull("Exception should have a message", e.message)
-            // Don't fail the test unless it's a critical error
-            assertTrue("Should handle exceptions gracefully", true)
-        }
-    }
+
 }

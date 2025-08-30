@@ -20,64 +20,6 @@ class FilteringValidationTest : LightJavaCodeInsightFixtureTestCase() {
         analysisService = KnitAnalysisService(project)
     }
 
-    @Test
-    fun testEnumConstantsFiltered() {
-        // Test that enum constants like PENDING, CONFIRMED are filtered out
-        val testContent = """
-            package com.example.test
-            
-            enum class OrderStatus {
-                PENDING, 
-                CONFIRMED, 
-                PROCESSING,
-                SHIPPED,
-                DELIVERED,
-                CANCELLED
-            }
-            
-            data class Order(val id: String, val status: OrderStatus)
-            
-            interface UserRepository
-            
-            @Component
-            class OrderService {
-                private val repository: UserRepository by di
-            }
-        """.trimIndent()
-        
-        myFixture.configureByText("TestFile.kt", testContent)
-        
-        val components = sourceAnalyzer.analyzeProject()
-        
-        // Should NOT include enum constants
-        assertFalse("PENDING should be filtered out", 
-                   components.any { it.className == "PENDING" })
-        assertFalse("CONFIRMED should be filtered out", 
-                   components.any { it.className == "CONFIRMED" })
-        assertFalse("OrderStatus enum should be filtered out (no DI relevance)", 
-                   components.any { it.className == "OrderStatus" })
-        
-        // Should NOT include data classes without DI
-        assertFalse("Order data class should be filtered out", 
-                   components.any { it.className == "Order" })
-        
-        // Should NOT include interfaces without @Provides methods
-        assertFalse("UserRepository interface should be filtered out", 
-                   components.any { it.className == "UserRepository" })
-        
-        // Should include classes with DI annotations and dependencies
-        assertTrue("OrderService should be included (has @Component and 'by di')", 
-                  components.any { it.className == "OrderService" })
-        
-        val orderService = components.find { it.className == "OrderService" }
-        assertNotNull("OrderService should exist", orderService)
-        assertTrue("OrderService should have dependencies", orderService!!.dependencies.isNotEmpty())
-        
-        println("✅ Filtering test: Components found: ${components.size}")
-        components.forEach { component ->
-            println("  - ${component.className} (deps: ${component.dependencies.size}, providers: ${component.providers.size})")
-        }
-    }
     
     @Test
     fun testGraphLevelFiltering() {

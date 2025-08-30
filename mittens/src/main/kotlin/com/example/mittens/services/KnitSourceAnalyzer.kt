@@ -2,6 +2,8 @@ package com.example.mittens.services
 
 import com.example.mittens.model.*
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.ApplicationManager
+import java.util.concurrent.Callable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
@@ -16,6 +18,33 @@ import com.intellij.openapi.util.TextRange
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.symbols.KtClassOrObjectSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KtPropertySymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionSymbol
+
+/**
+ * Data class to hold property analysis results
+ */
+private data class PropertyAnalysisResult(
+    val targetType: String,
+    val isNamed: Boolean,
+    val namedQualifier: String?,
+    val isSingletonAnnotated: Boolean
+)
+
+/**
+ * Data class to hold method analysis results
+ */
+private data class MethodAnalysisResult(
+    val returnType: String,
+    val isNamed: Boolean,
+    val namedQualifier: String?,
+    val isSingleton: Boolean,
+    val hasIntoSet: Boolean,
+    val hasIntoList: Boolean,
+    val hasIntoMap: Boolean
+)
 
 @Service
 class KnitSourceAnalyzer(private val project: Project) {
@@ -94,31 +123,44 @@ class KnitSourceAnalyzer(private val project: Project) {
      * Traditional source-based analysis (preserved for backward compatibility and fallback)
      */
     fun analyzeFromSource(): List<KnitComponent> {
-        return runReadAction {
-            logger.info("Starting source analysis for Knit components")
+        // Kotlin Analysis API must not be called on the EDT. If we're on the EDT,
+        // hop to a pooled thread and perform the read action there, synchronously.
+        val app = ApplicationManager.getApplication()
 
-            val components = mutableListOf<KnitComponent>()
-            val kotlinFiles = FileTypeIndex.getFiles(
-                KotlinFileType.INSTANCE,
-                GlobalSearchScope.projectScope(project)
-            )
+        val compute: () -> List<KnitComponent> = {
+            runReadAction {
+                logger.info("Starting source analysis for Knit components")
 
-            val psiManager = PsiManager.getInstance(project)
+                val components = mutableListOf<KnitComponent>()
+                val kotlinFiles = FileTypeIndex.getFiles(
+                    KotlinFileType.INSTANCE,
+                    GlobalSearchScope.projectScope(project)
+                )
 
-            for (file in kotlinFiles) {
-                val psiFile = psiManager.findFile(file) as? KtFile ?: continue
-                val classes = psiFile.collectDescendantsOfType<KtClass>()
+                val psiManager = PsiManager.getInstance(project)
 
-                for (ktClass in classes) {
-                    val component = analyzeClass(ktClass, psiFile, file.path)
-                    if (component != null) {
-                        components.add(component)
+                for (file in kotlinFiles) {
+                    val psiFile = psiManager.findFile(file) as? KtFile ?: continue
+                    val classes = psiFile.collectDescendantsOfType<KtClass>()
+
+                    for (ktClass in classes) {
+                        val component = analyzeClass(ktClass, psiFile, file.path)
+                        if (component != null) {
+                            components.add(component)
+                        }
                     }
                 }
-            }
 
-            logger.info("Found ${components.size} Knit components")
-            components
+                logger.info("Found ${components.size} Knit components")
+                components
+            }
+        }
+
+        return if (app.isDispatchThread) {
+            // Block the EDT while computing on a pooled thread to satisfy Analysis API constraints.
+            app.executeOnPooledThread(Callable<List<KnitComponent>> { compute() }).get().toList()
+        } else {
+            compute()
         }
     }
 
@@ -126,20 +168,29 @@ class KnitSourceAnalyzer(private val project: Project) {
      * Enhance knit.json-based components with source file information for better IDE integration
      */
     private fun enhanceWithSourceInfo(jsonComponents: List<KnitComponent>): List<KnitComponent> {
-        return runReadAction {
-            logger.info("Enhancing ${jsonComponents.size} knit.json components with source file information")
-            
-            val enhancedComponents = mutableListOf<KnitComponent>()
-            val sourceFileMap = buildSourceFileMap()
-            
-            for (component in jsonComponents) {
-                val sourceFile = findSourceFile(component, sourceFileMap)
-                val enhancedComponent = component.copy(sourceFile = sourceFile)
-                enhancedComponents.add(enhancedComponent)
+        val app = ApplicationManager.getApplication()
+        val compute: () -> List<KnitComponent> = {
+            runReadAction {
+                logger.info("Enhancing ${jsonComponents.size} knit.json components with source file information")
+
+                val enhancedComponents = mutableListOf<KnitComponent>()
+                val sourceFileMap = buildSourceFileMap()
+
+                for (component in jsonComponents) {
+                    val sourceFile = findSourceFile(component, sourceFileMap)
+                    val enhancedComponent = component.copy(sourceFile = sourceFile)
+                    enhancedComponents.add(enhancedComponent)
+                }
+
+                logger.info("Enhanced ${enhancedComponents.size} components with source information")
+                enhancedComponents
             }
-            
-            logger.info("Enhanced ${enhancedComponents.size} components with source information")
-            enhancedComponents
+        }
+
+        return if (app.isDispatchThread) {
+            app.executeOnPooledThread(Callable<List<KnitComponent>> { compute() }).get().toList()
+        } else {
+            compute()
         }
     }
 
@@ -188,14 +239,18 @@ class KnitSourceAnalyzer(private val project: Project) {
     /**
      * Determines if a class is relevant for dependency injection analysis.
      * This filters out enum constants, pure data classes, and other non-DI classes.
+     * Uses K2-compatible Analysis API for better annotation resolution.
      */
     private fun isDiRelevantClass(ktClass: KtClass): Boolean {
-        val classAnnotations = ktClass.annotationEntries
-        
-        
-        val hasDiAnnotations = classAnnotations.any { annotation ->
-            val annotationName = annotation.shortName?.asString()
-            annotationName in listOf("Component", "Provides", "KnitViewModel", "Singleton")
+        // Use Analysis API for enhanced annotation resolution
+        val hasDiAnnotations = analyze(ktClass) {
+            val classSymbol = ktClass.getSymbol() as? KtClassOrObjectSymbol ?: return@analyze false
+            val diAnnotationNames = setOf("Component", "Provides", "KnitViewModel", "Singleton")
+            
+            classSymbol.annotationsList.annotations.any { annotation ->
+                val shortName = annotation.classId?.shortClassName?.asString()
+                shortName in diAnnotationNames
+            }
         }
         
         if (hasDiAnnotations) {
@@ -224,8 +279,13 @@ class KnitSourceAnalyzer(private val project: Project) {
         
         val methods = ktClass.collectDescendantsOfType<KtNamedFunction>()
         val hasProvidesMethod = methods.any { method ->
-            val providesAnnotation = method.annotationEntries.find { it.shortName?.asString() == "Provides" }
-            providesAnnotation != null && !isAnnotationCommentedOut(providesAnnotation)
+            // Use Analysis API for method annotation analysis
+            analyze(method) {
+                val methodSymbol = method.getSymbol() as? KtFunctionSymbol ?: return@analyze false
+                methodSymbol.annotationsList.annotations.any { annotation ->
+                    annotation.classId?.shortClassName?.asString() == "Provides"
+                }
+            } && !isAnnotationCommentedOut(method.annotationEntries.find { it.shortName?.asString() == "Provides" })
         }
         
         if (hasProvidesMethod) {
@@ -283,13 +343,18 @@ class KnitSourceAnalyzer(private val project: Project) {
         }
 
         
-        val classAnnotations = ktClass.annotationEntries
+        // Use Analysis API for class-level annotation analysis
+        val (classLevelProvidesAnnotation, providesAnnotationEntry) = analyze(ktClass) {
+            val classSymbol = ktClass.getSymbol() as? KtClassOrObjectSymbol ?: return@analyze Pair(null, null)
+            val providesAnnotation = classSymbol.annotationsList.annotations.firstOrNull { annotation ->
+                annotation.classId?.shortClassName?.asString() == "Provides"
+            }
+            val annotationEntry = ktClass.annotationEntries.find { it.shortName?.asString() == "Provides" }
+            Pair(providesAnnotation, annotationEntry)
+        }
         
-        
-        
-        val classLevelProvidesAnnotation = classAnnotations.find { it.shortName?.asString() == "Provides" }
-        if (classLevelProvidesAnnotation != null && !isAnnotationCommentedOut(classLevelProvidesAnnotation) && providers.isEmpty()) {
-            val providesType = extractProvidesType(classLevelProvidesAnnotation)
+        if (classLevelProvidesAnnotation != null && providesAnnotationEntry != null && !isAnnotationCommentedOut(providesAnnotationEntry) && providers.isEmpty()) {
+            val providesType = extractProvidesType(providesAnnotationEntry)
             if (providesType != null) {
                 logger.info("Found class-level @Provides annotation on $className providing $providesType")
                 providers.add(
@@ -325,9 +390,22 @@ class KnitSourceAnalyzer(private val project: Project) {
         }
 
         
-        val hasComponent = classAnnotations.any { it.shortName?.asString() == "Component" }
-        val hasProvides = classAnnotations.any { it.shortName?.asString() == "Provides" }
-        val hasKnitViewModel = classAnnotations.any { it.shortName?.asString() == "KnitViewModel" }
+        // Use Analysis API for component type detection
+        val (hasComponent, hasProvides, hasKnitViewModel) = analyze(ktClass) {
+            val classSymbol = ktClass.getSymbol() as? KtClassOrObjectSymbol ?: return@analyze Triple(false, false, false)
+            
+            val hasComponentAnnotation = classSymbol.annotationsList.annotations.any { annotation ->
+                annotation.classId?.shortClassName?.asString() == "Component"
+            }
+            val hasProvidesAnnotation = classSymbol.annotationsList.annotations.any { annotation ->
+                annotation.classId?.shortClassName?.asString() == "Provides"
+            }
+            val hasKnitViewModelAnnotation = classSymbol.annotationsList.annotations.any { annotation ->
+                annotation.classId?.shortClassName?.asString() == "KnitViewModel"
+            }
+            
+            Triple(hasComponentAnnotation, hasProvidesAnnotation, hasKnitViewModelAnnotation)
+        }
 
         
         val componentType = when {
@@ -366,25 +444,39 @@ class KnitSourceAnalyzer(private val project: Project) {
         }
 
         val propertyName = property.name ?: return null
-        val typeReference = property.typeReference
-        val targetType = typeReference?.text ?: "Unknown"
+        
+        // Use Analysis API for enhanced type and annotation analysis
+        val (targetType, isNamed, namedQualifier, isSingletonAnnotated) = analyze(property) {
+            val propertySymbol = property.getSymbol() as? KtPropertySymbol
+            
+            // Fallback to PSI type text to avoid renderer API differences across Kotlin versions
+            val resolvedTargetType = property.typeReference?.text ?: "Unknown"
+            
+            val namedAnnotation = propertySymbol?.annotationsList?.annotations?.firstOrNull { annotation ->
+                annotation.classId?.shortClassName?.asString() == "Named"
+            }
+            val singletonAnnotation = propertySymbol?.annotationsList?.annotations?.firstOrNull { annotation ->
+                annotation.classId?.shortClassName?.asString() == "Singleton"
+            }
+            
+            val namedInfo = if (namedAnnotation != null) {
+                val namedAnnotationEntry = property.annotationEntries.find { it.shortName?.asString() == "Named" }
+                extractNamedQualifier(namedAnnotationEntry)
+            } else {
+                Pair(false, null)
+            }
+            
+            PropertyAnalysisResult(resolvedTargetType, namedInfo.first, namedInfo.second, singletonAnnotation != null)
+        }
 
         logger.debug("Found 'by di' property: $propertyName: $targetType in $containingClassName")
-
-        
-        val annotations = property.annotationEntries
-        val namedAnnotation = annotations.find { it.shortName?.asString() == "Named" }
-        val singletonAnnotation = annotations.find { it.shortName?.asString() == "Singleton" }
-
-        
-        val (isNamed, namedQualifier) = extractNamedQualifier(namedAnnotation)
 
         
         val isFactory = isFactoryType(targetType)
         val isLoadable = isLoadableType(targetType)
 
         
-        val isSingleton = singletonAnnotation != null || isSingletonDelegate(delegateText)
+        val isSingleton = isSingletonAnnotated || isSingletonDelegate(delegateText)
 
         return KnitDependency(
             propertyName = propertyName,
@@ -398,47 +490,72 @@ class KnitSourceAnalyzer(private val project: Project) {
     }
 
     private fun analyzeMethod(method: KtNamedFunction, containingClassName: String): KnitProvider? {
-        val annotations = method.annotationEntries
-        val providesAnnotation = annotations.find { it.shortName?.asString() == "Provides" }
+        // Check for @Provides annotation first
+        val providesAnnotationEntry = method.annotationEntries.find { it.shortName?.asString() == "Provides" }
             ?: return null
 
-
-        if (isAnnotationCommentedOut(providesAnnotation)) {
+        if (isAnnotationCommentedOut(providesAnnotationEntry)) {
             logger.debug("Skipping commented @Provides annotation on method: ${method.name} in $containingClassName")
             return null
         }
 
         val methodName = method.name ?: return null
-        val returnType = method.typeReference?.text ?: "Unit"
+        
+        // Use Analysis API for enhanced method analysis
+        val analysisResult = analyze(method) {
+            val methodSymbol = method.getSymbol() as? KtFunctionSymbol
+            
+            // Fallback to PSI type text to avoid renderer API differences across Kotlin versions
+            val resolvedReturnType = method.typeReference?.text ?: "Unit"
+            
+            val namedAnnotation = methodSymbol?.annotationsList?.annotations?.firstOrNull { annotation ->
+                annotation.classId?.shortClassName?.asString() == "Named"
+            }
+            val singletonAnnotation = methodSymbol?.annotationsList?.annotations?.firstOrNull { annotation ->
+                annotation.classId?.shortClassName?.asString() == "Singleton"
+            }
+            val intoSetAnnotation = methodSymbol?.annotationsList?.annotations?.firstOrNull { annotation ->
+                annotation.classId?.shortClassName?.asString() == "IntoSet"
+            }
+            val intoListAnnotation = methodSymbol?.annotationsList?.annotations?.firstOrNull { annotation ->
+                annotation.classId?.shortClassName?.asString() == "IntoList"
+            }
+            val intoMapAnnotation = methodSymbol?.annotationsList?.annotations?.firstOrNull { annotation ->
+                annotation.classId?.shortClassName?.asString() == "IntoMap"
+            }
+        
+            val namedInfo = if (namedAnnotation != null) {
+                val namedAnnotationEntry = method.annotationEntries.find { it.shortName?.asString() == "Named" }
+                extractNamedQualifier(namedAnnotationEntry)
+            } else {
+                Pair(false, null)
+            }
+            
+            MethodAnalysisResult(
+                returnType = resolvedReturnType,
+                isNamed = namedInfo.first,
+                namedQualifier = namedInfo.second,
+                isSingleton = singletonAnnotation != null,
+                hasIntoSet = intoSetAnnotation != null,
+                hasIntoList = intoListAnnotation != null,
+                hasIntoMap = intoMapAnnotation != null
+            )
+        }
 
+        val providesType = extractProvidesType(providesAnnotationEntry)
 
-        val providesType = extractProvidesType(providesAnnotation)
-
-        logger.info("Found @Provides method: $methodName(): $returnType in $containingClassName")
-
-
-        val namedAnnotation = annotations.find { it.shortName?.asString() == "Named" }
-        val (isNamed, namedQualifier) = extractNamedQualifier(namedAnnotation)
-
-
-        val singletonAnnotation = annotations.find { it.shortName?.asString() == "Singleton" }
-        val isSingleton = singletonAnnotation != null
-
-
-        val hasIntoSet = annotations.any { it.shortName?.asString() == "IntoSet" }
-        val hasIntoList = annotations.any { it.shortName?.asString() == "IntoList" }
-        val hasIntoMap = annotations.any { it.shortName?.asString() == "IntoMap" }
+        logger.info("Found @Provides method: $methodName(): ${analysisResult.returnType} in $containingClassName")
 
         return KnitProvider(
             methodName = methodName,
-            returnType = returnType,
+            returnType = analysisResult.returnType,
             providesType = providesType,
-            isNamed = isNamed,
-            namedQualifier = namedQualifier,
-            isSingleton = isSingleton,
-            isIntoSet = hasIntoSet,
-            isIntoList = hasIntoList,
-            isIntoMap = hasIntoMap
+            isNamed = analysisResult.isNamed,
+            namedQualifier = analysisResult.namedQualifier,
+            isSingleton = analysisResult.isSingleton,
+            isIntoSet = analysisResult.hasIntoSet,
+            isIntoList = analysisResult.hasIntoList,
+            isIntoMap = analysisResult.hasIntoMap
         )
     }
 
@@ -547,13 +664,11 @@ class KnitSourceAnalyzer(private val project: Project) {
     /**
      * Check if a method/annotation is commented out
      */
-    private fun isAnnotationCommentedOut(annotation: KtAnnotationEntry): Boolean {
+    private fun isAnnotationCommentedOut(annotation: KtAnnotationEntry?): Boolean {
+        if (annotation == null) return false
 
         if (isInCommentBlock(annotation)) return true
-
-
         if (isLineCommented(annotation)) return true
-
         return false
     }
 

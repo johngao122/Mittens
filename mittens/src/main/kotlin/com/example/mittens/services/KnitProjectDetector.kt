@@ -1,6 +1,8 @@
 package com.example.mittens.services
 
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.ApplicationManager
+import java.util.concurrent.Callable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
@@ -15,6 +17,9 @@ import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KtClassOrObjectSymbol
 import kotlin.ExperimentalStdlibApi
 
 @Service
@@ -41,26 +46,36 @@ class KnitProjectDetector(private val project: Project) {
     )
 
     fun detectKnitProject(): KnitDetectionResult {
-        logger.info("Starting comprehensive Knit project detection")
+        val app = ApplicationManager.getApplication()
 
-        val buildFileAnalysis = analyzeBuildFiles()
-        val sourceAnalysis = analyzeSourceFiles()
+        val compute: () -> KnitDetectionResult = {
+            logger.info("Starting comprehensive Knit project detection")
 
-        val isKnitProject = buildFileAnalysis.hasKnitPlugin ||
-                buildFileAnalysis.hasKnitDependency ||
-                sourceAnalysis.componentsWithByDi.isNotEmpty() ||
-                sourceAnalysis.componentsWithProvides.isNotEmpty() ||
-                sourceAnalysis.componentsWithComponent.isNotEmpty()
+            val buildFileAnalysis = analyzeBuildFiles()
+            val sourceAnalysis = analyzeSourceFiles()
 
-        return KnitDetectionResult(
-            isKnitProject = isKnitProject,
-            hasKnitPlugin = buildFileAnalysis.hasKnitPlugin,
-            hasKnitDependency = buildFileAnalysis.hasKnitDependency,
-            knitVersion = buildFileAnalysis.knitVersion,
-            componentsWithByDi = sourceAnalysis.componentsWithByDi,
-            componentsWithProvides = sourceAnalysis.componentsWithProvides,
-            componentsWithComponent = sourceAnalysis.componentsWithComponent
-        )
+            val isKnitProject = buildFileAnalysis.hasKnitPlugin ||
+                    buildFileAnalysis.hasKnitDependency ||
+                    sourceAnalysis.componentsWithByDi.isNotEmpty() ||
+                    sourceAnalysis.componentsWithProvides.isNotEmpty() ||
+                    sourceAnalysis.componentsWithComponent.isNotEmpty()
+
+            KnitDetectionResult(
+                isKnitProject = isKnitProject,
+                hasKnitPlugin = buildFileAnalysis.hasKnitPlugin,
+                hasKnitDependency = buildFileAnalysis.hasKnitDependency,
+                knitVersion = buildFileAnalysis.knitVersion,
+                componentsWithByDi = sourceAnalysis.componentsWithByDi,
+                componentsWithProvides = sourceAnalysis.componentsWithProvides,
+                componentsWithComponent = sourceAnalysis.componentsWithComponent
+            )
+        }
+
+        return if (app.isDispatchThread) {
+            app.executeOnPooledThread(Callable { compute() }).get()
+        } else {
+            compute()
+        }
     }
 
     private fun analyzeBuildFiles(): BuildAnalysisResult {
@@ -148,9 +163,15 @@ class KnitProjectDetector(private val project: Project) {
                     }
 
 
-                    val annotations = ktClass.annotationEntries
-                    val hasProvides = annotations.any { it.shortName?.asString() == "Provides" }
-                    val hasComponent = annotations.any { it.shortName?.asString() == "Component" }
+                    // Use Analysis API for annotation detection (compatible with bundled Kotlin in 2024.1)
+                    val (hasProvides, hasComponent) = analyze(ktClass) {
+                        val classSymbol = ktClass.getSymbol() as? KtClassOrObjectSymbol ?: return@analyze Pair(false, false)
+
+                        val providesAnnotation = classSymbol.annotationsList.annotations.any { it.classId?.shortClassName?.asString() == "Provides" }
+                        val componentAnnotation = classSymbol.annotationsList.annotations.any { it.classId?.shortClassName?.asString() == "Component" }
+
+                        Pair(providesAnnotation, componentAnnotation)
+                    }
 
                     if (hasProvides) {
                         componentsWithProvides.add(
@@ -173,7 +194,12 @@ class KnitProjectDetector(private val project: Project) {
 
                     val methods = ktClass.collectDescendantsOfType<KtNamedFunction>()
                     val hasProvidesMethods = methods.any { method ->
-                        method.annotationEntries.any { it.shortName?.asString() == "Provides" }
+                        analyze(method) {
+                            val methodSymbol = method.getSymbol() as? KtFunctionSymbol ?: return@analyze false
+                            methodSymbol.annotationsList.annotations.any { annotation ->
+                                annotation.classId?.shortClassName?.asString() == "Provides"
+                            }
+                        }
                     }
 
                     if (hasProvidesMethods && !hasProvides) {
