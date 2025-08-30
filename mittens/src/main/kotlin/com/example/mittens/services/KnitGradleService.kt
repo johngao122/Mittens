@@ -46,9 +46,21 @@ class KnitGradleService(private val project: Project) {
         val buildFile = findKnitGradleConfiguration() ?: return null
         val content = String(buildFile.contentsToByteArray())
 
+        // Support multiple Gradle notations and both group ids
+        // Examples matched:
+        // implementation("io.github.tiktok.knit:knit:0.1.5")
+        // implementation("io.github.tiktok:knit:0.1.5")
+        // implementation 'io.github.tiktok.knit:knit:0.1.5'
+        // implementation 'io.github.tiktok:knit:0.1.5'
+        // id("io.github.tiktok.knit.plugin") version "0.1.5"
+        // id 'io.github.tiktok.knit.plugin' version '0.1.5'
         val versionRegexes = listOf(
-            Regex("""io\\.github\\.tiktok\\.knit:knit[^:]*:([^"']+)"""),
-            Regex("""io\\.github\\.tiktok:knit[^:]*:([^"']+)""")
+            // Dependency coordinates
+            Regex("""io\.github\.tiktok\.knit:knit:([^\s"'()]+)"""),
+            Regex("""io\.github\.tiktok:knit:([^\s"'()]+)"""),
+            // Plugin block with version keyword
+            Regex("""id\("io\.github\.tiktok\.knit\.plugin"\)\s+version\s+"([^"]+)"""),
+            Regex("""id\s*'io\.github\.tiktok\.knit\.plugin'\s+version\s*'([^']+)'""")
         )
         val version = versionRegexes.asSequence()
             .mapNotNull { it.find(content)?.groupValues?.get(1) }

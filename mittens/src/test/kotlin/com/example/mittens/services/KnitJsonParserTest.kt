@@ -21,8 +21,10 @@ class KnitJsonParserTest : LightJavaCodeInsightFixtureTestCase() {
     }
 
     override fun tearDown() {
+        if(::tempDir.isInitialized) {
+            tempDir.deleteRecursively()
+        }
         super.tearDown()
-        tempDir.deleteRecursively()
     }
 
     @Test

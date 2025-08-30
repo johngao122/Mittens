@@ -54,13 +54,13 @@ class KnitJsonParser(private val project: Project) {
             )
             
         } catch (e: IOException) {
-            logger.error("Failed to parse knit.json file: ${knitJsonFile.absolutePath}", e)
+            logger.warn("Failed to parse knit.json file: ${knitJsonFile.absolutePath}", e)
             return KnitJsonParseResult(
                 success = false,
                 errorMessage = "JSON parsing error: ${e.message}"
             )
         } catch (e: Exception) {
-            logger.error("Unexpected error parsing knit.json file: ${knitJsonFile.absolutePath}", e)
+            logger.warn("Unexpected error parsing knit.json file: ${knitJsonFile.absolutePath}", e)
             return KnitJsonParseResult(
                 success = false,
                 errorMessage = "Unexpected error: ${e.message}"

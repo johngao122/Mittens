@@ -677,18 +677,7 @@ class AdvancedIssueDetector(private val project: Project) {
      * Check if provider shows suspicious patterns that might indicate it came from commented code
      */
     private fun isProviderSuspicious(component: KnitComponent, provider: KnitProvider): Boolean {
-
-        if (component.className == "InMemoryUserRepository" &&
-            (provider.providesType == "UserRepository" ||
-                    provider.returnType.contains("UserRepository"))
-        ) {
-
-
-            logger.warn("Phase 2: Detected InMemoryUserRepository provider that should be commented - filtering out")
-            return true
-        }
-
-
+        // Generic pattern-based filtering for suspicious provider method names
         val suspiciousMethodNames = listOf("commented", "temp", "test", "disabled", "old")
         if (suspiciousMethodNames.any { provider.methodName.lowercase().contains(it) }) {
             return true

@@ -13,11 +13,6 @@ repositories {
 }
 
 dependencies {
-    // ASM for bytecode analysis
-    implementation("org.ow2.asm:asm:9.6")
-    implementation("org.ow2.asm:asm-commons:9.6")
-    implementation("org.ow2.asm:asm-util:9.6")
-    
     // Gradle Tooling API for build integration (exclude SLF4J to avoid conflicts with IntelliJ)
     implementation("org.gradle:gradle-tooling-api:8.4") {
         exclude(group = "org.slf4j", module = "slf4j-api")

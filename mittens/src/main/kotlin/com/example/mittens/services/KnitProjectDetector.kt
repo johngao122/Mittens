@@ -92,8 +92,12 @@ class KnitProjectDetector(private val project: Project) {
 
                 if (knitVersion == null) {
                     val version = listOf(
-                        Regex("""io\\.github\\.tiktok:knit[^:]*:([^"']+)"""),
-                        Regex("""io\\.github\\.tiktok\\.knit:knit[^:]*:([^"']+)""")
+                        // Dependency coordinates
+                        Regex("""io\.github\.tiktok\.knit:knit:([^\s"'()]+)"""),
+                        Regex("""io\.github\.tiktok:knit:([^\s"'()]+)"""),
+                        // Plugin block with version keyword
+                        Regex("""id\("io\.github\.tiktok\.knit\.plugin"\)\s+version\s+"([^"]+)"""),
+                        Regex("""id\s*'io\.github\.tiktok\.knit\.plugin'\s+version\s*'([^']+)'""")
                     ).asSequence()
                         .mapNotNull { it.find(content)?.groupValues?.get(1) }
                         .firstOrNull()

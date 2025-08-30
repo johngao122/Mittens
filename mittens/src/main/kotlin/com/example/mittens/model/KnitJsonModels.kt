@@ -40,6 +40,7 @@ data class KnitJsonComponent(
      * Get the package name from the full component path
      */
     fun getPackageName(fullPath: String): String {
+        if (!fullPath.contains('/')) return ""
         val packagePath = fullPath.substringBeforeLast('/')
         return packagePath.replace('/', '.')
     }
@@ -160,10 +161,18 @@ data class KnitJsonProvider(
      * Get the priority value if present
      */
     fun getPriority(): Int? {
-        return if (hasPriority()) {
-            val priorityPart = provider.substringAfter("priority:").substringBefore(" ")
-            priorityPart.trim().toIntOrNull()
-        } else null
+        if (!hasPriority()) return null
+        val afterLabel = provider.substringAfter("priority:").trimStart()
+        val numberPart = buildString {
+            for (ch in afterLabel) {
+                if (ch.isDigit() || (isEmpty() && ch == '-')) {
+                    append(ch)
+                } else {
+                    break
+                }
+            }
+        }
+        return numberPart.toIntOrNull()
     }
     
     /**
