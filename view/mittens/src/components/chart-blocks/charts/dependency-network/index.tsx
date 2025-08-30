@@ -1,24 +1,44 @@
 'use client';
 
+/**
+ * DEPENDENCY NETWORK COMPONENT
+ * 
+ * Main component that renders a dependency network visualization with:
+ * - Interactive D3.js network graph showing nodes and connections
+ * - Filterable data table with component details
+ * - Node selection and details panel
+ * - Component type filtering capabilities
+ */
+
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { getD3NetworkData } from './chart-utils';
 import D3Network from './d3-network';
 import { D3Node } from '../../../../lib/knit-data-parser';
 
 export default function DependencyNetwork() {
+  // ========================================
+  // STATE MANAGEMENT
+  // ========================================
   const [selectedNode, setSelectedNode] = useState<D3Node | null>(null);
   const detailsRef = useRef<HTMLDivElement | null>(null);
   const [detailsHeight, setDetailsHeight] = useState<number | null>(null);
-  
-  // Filter states
   const [componentTypeFilter, setComponentTypeFilter] = useState<string>('all');
 
+  // ========================================
+  // DATA INITIALIZATION
+  // ========================================
   const networkData = getD3NetworkData();
 
+  // ========================================
+  // EVENT HANDLERS
+  // ========================================
   const handleNodeClick = (node: D3Node) => {
     setSelectedNode(node);
   };
 
+  // ========================================
+  // LAYOUT & RESPONSIVE BEHAVIOR
+  // ========================================
   // Keep the graph container height matched to the details panel when visible
   useEffect(() => {
     if (!detailsRef.current) {
@@ -37,6 +57,9 @@ export default function DependencyNetwork() {
     };
   }, [selectedNode]);
 
+  // ========================================
+  // UTILITY FUNCTIONS FOR NODE STATUS
+  // ========================================
   // Helper function to get status color for the inventory table
   const getStatusColor = (node: D3Node) => {
     if (node.errorInfo.isPartOfCycle) return 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-400/20';
@@ -76,6 +99,9 @@ export default function DependencyNetwork() {
     return 'healthy';
   };
 
+  // ========================================
+  // DATA PROCESSING & ANALYSIS
+  // ========================================
   // Helper function to determine component type based on package name
   const getComponentType = (node: D3Node): string => {
     const packageName = node.packageName.toLowerCase();
@@ -96,6 +122,9 @@ export default function DependencyNetwork() {
     ).length;
   };
 
+  // ========================================
+  // DEPENDENCY TREE BUILDING
+  // ========================================
   // Build provider→providee tree
   const providerTree = useMemo(() => {
     // Map nodeId → node
@@ -245,9 +274,13 @@ export default function DependencyNetwork() {
     );
   };
 
+  // ========================================
+  // MAIN COMPONENT RENDER
+  // ========================================
   return (
     <div className="w-full">
       
+      {/* ===== SUMMARY STATISTICS SECTION ===== */}
       {/* Enhanced Summary Statistics */}
       <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-800 dark:to-slate-700 border border-blue-200 dark:border-slate-600 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all duration-200">
@@ -276,8 +309,10 @@ export default function DependencyNetwork() {
         </div>
       </div>
       
+      {/* ===== INTERACTIVE NETWORK VISUALIZATION ===== */}
       {/* Graph + Details side-by-side */}
       <div className="mb-6 flex flex-col lg:flex-row gap-4 items-stretch">
+        {/* Network Graph Container */}
         <div
           className="flex-1 bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden"
           style={{ height: selectedNode && detailsHeight ? detailsHeight : 650, minHeight: 650 }}
@@ -290,6 +325,7 @@ export default function DependencyNetwork() {
             selectedNode={selectedNode}
           />
         </div>
+        {/* Node Details Panel */}
         {selectedNode && (
           <div ref={detailsRef} className="lg:w-96 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg p-4 self-start">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Selected Component Details</h4>
@@ -395,7 +431,8 @@ export default function DependencyNetwork() {
           </div>
         )}
       </div>
-      
+
+      {/* ===== COMPONENT DATA TABLE ===== */}
       {/* Enhanced Component Inventory Table */}
       <div className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-gray-100 to-gray-50 dark:from-slate-700 dark:to-slate-800 px-6 py-4 border-b border-gray-200 dark:border-slate-600">

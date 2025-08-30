@@ -1,26 +1,43 @@
 "use client";
 
+/**
+ * D3 NETWORK VISUALIZATION COMPONENT
+ * 
+ * Interactive force-directed graph visualization using D3.js featuring:
+ * - Draggable nodes with smart positioning (nodes stay where placed)
+ * - Dynamic force simulation with multiple force types
+ * - Zoom/pan controls and smooth animations
+ * - Node clustering by package type
+ * - Elastic link behavior during drag operations
+ * - Color-coded nodes based on error status
+ * - Size-based nodes reflecting dependency count
+ */
+
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import { NetworkData, D3Node, D3Link } from "../../../../lib/knit-data-parser";
 
-// Configuration constants
+// ========================================
+// CONFIGURATION CONSTANTS
+// ========================================
 const FORCE_CONFIG = {
-    LINK_DISTANCE: 170,
-    LINK_STRENGTH: 0.5,
-    CHARGE_STRENGTH: -100,
-    COLLISION_PADDING: 5,
-    CLUSTER_STRENGTH: 0.1,
-    DRAG_THRESHOLD: 5,
-    SIDE_PANEL_WIDTH_RATIO: 1,
+    LINK_DISTANCE: 170,           // Base distance between connected nodes
+    LINK_STRENGTH: 0.5,           // Base strength of link forces
+    REPEL_STRENGTH: -100,         // Node repulsion strength (negative = repel)
+    COLLISION_PADDING: 5,         // Padding around nodes for collision detection
+    CLUSTER_STRENGTH: 0.1,        // Strength of package clustering force
+    SIDE_PANEL_WIDTH_RATIO: 1,    // Reserved space ratio for side panels
 } as const;
 
 const ANIMATION_DURATIONS = {
-    ZOOM: 300,
-    RESET: 500,
-    CENTER: 500,
+    ZOOM: 300,                    // Zoom transition duration (ms)
+    RESET: 500,                   // Reset animation duration (ms)
+    CENTER: 500,                  // Center animation duration (ms)
 } as const;
 
+// ========================================
+// TYPE DEFINITIONS
+// ========================================
 interface D3NetworkProps {
     data: NetworkData;
     width?: number | string;
@@ -37,6 +54,9 @@ interface TooltipData {
     y: number;
 }
 
+// ========================================
+// MAIN COMPONENT
+// ========================================
 export default function D3Network({
     data,
     width = 800,
@@ -46,6 +66,9 @@ export default function D3Network({
     showZoomControls = true,
     selectedNode = null,
 }: D3NetworkProps) {
+    // ========================================
+    // STATE & REFS
+    // ========================================
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [tooltip, setTooltip] = useState<TooltipData | null>(null);
@@ -59,6 +82,9 @@ export default function D3Network({
     const nodesRef = useRef<any>(null); // Store reference to nodes for theme updates
     const hasSelectionRef = useRef<boolean>(false); // Track if a node is currently selected
 
+    // ========================================
+    // COMPONENT LIFECYCLE & SETUP
+    // ========================================
     // Wait for component to mount before using browser APIs
     useEffect(() => {
         setMounted(true);
@@ -66,6 +92,9 @@ export default function D3Network({
         setIsDarkMode(document.documentElement.classList.contains('dark'));
     }, []);
 
+    // ========================================
+    // THEME MANAGEMENT
+    // ========================================
     // Listen for theme changes (Light and Dark mode)
     useEffect(() => {
         if (!mounted) return;
@@ -118,7 +147,12 @@ export default function D3Network({
         });
         ro.observe(el);
         return () => ro.disconnect();
-    }, [mounted]);    useEffect(() => {
+    }, [mounted]);
+
+    // ========================================
+    // MAIN D3 VISUALIZATION EFFECT
+    // ========================================
+    useEffect(() => {
         if (!mounted || !svgRef.current || !data.nodes.length) return;
 
         const numericWidth = typeof width === "number" ? width : (containerSize.width || 800);
@@ -128,6 +162,9 @@ export default function D3Network({
         svg.selectAll("*").remove();
         svg.attr("width", numericWidth).attr("height", numericHeight);
 
+        // ========================================
+        // SVG SETUP & ZOOM BEHAVIOR
+        // ========================================
         // Create main container group
         const container = svg.append("g").attr("class", "network-container");
 
@@ -142,10 +179,16 @@ export default function D3Network({
         svg.call(zoom);
         zoomRef.current = zoom;
 
+        // ========================================
+        // DATA PREPARATION
+        // ========================================
         // Create copies of data for D3.js simulation
         const nodes = data.nodes.map((d) => ({ ...d }));
         const links = data.links.map((d) => ({ ...d }));
 
+        // ========================================
+        // STYLING HELPER FUNCTIONS
+        // ========================================
         // Helper function to get node color based on error state
         const getNodeColor = (node: D3Node) => {
             if (node.errorInfo.isPartOfCycle) return "#8b5cf6"; // Purple for cycles
@@ -191,32 +234,164 @@ export default function D3Network({
         function forceCluster(alpha: number) {
             nodes.forEach((node: any) => {
                 const cluster = clusters[node.packageName];
-                // Clustering strength
-                node.vx += (cluster.x - node.x) * FORCE_CONFIG.CLUSTER_STRENGTH * alpha;
-                node.vy += (cluster.y - node.y) * FORCE_CONFIG.CLUSTER_STRENGTH * alpha;
+                // Only apply cluster force to non-manually positioned nodes
+                if (!node._manuallyPositioned) {
+                    node.vx += (cluster.x - node.x) * FORCE_CONFIG.CLUSTER_STRENGTH * alpha;
+                    node.vy += (cluster.y - node.y) * FORCE_CONFIG.CLUSTER_STRENGTH * alpha;
+                }
             });
         }
 
-        // Create force simulation
+        // Custom center force that respects manually positioned nodes
+        function forceCustomCenter(alpha: number) {
+            const centerX = numericWidth / 2;
+            const centerY = numericHeight / 2;
+            
+            nodes.forEach((node: any) => {
+                // Only apply center force to non-manually positioned nodes
+                if (!node._manuallyPositioned) {
+                    const dx = centerX - node.x;
+                    const dy = centerY - node.y;
+                    const centerStrength = 0.02; // Weak center force
+                    
+                    node.vx += dx * centerStrength * alpha;
+                    node.vy += dy * centerStrength * alpha;
+                }
+            });
+        }
+
+        // Custom anchor force to keep manually positioned nodes near their target
+        function forceAnchor(alpha: number) {
+            nodes.forEach((node: any) => {
+                if (node._manuallyPositioned && node._targetX !== undefined && node._targetY !== undefined) {
+                    // Calculate distance from target
+                    const dx = node._targetX - node.x;
+                    const dy = node._targetY - node.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Check if this is a recently positioned node (within last 10 seconds)
+                    const isRecentlyPositioned = node._positionedAt && (Date.now() - node._positionedAt < 10000);
+                    
+                    if (isRecentlyPositioned) {
+                        // Extremely strong anchor for recently positioned nodes - acts like fixed positioning
+                        const anchorStrength = 0.99; // Almost completely locked
+                        node.vx += dx * anchorStrength;
+                        node.vy += dy * anchorStrength;
+                    } else {
+                        // Normal anchor force for older positioned nodes
+                        const maxDistance = 50;
+                        const strengthMultiplier = Math.max(0, (distance - 5) / maxDistance);
+                        const anchorStrength = 0.8 * strengthMultiplier;
+                        
+                        if (distance > 5) {
+                            node.vx += dx * anchorStrength * alpha;
+                            node.vy += dy * anchorStrength * alpha;
+                        }
+                    }
+                }
+            });
+        }
+
+        // ========================================
+        // FORCE SIMULATION SETUP
+        // ========================================
+        // Create force simulation with multiple physics forces
         const simulation = d3
             .forceSimulation(nodes)
+            .alphaDecay(0.0228) // Normal decay rate to prevent excessive motion
+            .velocityDecay(0.4) // Normal velocity decay for stable motion
             .force(
                 "link",
                 d3
                     .forceLink(links)
                     .id((d: any) => d.id)
-                    .distance(FORCE_CONFIG.LINK_DISTANCE)
-                    .strength(FORCE_CONFIG.LINK_STRENGTH)
+                    .distance((d: any) => {
+                        // Dynamic distance based on node types and states
+                        const sourceNode = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source);
+                        const targetNode = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target);
+                        
+                        // Base distance
+                        let baseDistance = FORCE_CONFIG.LINK_DISTANCE;
+                        
+                        // If either node is being dragged, make links much more elastic
+                        const sourceBeingDragged = sourceNode && (sourceNode.fx !== null);
+                        const targetBeingDragged = targetNode && (targetNode.fx !== null);
+                        
+                        if (sourceBeingDragged || targetBeingDragged) {
+                            // Much shorter rest length for maximum stretch and smooth following
+                            return baseDistance * 0.2;
+                        }
+                        
+                        // If either node is manually positioned, slightly flexible
+                        const sourceManuallyPositioned = sourceNode && sourceNode._manuallyPositioned;
+                        const targetManuallyPositioned = targetNode && targetNode._manuallyPositioned;
+                        
+                        if (sourceManuallyPositioned || targetManuallyPositioned) {
+                            return baseDistance * 0.7;
+                        }
+                        
+                        return baseDistance;
+                    })
+                    .strength((d: any) => {
+                        // Dynamic strength for smooth elastic behavior
+                        const sourceNode = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source);
+                        const targetNode = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target);
+                        
+                        // Base strength
+                        let baseStrength = FORCE_CONFIG.LINK_STRENGTH;
+                        
+                        // If either node is being dragged, use higher strength for smoother following
+                        const sourceBeingDragged = sourceNode && (sourceNode.fx !== null);
+                        const targetBeingDragged = targetNode && (targetNode.fx !== null);
+                        
+                        if (sourceBeingDragged || targetBeingDragged) {
+                            return baseStrength * 0.8; // Higher strength for connected nodes to follow
+                        }
+                        
+                        // COMPLETELY disable link forces for click-locked nodes
+                        const sourceClickLocked = sourceNode && (sourceNode as any)._clickLocked;
+                        const targetClickLocked = targetNode && (targetNode as any)._clickLocked;
+                        
+                        if (sourceClickLocked || targetClickLocked) {
+                            return 0; // No link force for click-locked nodes
+                        }
+                        
+                        // Special handling for drag-positioned nodes (keep them more fluid)
+                        const sourceDragPositioned = sourceNode && (sourceNode as any)._dragPositioned;
+                        const targetDragPositioned = targetNode && (targetNode as any)._dragPositioned;
+                        
+                        if (sourceDragPositioned || targetDragPositioned) {
+                            return baseStrength * 0.8; // High strength to maintain fluidity while preventing slingback
+                        }
+                        
+                        // If either node is manually positioned, keep reasonable strength for fluid motion
+                        const sourceManuallyPositioned = sourceNode && sourceNode._manuallyPositioned;
+                        const targetManuallyPositioned = targetNode && targetNode._manuallyPositioned;
+                        
+                        if (sourceManuallyPositioned && targetManuallyPositioned) {
+                            return baseStrength * 0.4; // Keep reasonable strength between positioned nodes
+                        }
+                        
+                        if (sourceManuallyPositioned || targetManuallyPositioned) {
+                            return baseStrength * 0.7; // Strong for mixed connections to maintain fluid motion
+                        }
+                        
+                        return baseStrength;
+                    })
             )
-            .force("charge", d3.forceManyBody().strength(FORCE_CONFIG.CHARGE_STRENGTH))
-            .force("center", d3.forceCenter(numericWidth, numericHeight))
+            .force("charge", d3.forceManyBody().strength(FORCE_CONFIG.REPEL_STRENGTH))
+            .force("center", forceCustomCenter as any)
             .force(
                 "collision",
                 d3.forceCollide().radius((d) => getNodeSize(d as D3Node) + FORCE_CONFIG.COLLISION_PADDING)
             )
-            .force("cluster", forceCluster as any);
+            .force("cluster", forceCluster as any)
+            .force("anchor", forceAnchor as any);
 
-        // Create links
+        // ========================================
+        // VISUAL ELEMENTS CREATION
+        // ========================================
+        // Create links (connections between nodes)
         const link = container
             .selectAll(".link")
             .data(links)
@@ -226,13 +401,13 @@ export default function D3Network({
             .attr("stroke", (d: any) =>
                 d.errorInfo.hasErrors ? "#ef4444" : "#64748b"
             )
-            .attr("stroke-width", 2)
-            .attr("stroke-opacity", 0.6)
+            .attr("stroke-width", 3)
+            .attr("stroke-opacity", 0.8)
             .attr("stroke-dasharray", (d: any) =>
                 d.errorInfo.hasErrors ? "5,5" : "0"
             );
 
-        // Create nodes
+        // Create nodes (interactive circles)
         const node = container
             .selectAll(".node")
             .data(nodes)
@@ -245,86 +420,54 @@ export default function D3Network({
             .attr("stroke-width", 2.5)
             .style("cursor", "pointer")
             .call(
+                // ========================================
+                // DRAG BEHAVIOR IMPLEMENTATION
+                // ========================================
+                // Smart drag system: nodes stay where placed, elastic following during drag
                 d3
                     .drag<SVGCircleElement, D3Node>()
                     .on("start", (event, d) => {
-                        // Always restart simulation for responsive dragging
-                        if (!event.active) simulation.alphaTarget(0.3).restart();
+                        // Clear click-locked status when dragging starts
+                        delete (d as any)._clickLocked;
                         
-                        // Store starting position to detect if it's a real drag
-                        (d as any)._dragStartX = event.x;
-                        (d as any)._dragStartY = event.y;
-                        (d as any)._dragStartTime = Date.now();
+                        // Don't clear manually positioned status - keep it for connected nodes
+                        // Only clear it for the dragged node to ensure it moves freely
+                        delete (d as any)._manuallyPositioned;
+                        delete (d as any)._targetX;
+                        delete (d as any)._targetY;
+                        delete (d as any)._dragPositioned;
                         
+                        // Higher simulation activity for responsive following
+                        if (!event.active) simulation.alphaTarget(0.5).restart();
+                        
+                        // Fix only the dragged node position during drag
                         d.fx = d.x;
                         d.fy = d.y;
-                        
-                        // Set a timeout to stop simulation if no significant movement
-                        (d as any)._dragTimeout = setTimeout(() => {
-                            const dragDistance = Math.sqrt(
-                                Math.pow(event.x - ((d as any)._dragStartX || 0), 2) + 
-                                Math.pow(event.y - ((d as any)._dragStartY || 0), 2)
-                            );
-                            
-                            // If no significant movement after 200ms, stop simulation
-                            if (dragDistance < FORCE_CONFIG.DRAG_THRESHOLD) {
-                                simulation.alphaTarget(0);
-                            }
-                        }, 200);
                     })
                     .on("drag", (event, d) => {
-                        // Clear the timeout since we're actively dragging
-                        if ((d as any)._dragTimeout) {
-                            clearTimeout((d as any)._dragTimeout);
-                            (d as any)._dragTimeout = null;
-                        }
-                        
-                        // Check for collision with other nodes
-                        const draggedNode = d as D3Node;
-                        const draggedRadius = getNodeSize(draggedNode) + FORCE_CONFIG.COLLISION_PADDING;
-                        let newX = event.x;
-                        let newY = event.y;
-                        
-                        // Check collision with all other nodes
-                        for (const otherNode of nodes) {
-                            if (otherNode.id === draggedNode.id) continue; // Skip self
-                            
-                            if (otherNode.x !== undefined && otherNode.y !== undefined) {
-                                const otherRadius = getNodeSize(otherNode as D3Node) + FORCE_CONFIG.COLLISION_PADDING;
-                                const dx = newX - otherNode.x;
-                                const dy = newY - otherNode.y;
-                                const distance = Math.sqrt(dx * dx + dy * dy);
-                                const minDistance = draggedRadius + otherRadius;
-                                
-                                // If collision detected, adjust position
-                                if (distance < minDistance && distance > 0) {
-                                    const angle = Math.atan2(dy, dx);
-                                    newX = otherNode.x + Math.cos(angle) * minDistance;
-                                    newY = otherNode.y + Math.sin(angle) * minDistance;
-                                }
-                            }
-                        }
-                        
-                        // Update node position during drag with collision prevention
-                        d.fx = newX;
-                        d.fy = newY;
-                    })
-                    .on("end", (event, d) => {
-                        // Clear timeout if it exists
-                        if ((d as any)._dragTimeout) {
-                            clearTimeout((d as any)._dragTimeout);
-                        }
-                        
-                        // Stop simulation
-                        if (!event.active) simulation.alphaTarget(0);
+                        // Update dragged node position
                         d.fx = event.x;
                         d.fy = event.y;
                         
-                        // Clean up tracking properties
-                        delete (d as any)._dragStartX;
-                        delete (d as any)._dragStartY;
-                        delete (d as any)._dragStartTime;
-                        delete (d as any)._dragTimeout;
+                        // Active simulation during drag for responsive following
+                        simulation.alphaTarget(0.5);
+                    })
+                    .on("end", (event, d) => {
+                        // Mark as manually positioned to prevent slingback, but keep it draggable
+                        (d as any)._manuallyPositioned = true;
+                        (d as any)._targetX = event.x;
+                        (d as any)._targetY = event.y;
+                        (d as any)._dragPositioned = true; // Flag to distinguish from click-positioned
+                        (d as any)._positionedAt = Date.now(); // Timestamp for recent positioning
+                        
+                        // Set final position and release from fixed positioning immediately
+                        d.x = event.x;
+                        d.y = event.y;
+                        d.fx = null; // Release fixed positioning to prevent phase-through
+                        d.fy = null; // Release fixed positioning to prevent phase-through
+                        
+                        // Use very low simulation activity and rely on strong anchor force
+                        simulation.alphaTarget(0.02);
                     })
             );
 
@@ -353,10 +496,19 @@ export default function D3Network({
             event.stopPropagation();
             const nodeData = d as D3Node;
             
-            // Only center if no node is currently selected (transitioning from big border to small border)
+            // IMMEDIATELY fix the node position to prevent any movement
+            nodeData.fx = nodeData.x;
+            nodeData.fy = nodeData.y;
+            
+            // Mark as manually positioned and record current position
+            (nodeData as any)._manuallyPositioned = true;
+            (nodeData as any)._targetX = nodeData.x;
+            (nodeData as any)._targetY = nodeData.y;
+            (nodeData as any)._clickLocked = true; // Additional flag for click-locked nodes
+            
+            // Handle selection state
             if (!hasSelectionRef.current) {
-                centerOnNode(nodeData);
-                hasSelectionRef.current = true; // Update immediately to prevent further centering
+                hasSelectionRef.current = true;
             }
             
             onNodeClick?.(nodeData);
@@ -373,12 +525,43 @@ export default function D3Network({
                 setTooltip(null);
             });
 
+        // ========================================
+        // ANIMATION & SIMULATION LOOP
+        // ========================================
         // Update positions on each tick of the simulation
         simulation.on("tick", () => {
             link.attr("x1", (d: any) => d.source.x)
                 .attr("y1", (d: any) => d.source.y)
                 .attr("x2", (d: any) => d.target.x)
-                .attr("y2", (d: any) => d.target.y);
+                .attr("y2", (d: any) => d.target.y)
+                .attr("stroke-width", (d: any) => {
+                    // Calculate distance between nodes
+                    const dx = d.target.x - d.source.x;
+                    const dy = d.target.y - d.source.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Make links thicker when stretched beyond normal distance
+                    const normalDistance = FORCE_CONFIG.LINK_DISTANCE;
+                    const stretchFactor = Math.max(1, distance / normalDistance);
+                    const baseWidth = 3; // Increased from 2 to 3 to match static width
+                    const maxWidth = 6; // Increased from 4 to 6 for better prominence
+                    
+                    return Math.min(baseWidth * stretchFactor, maxWidth);
+                })
+                .attr("stroke-opacity", (d: any) => {
+                    // Calculate distance between nodes
+                    const dx = d.target.x - d.source.x;
+                    const dy = d.target.y - d.source.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Make links more opaque when stretched
+                    const normalDistance = FORCE_CONFIG.LINK_DISTANCE;
+                    const stretchFactor = distance / normalDistance;
+                    const baseOpacity = 0.6;
+                    const maxOpacity = 0.9;
+                    
+                    return Math.min(baseOpacity + (stretchFactor - 1) * 0.3, maxOpacity);
+                });
 
             node.attr("cx", (d: any) => d.x).attr("cy", (d: any) => d.y);
 
