@@ -20,7 +20,7 @@ class AnalysisResultTest {
         val dependencyGraph = DependencyGraph(emptyList(), emptyList())
         val issues = listOf(
             KnitIssue(
-                type = IssueType.MISSING_COMPONENT_ANNOTATION,
+                type = IssueType.AMBIGUOUS_PROVIDER,
                 severity = Severity.WARNING,
                 message = "Test issue",
                 componentName = "TestComponent"
@@ -44,9 +44,9 @@ class AnalysisResultTest {
     @Test
     fun testGetIssuesByType() {
         val issues = listOf(
-            KnitIssue(IssueType.UNRESOLVED_DEPENDENCY, Severity.ERROR, "Dependency issue", "Component1"),
-            KnitIssue(IssueType.MISSING_COMPONENT_ANNOTATION, Severity.WARNING, "Component issue", "Component2"),
-            KnitIssue(IssueType.UNRESOLVED_DEPENDENCY, Severity.INFO, "Another dependency issue", "Component3")
+            KnitIssue(IssueType.CIRCULAR_DEPENDENCY, Severity.ERROR, "Circular dependency issue", "Component1"),
+            KnitIssue(IssueType.AMBIGUOUS_PROVIDER, Severity.WARNING, "Ambiguous provider issue", "Component2"),
+            KnitIssue(IssueType.CIRCULAR_DEPENDENCY, Severity.INFO, "Another circular dependency issue", "Component3")
         )
         
         val result = AnalysisResult(
@@ -60,17 +60,17 @@ class AnalysisResultTest {
         val issuesByType = result.getIssuesByType()
         
         assertEquals("Should have 2 issue types", 2, issuesByType.size)
-        assertEquals("Should have 2 dependency issues", 2, issuesByType[IssueType.UNRESOLVED_DEPENDENCY]?.size)
-        assertEquals("Should have 1 component issue", 1, issuesByType[IssueType.MISSING_COMPONENT_ANNOTATION]?.size)
+        assertEquals("Should have 2 circular dependency issues", 2, issuesByType[IssueType.CIRCULAR_DEPENDENCY]?.size)
+        assertEquals("Should have 1 ambiguous provider issue", 1, issuesByType[IssueType.AMBIGUOUS_PROVIDER]?.size)
     }
     
     @Test
     fun testGetIssuesBySeverity() {
         val issues = listOf(
-            KnitIssue(IssueType.UNRESOLVED_DEPENDENCY, Severity.ERROR, "Error issue", "Component1"),
-            KnitIssue(IssueType.MISSING_COMPONENT_ANNOTATION, Severity.WARNING, "Warning issue", "Component2"),
-            KnitIssue(IssueType.UNRESOLVED_DEPENDENCY, Severity.WARNING, "Another warning", "Component3"),
-            KnitIssue(IssueType.MISSING_COMPONENT_ANNOTATION, Severity.INFO, "Info issue", "Component4")
+            KnitIssue(IssueType.CIRCULAR_DEPENDENCY, Severity.ERROR, "Error issue", "Component1"),
+            KnitIssue(IssueType.AMBIGUOUS_PROVIDER, Severity.WARNING, "Warning issue", "Component2"),
+            KnitIssue(IssueType.CIRCULAR_DEPENDENCY, Severity.WARNING, "Another warning", "Component3"),
+            KnitIssue(IssueType.AMBIGUOUS_PROVIDER, Severity.INFO, "Info issue", "Component4")
         )
         
         val result = AnalysisResult(
@@ -92,13 +92,13 @@ class AnalysisResultTest {
     @Test
     fun testHasErrors() {
         val issuesWithErrors = listOf(
-            KnitIssue(IssueType.UNRESOLVED_DEPENDENCY, Severity.ERROR, "Error", "Component1"),
-            KnitIssue(IssueType.MISSING_COMPONENT_ANNOTATION, Severity.WARNING, "Warning", "Component2")
+            KnitIssue(IssueType.CIRCULAR_DEPENDENCY, Severity.ERROR, "Error", "Component1"),
+            KnitIssue(IssueType.AMBIGUOUS_PROVIDER, Severity.WARNING, "Warning", "Component2")
         )
         
         val issuesWithoutErrors = listOf(
-            KnitIssue(IssueType.MISSING_COMPONENT_ANNOTATION, Severity.WARNING, "Warning", "Component1"),
-            KnitIssue(IssueType.UNRESOLVED_DEPENDENCY, Severity.INFO, "Info", "Component2")
+            KnitIssue(IssueType.AMBIGUOUS_PROVIDER, Severity.WARNING, "Warning", "Component1"),
+            KnitIssue(IssueType.CIRCULAR_DEPENDENCY, Severity.INFO, "Info", "Component2")
         )
         
         val resultWithErrors = AnalysisResult(
@@ -124,13 +124,13 @@ class AnalysisResultTest {
     @Test
     fun testHasWarnings() {
         val issuesWithWarnings = listOf(
-            KnitIssue(IssueType.MISSING_COMPONENT_ANNOTATION, Severity.WARNING, "Warning", "Component1"),
-            KnitIssue(IssueType.UNRESOLVED_DEPENDENCY, Severity.INFO, "Info", "Component2")
+            KnitIssue(IssueType.AMBIGUOUS_PROVIDER, Severity.WARNING, "Warning", "Component1"),
+            KnitIssue(IssueType.CIRCULAR_DEPENDENCY, Severity.INFO, "Info", "Component2")
         )
         
         val issuesWithoutWarnings = listOf(
-            KnitIssue(IssueType.UNRESOLVED_DEPENDENCY, Severity.ERROR, "Error", "Component1"),
-            KnitIssue(IssueType.MISSING_COMPONENT_ANNOTATION, Severity.INFO, "Info", "Component2")
+            KnitIssue(IssueType.CIRCULAR_DEPENDENCY, Severity.ERROR, "Error", "Component1"),
+            KnitIssue(IssueType.AMBIGUOUS_PROVIDER, Severity.INFO, "Info", "Component2")
         )
         
         val resultWithWarnings = AnalysisResult(
@@ -185,9 +185,9 @@ class AnalysisResultTest {
         val dependencyGraph = DependencyGraph(nodes, edges)
 
         val issues = listOf(
-            KnitIssue(IssueType.UNRESOLVED_DEPENDENCY, Severity.ERROR, "Error", "Component1"),
-            KnitIssue(IssueType.MISSING_COMPONENT_ANNOTATION, Severity.WARNING, "Warning", "Component2"),
-            KnitIssue(IssueType.UNRESOLVED_DEPENDENCY, Severity.INFO, "Info", "Component1")
+            KnitIssue(IssueType.CIRCULAR_DEPENDENCY, Severity.ERROR, "Error", "Component1"),
+            KnitIssue(IssueType.AMBIGUOUS_PROVIDER, Severity.WARNING, "Warning", "Component2"),
+            KnitIssue(IssueType.CIRCULAR_DEPENDENCY, Severity.INFO, "Info", "Component1")
         )
         
         val result = AnalysisResult(
@@ -223,7 +223,7 @@ class AnalysisResultTest {
                 validationStatus = ValidationStatus.VALIDATED_TRUE_POSITIVE
             ),
             KnitIssue(
-                type = IssueType.UNRESOLVED_DEPENDENCY, 
+                type = IssueType.CIRCULAR_DEPENDENCY, 
                 severity = Severity.WARNING, 
                 message = "False positive", 
                 componentName = "Component2",

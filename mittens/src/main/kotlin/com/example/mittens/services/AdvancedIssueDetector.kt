@@ -13,34 +13,12 @@ import com.intellij.openapi.project.Project
 class AdvancedIssueDetector(private val project: Project) {
 
     private val logger = Logger.getInstance(AdvancedIssueDetector::class.java)
-    private val typeCache = mutableMapOf<String, TypeMatchResult>()
-    private val providerLookupCache = mutableMapOf<String, List<ProviderMatch>>()
 
-    data class TypeMatchResult(
-        val exactMatches: List<String>,
-        val fuzzyMatches: List<String>,
-        val inheritanceMatches: List<String>
-    )
-
-    data class ProviderMatch(
-        val providerId: String,
-        val providerType: String,
-        val matchType: MatchType,
-        val confidence: Double
-    )
-
-    enum class MatchType {
-        EXACT,
-        INHERITANCE,
-        GENERIC_COMPATIBLE,
-        FUZZY
-    }
 
     /**
      * Detect advanced circular dependencies with detailed path information
      */
     fun detectAdvancedCircularDependencies(
-        components: List<KnitComponent>,
         dependencyGraph: DependencyGraph
     ): List<KnitIssue> {
         val issues = mutableListOf<KnitIssue>()
@@ -192,287 +170,22 @@ class AdvancedIssueDetector(private val project: Project) {
         return issues
     }
 
-    /**
-     * Improved unresolved dependency detection with generic type support
-     */
-    fun detectImprovedUnresolvedDependencies(components: List<KnitComponent>): List<KnitIssue> {
-        val issues = mutableListOf<KnitIssue>()
-        val providerIndex = buildProviderIndex(components)
-
-        components.forEach { component ->
-            component.dependencies.forEach { dependency ->
-                val matchResult = findEnhancedProviderMatches(
-                    dependency.targetType,
-                    dependency.namedQualifier,
-                    providerIndex,
-                    components
-                )
-
-                if (matchResult.isEmpty()) {
-                    val suggestions = generateUnresolvedDependencySuggestions(
-                        dependency.targetType,
-                        dependency.namedQualifier,
-                        providerIndex
-                    )
-
-                    val message = if (dependency.isNamed) {
-                        "No provider found for dependency: ${dependency.targetType} with qualifier '@Named(${dependency.namedQualifier})'"
-                    } else {
-                        "No provider found for dependency: ${dependency.targetType}"
-                    }
-
-                    issues.add(
-                        KnitIssue(
-                            type = IssueType.UNRESOLVED_DEPENDENCY,
-                            severity = Severity.ERROR,
-                            message = message,
-                            componentName = "${component.packageName}.${component.className}",
-                            sourceLocation = component.sourceFile,
-                            suggestedFix = suggestions,
-                            metadata = mapOf(
-                                "targetType" to dependency.targetType,
-                                "namedQualifier" to (dependency.namedQualifier ?: ""),
-                                "isNamed" to dependency.isNamed,
-                                "propertyName" to dependency.propertyName
-                            )
-                        )
-                    )
-                }
-            }
-        }
-
-        return issues
-    }
-
-    /**
-     * Advanced singleton violation detection with lifecycle analysis
-     */
-    fun detectAdvancedSingletonViolations(components: List<KnitComponent>): List<KnitIssue> {
-        val issues = mutableListOf<KnitIssue>()
-        val singletonAnalysis = analyzeSingletonLifecycles(components)
 
 
-        singletonAnalysis.conflictingProviders.forEach { (mapKey, providers) ->
-            val baseType = mapKey.substringBefore('@')
-            issues.add(
-                KnitIssue(
-                    type = IssueType.SINGLETON_VIOLATION,
-                    severity = Severity.ERROR,
-                    message = "Multiple singleton providers found for type: $baseType",
-                    componentName = providers.joinToString(", "),
-                    suggestedFix = "Remove duplicate singleton providers or use different types/qualifiers. " +
-                            "Consider using component-level singletons instead of global ones.",
-                    metadata = mapOf(
-                        "conflictingType" to baseType,
-                        "providerCount" to providers.size,
-                        "providers" to providers
-                    )
-                )
-            )
-        }
 
 
-        singletonAnalysis.lifecycleMismatches.forEach { mismatch ->
-            issues.add(
-                KnitIssue(
-                    type = IssueType.SINGLETON_VIOLATION,
-                    severity = Severity.WARNING,
-                    message = "Singleton dependency '${mismatch.dependencyType}' is provided by non-singleton providers",
-                    componentName = mismatch.consumerComponent,
-                    sourceLocation = mismatch.sourceFile,
-                    suggestedFix = "Mark providers as @Singleton: ${mismatch.nonSingletonProviders.joinToString()}",
-                    metadata = mapOf(
-                        "dependencyType" to mismatch.dependencyType,
-                        "consumerComponent" to mismatch.consumerComponent,
-                        "nonSingletonProviders" to mismatch.nonSingletonProviders
-                    )
-                )
-            )
-        }
-
-        return issues
-    }
-
-    /**
-     * Enhanced named qualifier mismatch detection with fuzzy matching
-     */
-    fun detectEnhancedNamedQualifierMismatches(components: List<KnitComponent>): List<KnitIssue> {
-        val issues = mutableListOf<KnitIssue>()
-        val qualifierAnalysis = analyzeQualifierUsage(components)
-
-        qualifierAnalysis.mismatches.forEach { mismatch ->
-            val suggestions = generateQualifierSuggestions(
-                mismatch.requestedQualifier,
-                mismatch.availableQualifiers
-            )
-
-            issues.add(
-                KnitIssue(
-                    type = IssueType.NAMED_QUALIFIER_MISMATCH,
-                    severity = Severity.ERROR,
-                    message = "Named qualifier '@Named(${mismatch.requestedQualifier})' not found for type: ${mismatch.dependencyType}",
-                    componentName = mismatch.consumerComponent,
-                    sourceLocation = mismatch.sourceFile,
-                    suggestedFix = if (suggestions.isNotEmpty()) {
-                        "Did you mean: ${suggestions.joinToString(", ") { "'$it'" }}? Available qualifiers: ${
-                            mismatch.availableQualifiers.joinToString(
-                                ", "
-                            ) { "'$it'" }
-                        }"
-                    } else {
-                        "Create a provider with @Named(${mismatch.requestedQualifier}) or check available qualifiers: ${
-                            mismatch.availableQualifiers.joinToString(
-                                ", "
-                            ) { "'$it'" }
-                        }"
-                    },
-                    metadata = mapOf(
-                        "requestedQualifier" to mismatch.requestedQualifier,
-                        "availableQualifiers" to mismatch.availableQualifiers,
-                        "dependencyType" to mismatch.dependencyType,
-                        "suggestions" to suggestions
-                    )
-                )
-            )
-        }
-
-        return issues
-    }
 
 
-    private data class SingletonAnalysis(
-        val conflictingProviders: Map<String, List<String>>,
-        val lifecycleMismatches: List<LifecycleMismatch>
-    )
-
-    private data class LifecycleMismatch(
-        val dependencyType: String,
-        val consumerComponent: String,
-        val sourceFile: String,
-        val nonSingletonProviders: List<String>
-    )
-
-    private data class QualifierAnalysis(
-        val mismatches: List<QualifierMismatch>
-    )
-
-    private data class QualifierMismatch(
-        val dependencyType: String,
-        val requestedQualifier: String,
-        val availableQualifiers: List<String>,
-        val consumerComponent: String,
-        val sourceFile: String
-    )
-
-    private fun buildProviderIndex(components: List<KnitComponent>): Map<String, List<Pair<String, KnitProvider>>> {
-        val typeToProviders = mutableMapOf<String, MutableList<Pair<String, KnitProvider>>>()
-
-        components.forEach { component ->
-            val validProviders = component.providers.filter { provider ->
-                isProviderActive(component, provider)
-            }
-
-            validProviders.forEach { provider ->
-                val providedType = provider.providesType ?: provider.returnType
-                val providerKey = if (provider.isNamed) {
-                    "$providedType@${provider.namedQualifier ?: "unnamed"}"
-                } else {
-                    providedType
-                }
-
-                val providerId = "${component.packageName}.${component.className}.${provider.methodName}"
-
-                logger.debug("Phase 2: Indexing active provider - $providerId for type $providedType")
-
-                val bucket = typeToProviders.getOrPut(providerKey) { mutableListOf() }
-                if (bucket.none { (id, _) -> id == providerId }) {
-                    bucket.add(providerId to provider)
-                }
-            }
 
 
-            val filteredCount = component.providers.size - validProviders.size
-            if (filteredCount > 0) {
-                logger.debug("Phase 2: Filtered out $filteredCount inactive providers from ${component.fullyQualifiedName}")
-            }
-        }
-
-        return typeToProviders
-    }
-
-    private fun findEnhancedProviderMatches(
-        targetType: String,
-        namedQualifier: String?,
-        providerIndex: Map<String, List<Pair<String, KnitProvider>>>,
-        components: List<KnitComponent>
-    ): List<ProviderMatch> {
-        val matches = mutableListOf<ProviderMatch>()
-        val possibleKeys = mutableListOf<String>()
-        if (namedQualifier != null) {
-            possibleKeys.add("$targetType@$namedQualifier")
-        } else {
-            possibleKeys.add(targetType)
-
-            possibleKeys.add("$targetType@unnamed")
-        }
 
 
-        possibleKeys.forEach { key ->
-            providerIndex[key]?.forEach { (providerId, provider) ->
-                matches.add(ProviderMatch(providerId, provider.returnType, MatchType.EXACT, 1.0))
-            }
-        }
 
 
-        if (matches.isEmpty()) {
-
-            findGenericTypeMatches(targetType, providerIndex).forEach { match ->
-                matches.add(match)
-            }
 
 
-            findInheritanceMatches(targetType, components).forEach { match ->
-                matches.add(match)
-            }
-        }
-
-        return matches
-    }
-
-    private fun findGenericTypeMatches(
-        targetType: String,
-        providerIndex: Map<String, List<Pair<String, KnitProvider>>>
-    ): List<ProviderMatch> {
-        val matches = mutableListOf<ProviderMatch>()
-        val baseType = targetType.substringBefore('<')
-
-        providerIndex.keys
-            .filter { it.startsWith(baseType) && it.contains('<') }
-            .forEach { key ->
-                val providers = providerIndex[key] ?: emptyList()
-                providers.forEach { (providerId, provider) ->
-                    matches.add(
-                        ProviderMatch(
-                            providerId,
-                            provider.returnType,
-                            MatchType.GENERIC_COMPATIBLE,
-                            0.8
-                        )
-                    )
-                }
-            }
-
-        return matches
-    }
-
-    private fun findInheritanceMatches(
-        targetType: String,
-        components: List<KnitComponent>
-    ): List<ProviderMatch> {
 
 
-        return emptyList()
-    }
 
     private fun generateAmbiguousProviderSuggestions(
         providedType: String,
@@ -490,156 +203,15 @@ class AdvancedIssueDetector(private val project: Project) {
         }
     }
 
-    private fun generateUnresolvedDependencySuggestions(
-        targetType: String,
-        namedQualifier: String?,
-        providerIndex: Map<String, List<Pair<String, KnitProvider>>>
-    ): String {
-        val suggestions = mutableListOf<String>()
-
-        if (namedQualifier != null) {
-            suggestions.add("Create a @Provides method with @Named($namedQualifier) for $targetType")
 
 
-            val baseTypeProviders = providerIndex[targetType]
-            if (baseTypeProviders?.isNotEmpty() == true) {
-                suggestions.add(
-                    "Available providers for $targetType (without qualifiers): ${
-                        baseTypeProviders.map { it.first }.joinToString(", ")
-                    }"
-                )
-            }
-        } else {
-            suggestions.add("Create a @Provides method or @Component class for $targetType")
 
 
-            val namedProviders = providerIndex.keys.filter { it.startsWith("$targetType@") }
-            if (namedProviders.isNotEmpty()) {
-                val qualifiers = namedProviders.map { it.substringAfter('@') }
-                suggestions.add("Available named providers: ${qualifiers.joinToString(", ") { "@Named($it)" }}")
-            }
-        }
-
-        return suggestions.joinToString("\n")
-    }
-
-    private fun analyzeSingletonLifecycles(components: List<KnitComponent>): SingletonAnalysis {
-        val singletonTypes = mutableMapOf<String, MutableList<String>>()
-        val allProvidedTypes = mutableMapOf<String, MutableList<String>>()
-        val lifecycleMismatches = mutableListOf<LifecycleMismatch>()
 
 
-        components.forEach { component ->
-            component.providers.forEach { provider ->
-                val baseProvidedType = provider.providesType ?: provider.returnType
-                val qualifierKey = if (provider.isNamed) provider.namedQualifier ?: "__unnamed__" else "__default__"
-                val mapKey = "$baseProvidedType@$qualifierKey"
-                val providerPath = "${component.packageName}.${component.className}.${provider.methodName}"
-
-                if (provider.isSingleton) {
-                    val bucket = singletonTypes.getOrPut(mapKey) { mutableListOf() }
-                    if (!bucket.contains(providerPath)) bucket.add(providerPath)
-                }
-                val allBucket = allProvidedTypes.getOrPut(mapKey) { mutableListOf() }
-                if (!allBucket.contains(providerPath)) allBucket.add(providerPath)
-            }
-        }
 
 
-        components.forEach { component ->
-            component.dependencies.filter { it.isSingleton }.forEach { dependency ->
-                val nonSingletonProviders = components.flatMap { comp ->
-                    comp.providers.filter { prov ->
-                        (prov.providesType ?: prov.returnType) == dependency.targetType && !prov.isSingleton
-                    }.map { "${comp.packageName}.${comp.className}.${it.methodName}" }
-                }
 
-                if (nonSingletonProviders.isNotEmpty()) {
-                    lifecycleMismatches.add(
-                        LifecycleMismatch(
-                            dependency.targetType,
-                            "${component.packageName}.${component.className}",
-                            component.sourceFile ?: "${component.className}.kt",
-                            nonSingletonProviders
-                        )
-                    )
-                }
-            }
-        }
-
-
-        val conflictingProviders = mutableMapOf<String, List<String>>()
-        singletonTypes.filterValues { it.size > 1 }.forEach { (k, v) -> conflictingProviders[k] = v }
-        allProvidedTypes.filterValues { it.size > 1 }.forEach { (k, v) ->
-            if (!conflictingProviders.containsKey(k)) conflictingProviders[k] = v
-        }
-
-        return SingletonAnalysis(conflictingProviders, lifecycleMismatches)
-    }
-
-    private fun analyzeQualifierUsage(components: List<KnitComponent>): QualifierAnalysis {
-        val mismatches = mutableListOf<QualifierMismatch>()
-        val availableProviders = mutableMapOf<String, MutableSet<String?>>()
-
-
-        components.forEach { component ->
-            component.providers.forEach { provider ->
-                val providedType = provider.providesType ?: provider.returnType
-                availableProviders.getOrPut(providedType) { mutableSetOf() }.add(
-                    if (provider.isNamed) provider.namedQualifier else null
-                )
-            }
-        }
-
-
-        components.forEach { component ->
-            component.dependencies.filter { it.isNamed }.forEach { dependency ->
-                val availableQualifiers = availableProviders[dependency.targetType]?.filterNotNull() ?: emptyList()
-
-                if (dependency.namedQualifier !in availableQualifiers) {
-                    mismatches.add(
-                        QualifierMismatch(
-                            dependency.targetType,
-                            dependency.namedQualifier ?: "",
-                            availableQualifiers,
-                            "${component.packageName}.${component.className}",
-                            component.sourceFile ?: "${component.className}.kt"
-                        )
-                    )
-                }
-            }
-        }
-
-        return QualifierAnalysis(mismatches)
-    }
-
-    private fun generateQualifierSuggestions(requested: String, available: List<String>): List<String> {
-        return available.filter {
-
-            calculateEditDistance(requested.lowercase(), it.lowercase()) <= 2
-        }.sortedBy {
-            calculateEditDistance(requested.lowercase(), it.lowercase())
-        }
-    }
-
-    private fun calculateEditDistance(s1: String, s2: String): Int {
-        val dp = Array(s1.length + 1) { IntArray(s2.length + 1) }
-
-        for (i in 0..s1.length) dp[i][0] = i
-        for (j in 0..s2.length) dp[0][j] = j
-
-        for (i in 1..s1.length) {
-            for (j in 1..s2.length) {
-                dp[i][j] = if (s1[i - 1] == s2[j - 1]) {
-                    dp[i - 1][j - 1]
-                } else {
-                    1 + minOf(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
-                }
-            }
-        }
-
-        return dp[s1.length][s2.length]
-    }
 
     /**
      * Phase 2: Validate if a provider is active and should be included in analysis.
@@ -656,7 +228,7 @@ class AdvancedIssueDetector(private val project: Project) {
 
 
 
-        if (isProviderSuspicious(component, provider)) {
+        if (isProviderSuspicious(provider)) {
             logger.debug("Phase 2: Filtering out suspicious provider ${provider.methodName} in ${component.fullyQualifiedName}")
             return false
         }
@@ -674,7 +246,7 @@ class AdvancedIssueDetector(private val project: Project) {
     /**
      * Check if provider shows suspicious patterns that might indicate it came from commented code
      */
-    private fun isProviderSuspicious(component: KnitComponent, provider: KnitProvider): Boolean {
+    private fun isProviderSuspicious(provider: KnitProvider): Boolean {
         // Generic pattern-based filtering for suspicious provider method names
         val suspiciousMethodNames = listOf("commented", "temp", "test", "disabled", "old")
         if (suspiciousMethodNames.any { provider.methodName.lowercase().contains(it) }) {
@@ -717,159 +289,13 @@ class AdvancedIssueDetector(private val project: Project) {
     
     
 
-    /**
-     * Detect unresolved dependencies with component exclusion support
-     * Excludes components as consumers (to avoid reporting their own circular dependency issues)
-     * but keeps them as providers (so other components can still resolve dependencies to them)
-     */
-    fun detectImprovedUnresolvedDependencies(
-        components: List<KnitComponent>, 
-        excludedComponents: Set<String>
-    ): List<KnitIssue> {
-        val issues = mutableListOf<KnitIssue>()
-        
-        // Build provider index from ALL components (including excluded ones)
-        val providerIndex = buildProviderIndex(components)
 
-        // Only check dependencies for non-excluded components
-        components.forEach { component ->
-            val fullName = "${component.packageName}.${component.className}"
-            
-            // Skip dependency checking for excluded components (they're in circular dependencies)
-            if (fullName in excludedComponents) {
-                return@forEach
-            }
-            
-            component.dependencies.forEach { dependency ->
-                val matchResult = findEnhancedProviderMatches(
-                    dependency.targetType,
-                    dependency.namedQualifier,
-                    providerIndex,
-                    components
-                )
 
-                if (matchResult.isEmpty()) {
-                    val suggestions = generateUnresolvedDependencySuggestions(
-                        dependency.targetType,
-                        dependency.namedQualifier,
-                        providerIndex
-                    )
 
-                    val message = if (dependency.isNamed) {
-                        "No provider found for dependency: ${dependency.targetType} with qualifier '@Named(${dependency.namedQualifier})'"
-                    } else {
-                        "No provider found for dependency: ${dependency.targetType}"
-                    }
 
-                    issues.add(
-                        KnitIssue(
-                            type = IssueType.UNRESOLVED_DEPENDENCY,
-                            severity = Severity.ERROR,
-                            message = message,
-                            componentName = "${component.packageName}.${component.className}",
-                            sourceLocation = component.sourceFile,
-                            suggestedFix = suggestions,
-                            metadata = mapOf(
-                                "targetType" to dependency.targetType,
-                                "namedQualifier" to (dependency.namedQualifier ?: ""),
-                                "isNamed" to dependency.isNamed,
-                                "propertyName" to dependency.propertyName
-                            )
-                        )
-                    )
-                }
-            }
-        }
 
-        return issues
-    }
 
-    /**
-     * Detect ambiguous providers with component exclusion support
-     * Excludes components as consumers but keeps them as providers to avoid hiding real ambiguity issues
-     */
-    fun detectEnhancedAmbiguousProviders(
-        components: List<KnitComponent>,
-        excludedComponents: Set<String>
-    ): List<KnitIssue> {
-        // For ambiguous provider detection, we need ALL components as providers
-        // but we can exclude components from being analyzed for their own ambiguity issues
-        // However, since this analyzer looks at provider conflicts globally, 
-        // we should include all components to detect all potential ambiguities
-        return detectEnhancedAmbiguousProviders(components)
-    }
 
-    /**
-     * Detect singleton violations with component exclusion support
-     * Keeps all components as providers to detect all potential singleton conflicts
-     */
-    fun detectAdvancedSingletonViolations(
-        components: List<KnitComponent>,
-        excludedComponents: Set<String>
-    ): List<KnitIssue> {
-        // For singleton violation detection, we need ALL components as providers
-        // to detect all potential singleton conflicts across the entire system
-        return detectAdvancedSingletonViolations(components)
-    }
 
-    /**
-     * Detect named qualifier mismatches with component exclusion support
-     * Excludes components as consumers but keeps them as providers for qualifier matching
-     */
-    fun detectEnhancedNamedQualifierMismatches(
-        components: List<KnitComponent>,
-        excludedComponents: Set<String>
-    ): List<KnitIssue> {
-        // We need ALL components as providers for qualifier matching
-        // but only check dependencies for non-excluded components
-        val issues = mutableListOf<KnitIssue>()
-        val qualifierAnalysis = analyzeQualifierUsage(components)
 
-        // Filter out mismatches from excluded components (they're in circular dependencies)
-        val filteredMismatches = qualifierAnalysis.mismatches.filter { mismatch ->
-            mismatch.consumerComponent !in excludedComponents
-        }
-
-        filteredMismatches.forEach { mismatch ->
-            val suggestions = generateQualifierSuggestions(
-                mismatch.requestedQualifier,
-                mismatch.availableQualifiers
-            )
-
-            issues.add(
-                KnitIssue(
-                    type = IssueType.NAMED_QUALIFIER_MISMATCH,
-                    severity = Severity.ERROR,
-                    message = "Named qualifier '@Named(${mismatch.requestedQualifier})' not found for type: ${mismatch.dependencyType}",
-                    componentName = mismatch.consumerComponent,
-                    sourceLocation = mismatch.sourceFile,
-                    suggestedFix = if (suggestions.isNotEmpty()) {
-                        "Did you mean: ${suggestions.joinToString(", ") { "'$it'" }}? Available qualifiers: ${
-                            mismatch.availableQualifiers.joinToString(
-                                ", "
-                            ) { "'$it'" }
-                        }"
-                    } else {
-                        "Add a provider with qualifier '@Named(${mismatch.requestedQualifier})' for type ${mismatch.dependencyType}, or check if the qualifier name is correct."
-                    },
-                    metadata = mapOf(
-                        "requestedQualifier" to mismatch.requestedQualifier,
-                        "dependencyType" to mismatch.dependencyType,
-                        "availableQualifiers" to mismatch.availableQualifiers,
-                        "suggestions" to suggestions
-                    )
-                )
-            )
-        }
-
-        return issues
-    }
-
-    /**
-     * Clear all caches - useful for testing or when project structure changes significantly
-     */
-    fun clearCaches() {
-        typeCache.clear()
-        providerLookupCache.clear()
-    }
 }

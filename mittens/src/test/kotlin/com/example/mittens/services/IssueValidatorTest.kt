@@ -106,40 +106,7 @@ class IssueValidatorTest : LightJavaCodeInsightFixtureTestCase() {
         assertTrue("Confidence should be low for false positive", validatedIssue.confidenceScore < 0.5)
     }
 
-    @Test
-    fun testValidateUnresolvedDependency_TruePositive() {
-        val consumerComponent = KnitComponent(
-            className = "PaymentService",
-            packageName = "com.test",
-            type = ComponentType.COMPONENT,
-            dependencies = listOf(
-                KnitDependency(
-                    propertyName = "paymentGateway",
-                    targetType = "PaymentGateway",
-                    isNamed = false
-                )
-            ),
-            providers = emptyList(),
-            sourceFile = "PaymentService.kt"
-        )
 
-        val unresolvedIssue = KnitIssue(
-            type = IssueType.UNRESOLVED_DEPENDENCY,
-            severity = Severity.ERROR,
-            message = "No provider found for PaymentGateway",
-            componentName = "PaymentService",
-            metadata = mapOf("dependencyType" to "PaymentGateway")
-        )
-
-        // No provider component for PaymentGateway
-        val components = listOf(consumerComponent)
-        val validatedIssues = issueValidator.validateIssues(listOf(unresolvedIssue), components)
-
-        assertEquals(1, validatedIssues.size)
-        val validatedIssue = validatedIssues[0]
-        assertEquals(ValidationStatus.VALIDATED_TRUE_POSITIVE, validatedIssue.validationStatus)
-        assertTrue("Confidence should be high for true unresolved dependency", validatedIssue.confidenceScore > 0.8)
-    }
 
     @Test
     fun testValidateAmbiguousProvider_TruePositive() {
@@ -192,111 +159,9 @@ class IssueValidatorTest : LightJavaCodeInsightFixtureTestCase() {
         assertTrue("Confidence should be high for true ambiguous provider", validatedIssue.confidenceScore > 0.9)
     }
 
-    @Test
-    fun testValidateSingletonViolation_TruePositive() {
-        val provider1 = KnitComponent(
-            className = "SingletonProvider1",
-            packageName = "com.test",
-            type = ComponentType.PROVIDER,
-            dependencies = emptyList(),
-            providers = listOf(
-                KnitProvider(
-                    methodName = "provideService",
-                    returnType = "UserService",
-                    isNamed = false,
-                    isSingleton = true
-                )
-            ),
-            sourceFile = "SingletonProvider1.kt"
-        )
 
-        val provider2 = KnitComponent(
-            className = "SingletonProvider2",
-            packageName = "com.test",
-            type = ComponentType.PROVIDER,
-            dependencies = emptyList(),
-            providers = listOf(
-                KnitProvider(
-                    methodName = "provideAnotherService",
-                    returnType = "UserService",
-                    isNamed = false,
-                    isSingleton = true
-                )
-            ),
-            sourceFile = "SingletonProvider2.kt"
-        )
 
-        val singletonIssue = KnitIssue(
-            type = IssueType.SINGLETON_VIOLATION,
-            severity = Severity.ERROR,
-            message = "Multiple singleton providers found for UserService",
-            componentName = "SingletonProvider1, SingletonProvider2",
-            metadata = mapOf(
-                "conflictingType" to "UserService",
-                "providerCount" to 2
-            )
-        )
 
-        val components = listOf(provider1, provider2)
-        val validatedIssues = issueValidator.validateIssues(listOf(singletonIssue), components)
-
-        assertEquals(1, validatedIssues.size)
-        val validatedIssue = validatedIssues[0]
-        assertEquals(ValidationStatus.VALIDATED_TRUE_POSITIVE, validatedIssue.validationStatus)
-        assertTrue("Confidence should be high for true singleton violation", validatedIssue.confidenceScore > 0.8)
-    }
-
-    @Test
-    fun testValidateNamedQualifierMismatch_TruePositive() {
-        val consumer = KnitComponent(
-            className = "OrderService",
-            packageName = "com.test",
-            type = ComponentType.COMPONENT,
-            dependencies = listOf(
-                KnitDependency(
-                    propertyName = "userRepository",
-                    targetType = "UserRepository",
-                    isNamed = true,
-                    namedQualifier = "database"
-                )
-            ),
-            providers = emptyList(),
-            sourceFile = "OrderService.kt"
-        )
-
-        val provider = KnitComponent(
-            className = "UserRepositoryProvider",
-            packageName = "com.test",
-            type = ComponentType.PROVIDER,
-            dependencies = emptyList(),
-            providers = listOf(
-                KnitProvider(
-                    methodName = "provideUserRepository",
-                    returnType = "UserRepository",
-                    isNamed = true,
-                    namedQualifier = "memory", // Different qualifier
-                    isSingleton = false
-                )
-            ),
-            sourceFile = "UserRepositoryProvider.kt"
-        )
-
-        val qualifierIssue = KnitIssue(
-            type = IssueType.NAMED_QUALIFIER_MISMATCH,
-            severity = Severity.ERROR,
-            message = "Named qualifier mismatch for UserRepository",
-            componentName = "OrderService",
-            metadata = mapOf("dependencyType" to "UserRepository")
-        )
-
-        val components = listOf(consumer, provider)
-        val validatedIssues = issueValidator.validateIssues(listOf(qualifierIssue), components)
-
-        assertEquals(1, validatedIssues.size)
-        val validatedIssue = validatedIssues[0]
-        assertEquals(ValidationStatus.VALIDATED_TRUE_POSITIVE, validatedIssue.validationStatus)
-        assertTrue("Confidence should be high for true qualifier mismatch", validatedIssue.confidenceScore > 0.7)
-    }
 
     @Test
     fun testValidationSettings_Disabled() {
@@ -318,7 +183,7 @@ class IssueValidatorTest : LightJavaCodeInsightFixtureTestCase() {
     @Test
     fun testValidationSettings_ConfidenceThreshold() {
         val lowConfidenceIssue = KnitIssue(
-            type = IssueType.MISSING_COMPONENT_ANNOTATION,
+            type = IssueType.AMBIGUOUS_PROVIDER,
             severity = Severity.WARNING,
             message = "Missing component annotation",
             componentName = "TestComponent"

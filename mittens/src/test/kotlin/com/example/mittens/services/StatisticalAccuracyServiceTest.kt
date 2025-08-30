@@ -26,7 +26,7 @@ class StatisticalAccuracyServiceTest {
                 confidenceScore = 0.95
             ),
             KnitIssue(
-                type = IssueType.UNRESOLVED_DEPENDENCY,
+                type = IssueType.CIRCULAR_DEPENDENCY,
                 severity = Severity.ERROR,
                 message = "True positive 2",
                 componentName = "Component2",
@@ -65,7 +65,7 @@ class StatisticalAccuracyServiceTest {
                 confidenceScore = 0.9
             ),
             KnitIssue(
-                type = IssueType.UNRESOLVED_DEPENDENCY,
+                type = IssueType.CIRCULAR_DEPENDENCY,
                 severity = Severity.ERROR,
                 message = "False positive",
                 componentName = "Component2",
@@ -154,7 +154,7 @@ class StatisticalAccuracyServiceTest {
                     falsePositives = 3,
                     averageConfidence = 0.4
                 ),
-                IssueType.UNRESOLVED_DEPENDENCY to ValidationDetails(
+                IssueType.CIRCULAR_DEPENDENCY to ValidationDetails(
                     totalDetected = 5,
                     validated = 5,
                     falsePositives = 3,

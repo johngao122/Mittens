@@ -1,5 +1,11 @@
 package com.example.mittens.model
 
+enum class AnalysisMethod {
+    SOURCE_ANALYSIS,
+    KNIT_JSON_ANALYSIS,
+    HYBRID_ANALYSIS
+}
+
 data class AnalysisResult(
     val components: List<KnitComponent>,
     val dependencyGraph: DependencyGraph,

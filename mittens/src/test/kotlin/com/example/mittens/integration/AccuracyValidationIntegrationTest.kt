@@ -276,7 +276,7 @@ class AccuracyValidationIntegrationTest : LightJavaCodeInsightFixtureTestCase() 
             ),
             // False positive - resolved dependency flagged as unresolved (UserRepository IS provided)
             KnitIssue(
-                type = IssueType.UNRESOLVED_DEPENDENCY,
+                type = IssueType.CIRCULAR_DEPENDENCY,
                 severity = Severity.ERROR,
                 message = "No provider found for UserRepository",
                 componentName = "UserService",
@@ -284,19 +284,13 @@ class AccuracyValidationIntegrationTest : LightJavaCodeInsightFixtureTestCase() 
             ),
             // False positive - non-existent dependency flagged as unresolved
             KnitIssue(
-                type = IssueType.UNRESOLVED_DEPENDENCY,
+                type = IssueType.CIRCULAR_DEPENDENCY,
                 severity = Severity.ERROR,
                 message = "No provider found for NonExistentService",
                 componentName = "UserService",
                 metadata = mapOf("dependencyType" to "NonExistentService")
             ),
-            // False positive - component with no dependencies or providers doesn't need annotation
-            KnitIssue(
-                type = IssueType.MISSING_COMPONENT_ANNOTATION,
-                severity = Severity.WARNING,
-                message = "Component missing @Component annotation",
-                componentName = "EmptyComponent"
-            )
+            
         )
     }
 

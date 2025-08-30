@@ -69,10 +69,10 @@ class InvalidProviderValidationTest : BasePlatformTestCase() {
         
         val components = listOf(inMemoryComponent, userServiceComponent)
         
-        // Test unresolved dependency detection - should NOT find any issues now
-        val issues = advancedDetector.detectImprovedUnresolvedDependencies(components)
+        // Test ambiguous provider detection - should NOT find any issues now
+        val issues = advancedDetector.detectEnhancedAmbiguousProviders(components)
         val userRepositoryIssues = issues.filter { 
-            it.message.contains("UserRepository") && it.type == IssueType.UNRESOLVED_DEPENDENCY 
+            it.message.contains("UserRepository") && it.type == IssueType.AMBIGUOUS_PROVIDER 
         }
         
         assertTrue("Should NOT detect unresolved UserRepository dependency (provider is available)", 

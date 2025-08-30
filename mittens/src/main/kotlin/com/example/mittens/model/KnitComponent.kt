@@ -56,11 +56,7 @@ data class KnitIssue(
 
 enum class IssueType {
     CIRCULAR_DEPENDENCY,
-    AMBIGUOUS_PROVIDER,
-    UNRESOLVED_DEPENDENCY,
-    SINGLETON_VIOLATION,
-    NAMED_QUALIFIER_MISMATCH,
-    MISSING_COMPONENT_ANNOTATION
+    AMBIGUOUS_PROVIDER
 }
 
 enum class Severity {
@@ -76,8 +72,3 @@ enum class ValidationStatus {
     VALIDATION_FAILED
 }
 
-enum class AnalysisMethod {
-    SOURCE_ANALYSIS,
-    KNIT_JSON_ANALYSIS,
-    HYBRID_ANALYSIS
-}

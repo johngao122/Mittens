@@ -2,7 +2,7 @@
 
 /**
  * D3 NETWORK VISUALIZATION COMPONENT
- * 
+ *
  * Interactive force-directed graph visualization using D3.js featuring:
  * - Draggable nodes with smart positioning (nodes stay where placed)
  * - Dynamic force simulation with multiple force types
@@ -17,32 +17,26 @@ import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import { NetworkData, D3Node, D3Link } from "../../../../lib/knit-data-parser";
 
-// ========================================
-// CONFIGURATION CONSTANTS
-// ========================================
 const FORCE_CONFIG = {
-    LINK_DISTANCE: 170,           // Base distance between connected nodes
-    LINK_STRENGTH: 0.5,           // Base strength of link forces
-    REPEL_STRENGTH: -100,         // Node repulsion strength (negative = repel)
-    COLLISION_PADDING: 5,         // Padding around nodes for collision detection
-    CLUSTER_STRENGTH: 0.1,        // Strength of package clustering force
-    SIDE_PANEL_WIDTH_RATIO: 1,    // Reserved space ratio for side panels
+    LINK_DISTANCE: 300,
+    LINK_STRENGTH: 0.5,
+    REPEL_STRENGTH: -450,
+    COLLISION_PADDING: 18,
+    CLUSTER_STRENGTH: 0.05,
+    SIDE_PANEL_WIDTH_RATIO: 1,
 } as const;
 
 const ANIMATION_DURATIONS = {
-    ZOOM: 300,                    // Zoom transition duration (ms)
-    RESET: 500,                   // Reset animation duration (ms)
-    CENTER: 500,                  // Center animation duration (ms)
+    ZOOM: 300,
+    RESET: 500,
+    CENTER: 500,
 } as const;
 
-// ========================================
-// TYPE DEFINITIONS
-// ========================================
 interface D3NetworkProps {
     data: NetworkData;
     width?: number | string;
     height?: number | string;
-    onNodeClick?: (node: D3Node) => void;
+    onNodeClick?: (node: D3Node | null) => void;
     onLinkClick?: (link: D3Link) => void;
     showZoomControls?: boolean;
     selectedNode?: D3Node | null;
@@ -54,9 +48,6 @@ interface TooltipData {
     y: number;
 }
 
-// ========================================
-// MAIN COMPONENT
-// ========================================
 export default function D3Network({
     data,
     width = 800,
@@ -66,9 +57,6 @@ export default function D3Network({
     showZoomControls = true,
     selectedNode = null,
 }: D3NetworkProps) {
-    // ========================================
-    // STATE & REFS
-    // ========================================
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [tooltip, setTooltip] = useState<TooltipData | null>(null);
@@ -77,32 +65,32 @@ export default function D3Network({
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(
         null
     );
-    const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({ width: 800, height: 400 });
-    const labelsRef = useRef<any>(null); // Store reference to labels for theme updates
-    const nodesRef = useRef<any>(null); // Store reference to nodes for theme updates
-    const hasSelectionRef = useRef<boolean>(false); // Track if a node is currently selected
+    const [containerSize, setContainerSize] = useState<{
+        width: number;
+        height: number;
+    }>({ width: 800, height: 400 });
+    const labelsRef = useRef<any>(null);
+    const nodesRef = useRef<any>(null);
+    const linksRef = useRef<any>(null);
+    const hasSelectionRef = useRef<boolean>(false);
 
-    // ========================================
-    // COMPONENT LIFECYCLE & SETUP
-    // ========================================
-    // Wait for component to mount before using browser APIs
     useEffect(() => {
         setMounted(true);
-        // Set initial theme state
-        setIsDarkMode(document.documentElement.classList.contains('dark'));
+
+        setIsDarkMode(document.documentElement.classList.contains("dark"));
     }, []);
 
-    // ========================================
-    // THEME MANAGEMENT
-    // ========================================
-    // Listen for theme changes (Light and Dark mode)
     useEffect(() => {
         if (!mounted) return;
-        
+
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                    const newIsDarkMode = document.documentElement.classList.contains('dark');
+                if (
+                    mutation.type === "attributes" &&
+                    mutation.attributeName === "class"
+                ) {
+                    const newIsDarkMode =
+                        document.documentElement.classList.contains("dark");
                     setIsDarkMode(newIsDarkMode);
                 }
             });
@@ -110,65 +98,64 @@ export default function D3Network({
 
         observer.observe(document.documentElement, {
             attributes: true,
-            attributeFilter: ['class']
+            attributeFilter: ["class"],
         });
 
         return () => observer.disconnect();
     }, [mounted]);
 
-    // Update label and Node border colors when theme changes
     useEffect(() => {
         if (labelsRef.current) {
             labelsRef.current
-                .attr("fill", isDarkMode ? "#ffffff" : "#434850ff") // Dark gray for light mode
-                .style("text-shadow", isDarkMode ? "2px 2px 4px rgba(0,0,0,0.9)" : "1px 1px 2px rgba(255,255,255,0.8)");
+                .attr("fill", isDarkMode ? "#ffffff" : "#434850ff")
+                .style(
+                    "text-shadow",
+                    isDarkMode
+                        ? "2px 2px 4px rgba(0,0,0,0.9)"
+                        : "1px 1px 2px rgba(255,255,255,0.8)"
+                );
         }
         if (nodesRef.current) {
             nodesRef.current
-                .attr("stroke", isDarkMode ? "#ffffff" : "#374151") // Dark gray border for light mode
+                .attr("stroke", isDarkMode ? "#ffffff" : "#374151")
                 .attr("stroke-width", 2.5);
         }
     }, [isDarkMode]);
 
-    // Track selection state for centering logic
     useEffect(() => {
         hasSelectionRef.current = selectedNode !== null;
     }, [selectedNode]);
 
-    // Track container size so we can fill 100% of the parent
     useEffect(() => {
         if (!mounted || !containerRef.current) return;
         const el = containerRef.current;
-        const ro = new ResizeObserver(entries => {
+        const ro = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const { width: w, height: h } = entry.contentRect;
-                setContainerSize({ width: Math.max(1, Math.floor(w)), height: Math.max(1, Math.floor(h)) });
+                setContainerSize({
+                    width: Math.max(1, Math.floor(w)),
+                    height: Math.max(1, Math.floor(h)),
+                });
             }
         });
         ro.observe(el);
         return () => ro.disconnect();
     }, [mounted]);
 
-    // ========================================
-    // MAIN D3 VISUALIZATION EFFECT
-    // ========================================
     useEffect(() => {
         if (!mounted || !svgRef.current || !data.nodes.length) return;
 
-        const numericWidth = typeof width === "number" ? width : (containerSize.width || 800);
-        const numericHeight = typeof height === "number" ? height : (containerSize.height || 400);
+        const numericWidth =
+            typeof width === "number" ? width : containerSize.width || 800;
+        const numericHeight =
+            typeof height === "number" ? height : containerSize.height || 400;
 
         const svg = d3.select(svgRef.current);
         svg.selectAll("*").remove();
         svg.attr("width", numericWidth).attr("height", numericHeight);
 
-        // ========================================
-        // SVG SETUP & ZOOM BEHAVIOR
-        // ========================================
-        // Create main container group
         const container = svg.append("g").attr("class", "network-container");
 
-        // Initialize zoom behavior
         const zoom = d3
             .zoom<SVGSVGElement, unknown>()
             .scaleExtent([0.1, 10])
@@ -179,49 +166,51 @@ export default function D3Network({
         svg.call(zoom);
         zoomRef.current = zoom;
 
-        // ========================================
-        // DATA PREPARATION
-        // ========================================
-        // Create copies of data for D3.js simulation
+        svg.on("click", () => {
+            onNodeClick?.(null);
+        });
+
         const nodes = data.nodes.map((d) => ({ ...d }));
         const links = data.links.map((d) => ({ ...d }));
 
-        // ========================================
-        // STYLING HELPER FUNCTIONS
-        // ========================================
-        // Helper function to get node color based on error state
         const getNodeColor = (node: D3Node) => {
-            if (node.errorInfo.isPartOfCycle) return "#8b5cf6"; // Purple for cycles
+            if (node.errorInfo.isPartOfCycle) return "#8b5cf6";
             if (node.errorInfo.hasErrors) {
                 switch (node.errorInfo.errorSeverity) {
                     case "ERROR":
-                        return "#ef4444"; // Red for errors
+                        return "#ef4444";
                     case "WARNING":
-                        return "#eab308"; // Yellow for warnings
+                        return "#eab308";
                     default:
-                        return "#10b981"; // Green for healthy
+                        return "#10b981";
                 }
             }
-            return "#10b981"; // Green for healthy
+            return "#10b981";
         };
 
-        // Helper function to get node size based on dependency count
-        const getNodeSize = (node: D3Node) => {
-            const baseSize = 20;
-            const maxSize = 50;
-            const dependencyCount = node.metadata.dependencyCount || 0;
-            // Scale node size based on dependency count (logarithmic scale for better visualization)
-            return Math.min(
-                baseSize + Math.log(dependencyCount + 1) * 8,
-                maxSize
-            );
+        const getNodeDims = (node: D3Node) => {
+            const dep = node.metadata.dependencyCount || 0;
+            const baseW = 120;
+            const baseH = 44;
+            const maxW = 260;
+            const maxH = 96;
+            const scale = Math.log(dep + 1);
+            const width = Math.min(baseW + scale * 28, maxW);
+            const height = Math.min(baseH + scale * 8, maxH);
+            return { width, height };
+        };
+
+        const getCollisionRadius = (node: D3Node) => {
+            const { width, height } = getNodeDims(node);
+            return 0.5 * Math.sqrt(width * width + height * height);
         };
 
         const clusters: Record<string, { x: number; y: number }> = {};
-        const clusterTags = Array.from(new Set(nodes.map(n => n.packageName)));
+        const clusterTags = Array.from(
+            new Set(nodes.map((n) => n.packageName))
+        );
         const clusterRadius = Math.min(numericWidth, numericHeight) / 3;
 
-        // Assign cluster centers in a circle
         clusterTags.forEach((tag, i) => {
             const angle = (2 * Math.PI * i) / clusterTags.length;
             clusters[tag] = {
@@ -230,77 +219,67 @@ export default function D3Network({
             };
         });
 
-        // Custom cluster force
         function forceCluster(alpha: number) {
             nodes.forEach((node: any) => {
                 const cluster = clusters[node.packageName];
-                // Only apply cluster force to non-manually positioned nodes
+
                 if (!node._manuallyPositioned) {
-                    node.vx += (cluster.x - node.x) * FORCE_CONFIG.CLUSTER_STRENGTH * alpha;
-                    node.vy += (cluster.y - node.y) * FORCE_CONFIG.CLUSTER_STRENGTH * alpha;
+                    node.vx +=
+                        (cluster.x - node.x) *
+                        FORCE_CONFIG.CLUSTER_STRENGTH *
+                        alpha;
+                    node.vy +=
+                        (cluster.y - node.y) *
+                        FORCE_CONFIG.CLUSTER_STRENGTH *
+                        alpha;
                 }
             });
         }
 
-        // Custom center force that respects manually positioned nodes
         function forceCustomCenter(alpha: number) {
             const centerX = numericWidth / 2;
             const centerY = numericHeight / 2;
-            
+
             nodes.forEach((node: any) => {
-                // Only apply center force to non-manually positioned nodes
                 if (!node._manuallyPositioned) {
                     const dx = centerX - node.x;
                     const dy = centerY - node.y;
-                    const centerStrength = 0.02; // Weak center force
-                    
+                    const centerStrength = 0.02;
+
                     node.vx += dx * centerStrength * alpha;
                     node.vy += dy * centerStrength * alpha;
                 }
             });
         }
 
-        // Custom anchor force to keep manually positioned nodes near their target
         function forceAnchor(alpha: number) {
             nodes.forEach((node: any) => {
-                if (node._manuallyPositioned && node._targetX !== undefined && node._targetY !== undefined) {
-                    // Skip anchor force if node is currently being dragged
-                    if (node.fx !== null || node.fy !== null) return;
-                    
-                    // Check if any connected node is being dragged - if so, reduce anchor force
-                    const connectedLinks = links.filter(link => {
-                        const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
-                        const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
-                        return sourceId === node.id || targetId === node.id;
-                    });
-                    
-                    const hasConnectedDraggedNode = connectedLinks.some(link => {
-                        const sourceId = typeof link.source === 'string' ? link.source : (link.source as any).id;
-                        const targetId = typeof link.target === 'string' ? link.target : (link.target as any).id;
-                        const sourceNode = nodes.find(n => n.id === sourceId);
-                        const targetNode = nodes.find(n => n.id === targetId);
-                        return (sourceNode && sourceNode.fx !== null) || (targetNode && targetNode.fx !== null);
-                    });
-                    
-                    // Calculate distance from target
+                if (
+                    node._manuallyPositioned &&
+                    node._targetX !== undefined &&
+                    node._targetY !== undefined
+                ) {
                     const dx = node._targetX - node.x;
                     const dy = node._targetY - node.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Check if this is a recently positioned node (within last 5 seconds)
-                    const isRecentlyPositioned = node._positionedAt && (Date.now() - node._positionedAt < 5000);
-                    
+
+                    const isRecentlyPositioned =
+                        node._positionedAt &&
+                        Date.now() - node._positionedAt < 10000;
+
                     if (isRecentlyPositioned) {
-                        // Reduce anchor strength if connected node is being dragged
-                        let anchorStrength = hasConnectedDraggedNode ? 0.2 : 0.8;
+                        const anchorStrength = 0.99;
                         node.vx += dx * anchorStrength;
                         node.vy += dy * anchorStrength;
                     } else {
-                        // Weaker anchor force for older positioned nodes
                         const maxDistance = 50;
-                        const strengthMultiplier = Math.max(0, Math.min(1, distance / maxDistance));
-                        const anchorStrength = 0.3 * strengthMultiplier;
-                        
+                        const strengthMultiplier = Math.max(
+                            0,
+                            (distance - 5) / maxDistance
+                        );
+                        const anchorStrength = 0.8 * strengthMultiplier;
+
+
                         if (distance > 5) {
                             node.vx += dx * anchorStrength * alpha;
                             node.vy += dy * anchorStrength * alpha;
@@ -310,110 +289,134 @@ export default function D3Network({
             });
         }
 
-        // ========================================
-        // FORCE SIMULATION SETUP
-        // ========================================
-        // Create force simulation with multiple physics forces
         const simulation = d3
             .forceSimulation(nodes)
-            .alphaDecay(0.02) // Moderate decay to prevent over-activity
-            .velocityDecay(0.7) // Higher velocity decay for quicker settling
-            .alpha(0.6) // Moderate initial energy
+            .alphaDecay(0.0228)
+            .velocityDecay(0.4)
             .force(
                 "link",
                 d3
                     .forceLink(links)
                     .id((d: any) => d.id)
                     .distance((d: any) => {
-                        // Dynamic distance based on node types and states
-                        const sourceNode = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source);
-                        const targetNode = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target);
-                        
-                        // Base distance
+                        const sourceNode =
+                            typeof d.source === "object"
+                                ? d.source
+                                : nodes.find((n) => n.id === d.source);
+                        const targetNode =
+                            typeof d.target === "object"
+                                ? d.target
+                                : nodes.find((n) => n.id === d.target);
+
                         let baseDistance = FORCE_CONFIG.LINK_DISTANCE;
-                        
-                        // If either node is being dragged, make links much more elastic
-                        const sourceBeingDragged = sourceNode && (sourceNode.fx !== null);
-                        const targetBeingDragged = targetNode && (targetNode.fx !== null);
-                        
+
+                        const sourceBeingDragged =
+                            sourceNode && sourceNode.fx !== null;
+                        const targetBeingDragged =
+                            targetNode && targetNode.fx !== null;
+
                         if (sourceBeingDragged || targetBeingDragged) {
-                            // Smoother elastic behavior with gradual distance reduction
-                            return baseDistance * 0.3; // Increased from 0.2 for smoother following
+                            return baseDistance * 0.2;
                         }
-                        
-                        // If either node is manually positioned, slightly flexible
-                        const sourceManuallyPositioned = sourceNode && sourceNode._manuallyPositioned;
-                        const targetManuallyPositioned = targetNode && targetNode._manuallyPositioned;
-                        
-                        if (sourceManuallyPositioned || targetManuallyPositioned) {
-                            return baseDistance * 0.8; // Increased from 0.7 for smoother connections
+
+                        const sourceManuallyPositioned =
+                            sourceNode && sourceNode._manuallyPositioned;
+                        const targetManuallyPositioned =
+                            targetNode && targetNode._manuallyPositioned;
+
+                        if (
+                            sourceManuallyPositioned ||
+                            targetManuallyPositioned
+                        ) {
+                            return baseDistance * 0.7;
                         }
-                        
+
                         return baseDistance;
                     })
                     .strength((d: any) => {
-                        // Dynamic strength for smooth elastic behavior
-                        const sourceNode = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source);
-                        const targetNode = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target);
-                        
-                        // Base strength
+                        const sourceNode =
+                            typeof d.source === "object"
+                                ? d.source
+                                : nodes.find((n) => n.id === d.source);
+                        const targetNode =
+                            typeof d.target === "object"
+                                ? d.target
+                                : nodes.find((n) => n.id === d.target);
+
                         let baseStrength = FORCE_CONFIG.LINK_STRENGTH;
-                        
-                        // If either node is being dragged, use higher strength for smoother following
-                        const sourceBeingDragged = sourceNode && (sourceNode.fx !== null);
-                        const targetBeingDragged = targetNode && (targetNode.fx !== null);
-                        
+
+                        const sourceBeingDragged =
+                            sourceNode && sourceNode.fx !== null;
+                        const targetBeingDragged =
+                            targetNode && targetNode.fx !== null;
+
                         if (sourceBeingDragged || targetBeingDragged) {
-                            // OVERRIDE all other positioning states when actively dragging
-                            // This ensures positioned nodes can still be pulled by dragged nodes
-                            return baseStrength * 1.8; // Very high strength to pull positioned nodes
+                            return baseStrength * 0.8;
                         }
-                        
-                        // Only disable link forces for click-locked nodes that are NOT being dragged
-                        const sourceClickLocked = sourceNode && (sourceNode as any)._clickLocked && !sourceBeingDragged;
-                        const targetClickLocked = targetNode && (targetNode as any)._clickLocked && !targetBeingDragged;
-                        
+
+                        const sourceClickLocked =
+                            sourceNode && (sourceNode as any)._clickLocked;
+                        const targetClickLocked =
+                            targetNode && (targetNode as any)._clickLocked;
+
                         if (sourceClickLocked || targetClickLocked) {
-                            return baseStrength * 0.2; // Slightly higher for smoother connections
+                            return 0;
                         }
-                        
-                        // Reduce anchor influence for manually positioned nodes to allow easier dragging
-                        const sourceManuallyPositioned = sourceNode && sourceNode._manuallyPositioned;
-                        const targetManuallyPositioned = targetNode && targetNode._manuallyPositioned;
-                        
-                        // Check if this is a recently positioned node (within last 5 seconds)
-                        const sourceRecentlyPositioned = sourceNode && sourceNode._positionedAt && (Date.now() - sourceNode._positionedAt < 5000);
-                        const targetRecentlyPositioned = targetNode && targetNode._positionedAt && (Date.now() - targetNode._positionedAt < 5000);
-                        
-                        // If either node was recently positioned, use very weak link force to prevent slingback
-                        if (sourceRecentlyPositioned || targetRecentlyPositioned) {
-                            return baseStrength * 0.05; // Very weak to prevent pulling back to dependencies
+
+                        const sourceDragPositioned =
+                            sourceNode && (sourceNode as any)._dragPositioned;
+                        const targetDragPositioned =
+                            targetNode && (targetNode as any)._dragPositioned;
+
+                        if (sourceDragPositioned || targetDragPositioned) {
+                            return baseStrength * 0.8;
                         }
-                        
-                        if (sourceManuallyPositioned && targetManuallyPositioned) {
-                            return baseStrength * 0.1; // Very weak between positioned nodes
+
+                        const sourceManuallyPositioned =
+                            sourceNode && sourceNode._manuallyPositioned;
+                        const targetManuallyPositioned =
+                            targetNode && targetNode._manuallyPositioned;
+
+                        if (
+                            sourceManuallyPositioned &&
+                            targetManuallyPositioned
+                        ) {
+                            return baseStrength * 0.4;
                         }
-                        
-                        if (sourceManuallyPositioned || targetManuallyPositioned) {
-                            return baseStrength * 0.2; // Weak for mixed connections to prevent pulling
+
+                        if (
+                            sourceManuallyPositioned ||
+                            targetManuallyPositioned
+                        ) {
+                            return baseStrength * 0.7;
+
                         }
-                        
+
                         return baseStrength;
                     })
             )
-            .force("charge", d3.forceManyBody().strength(FORCE_CONFIG.REPEL_STRENGTH))
+            .force(
+                "charge",
+                d3
+                    .forceManyBody()
+                    .strength(FORCE_CONFIG.REPEL_STRENGTH)
+                    .distanceMin(40)
+                    .distanceMax(Math.max(numericWidth, numericHeight))
+            )
             .force("center", forceCustomCenter as any)
             .force(
                 "collision",
-                d3.forceCollide().radius((d) => getNodeSize(d as D3Node) + FORCE_CONFIG.COLLISION_PADDING)
+                d3
+                    .forceCollide()
+                    .radius(
+                        (d) =>
+                            getCollisionRadius(d as D3Node) +
+                            FORCE_CONFIG.COLLISION_PADDING
+                    )
             )
             .force("cluster", forceCluster as any)
             .force("anchor", forceAnchor as any);
 
-        // ========================================
-        // VISUAL ELEMENTS CREATION
-        // ========================================
-        // Create links (connections between nodes)
         const link = container
             .selectAll(".link")
             .data(links)
@@ -429,74 +432,75 @@ export default function D3Network({
                 d.errorInfo.hasErrors ? "5,5" : "0"
             );
 
-        // Create nodes (interactive circles)
+        linksRef.current = link;
+
         const node = container
             .selectAll(".node")
             .data(nodes)
             .enter()
-            .append("circle")
+            .append("rect")
             .attr("class", "node")
-            .attr("r", (d: any) => getNodeSize(d as D3Node))
+            .attr("width", (d: any) => getNodeDims(d as D3Node).width)
+            .attr("height", (d: any) => getNodeDims(d as D3Node).height)
+            .attr("x", (d: any) => -getNodeDims(d as D3Node).width / 2)
+            .attr("y", (d: any) => -getNodeDims(d as D3Node).height / 2)
+            .attr("rx", (d: any) =>
+                Math.min(10, getNodeDims(d as D3Node).height / 2)
+            )
+            .attr("ry", (d: any) =>
+                Math.min(10, getNodeDims(d as D3Node).height / 2)
+            )
             .attr("fill", (d: any) => getNodeColor(d as D3Node))
             .attr("stroke", isDarkMode ? "#ffffff" : "#374151")
             .attr("stroke-width", 2.5)
             .style("cursor", "pointer")
             .call(
-                // ========================================
-                // DRAG BEHAVIOR IMPLEMENTATION
-                // ========================================
-                // Smart drag system: nodes stay where placed, elastic following during drag
                 d3
-                    .drag<SVGCircleElement, D3Node>()
+                    .drag<SVGRectElement, D3Node>()
                     .on("start", (event, d) => {
-                        // Clear all positioning flags to ensure free movement
+
                         delete (d as any)._clickLocked;
+
+
                         delete (d as any)._manuallyPositioned;
                         delete (d as any)._targetX;
                         delete (d as any)._targetY;
                         delete (d as any)._dragPositioned;
-                        delete (d as any)._positionedAt;
-                        
-                        // Higher simulation activity for smooth dragging
-                        if (!event.active) simulation.alphaTarget(0.6).restart();
-                        
-                        // Fix only the dragged node position during drag
+
+
+                        if (!event.active)
+                            simulation.alphaTarget(0.5).restart();
+
+
                         d.fx = d.x;
                         d.fy = d.y;
                     })
                     .on("drag", (event, d) => {
-                        // Update dragged node position
                         d.fx = event.x;
                         d.fy = event.y;
-                        
-                        // Maintain moderate simulation activity for smooth following
-                        simulation.alphaTarget(0.6);
+
+
+                        simulation.alphaTarget(0.5);
                     })
                     .on("end", (event, d) => {
-                        // Mark as manually positioned with strong anchoring
+
                         (d as any)._manuallyPositioned = true;
                         (d as any)._targetX = event.x;
                         (d as any)._targetY = event.y;
                         (d as any)._dragPositioned = true;
                         (d as any)._positionedAt = Date.now();
-                        
-                        // Set final position firmly
+
+
                         d.x = event.x;
                         d.y = event.y;
                         d.fx = null;
                         d.fy = null;
-                        
-                        // Use higher simulation activity initially to establish position against link forces
-                        simulation.alphaTarget(0.3);
-                        
-                        // Quick cooldown after establishing position
-                        setTimeout(() => {
-                            simulation.alphaTarget(0.02);
-                        }, 300);
+
+                        simulation.alphaTarget(0.02);
+
                     })
             );
 
-        // Create node labels
         const labels = container
             .selectAll(".label")
             .data(nodes)
@@ -506,36 +510,76 @@ export default function D3Network({
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
             .attr("fill", isDarkMode ? "#ffffff" : "#1f2937")
-            .attr("font-size", "12px")
+            .attr("font-size", "15px")
+            .attr(
+                "font-family",
+                "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans'"
+            )
             .attr("font-weight", "bold")
             .attr("pointer-events", "none")
-            .style("text-shadow", isDarkMode ? "2px 2px 4px rgba(0,0,0,0.9)" : "1px 1px 2px rgba(255,255,255,0.8)")
-            .text((d: any) => d.label);
+            .style(
+                "text-shadow",
+                isDarkMode
+                    ? "2px 2px 4px rgba(0,0,0,0.9)"
+                    : "1px 1px 2px rgba(255,255,255,0.8)"
+            )
+            .text((d: any) => d.label)
+            .each(function (d: any) {
+                const el = this as SVGTextElement;
+                (d as any)._origLabel = d.label;
+                const dims = getNodeDims(d as D3Node);
+                const maxWidth = Math.max(24, dims.width - 16);
+                const baseSize = 15;
 
-        // Store references for theme updates
+                const measure = () => el.getComputedTextLength();
+
+                el.setAttribute("font-size", `${baseSize}px`);
+                let width = measure();
+                if (width > 0) {
+                    const scale = Math.min(1, maxWidth / width);
+                    const size = Math.max(12, Math.floor(baseSize * scale));
+                    el.setAttribute("font-size", `${size}px`);
+                }
+
+                width = measure();
+                if (width > maxWidth) {
+                    const text = (d as any)._origLabel as string;
+                    const ratio = maxWidth / width;
+                    const keep = Math.max(
+                        3,
+                        Math.floor(text.length * ratio) - 1
+                    );
+                    const truncated =
+                        text.length > keep ? `${text.slice(0, keep)}…` : text;
+                    el.textContent = truncated;
+
+                    const current = parseInt(
+                        el.getAttribute("font-size") || "15",
+                        10
+                    );
+                    el.setAttribute("font-size", `${Math.max(12, current)}px`);
+                }
+            });
+
         labelsRef.current = labels;
         nodesRef.current = node;
 
-        // Add event listeners
         node.on("click", (event: any, d: any) => {
             event.stopPropagation();
             const nodeData = d as D3Node;
-            
-            // IMMEDIATELY fix the node position to prevent any movement
+
             nodeData.fx = nodeData.x;
             nodeData.fy = nodeData.y;
-            
-            // Mark as manually positioned and record current position
+
             (nodeData as any)._manuallyPositioned = true;
             (nodeData as any)._targetX = nodeData.x;
             (nodeData as any)._targetY = nodeData.y;
-            (nodeData as any)._clickLocked = true; // Additional flag for click-locked nodes
-            
-            // Handle selection state
+            (nodeData as any)._clickLocked = true;
+
             if (!hasSelectionRef.current) {
                 hasSelectionRef.current = true;
             }
-            
+
             onNodeClick?.(nodeData);
         })
             .on("mouseenter", (event: any, d: any) => {
@@ -550,66 +594,123 @@ export default function D3Network({
                 setTooltip(null);
             });
 
-        // ========================================
-        // ANIMATION & SIMULATION LOOP
-        // ========================================
-        // Update positions on each tick of the simulation
         simulation.on("tick", () => {
             link.attr("x1", (d: any) => d.source.x)
                 .attr("y1", (d: any) => d.source.y)
                 .attr("x2", (d: any) => d.target.x)
                 .attr("y2", (d: any) => d.target.y)
                 .attr("stroke-width", (d: any) => {
-                    // Calculate distance between nodes
                     const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Make links thicker when stretched beyond normal distance
+
                     const normalDistance = FORCE_CONFIG.LINK_DISTANCE;
-                    const stretchFactor = Math.max(1, distance / normalDistance);
-                    const baseWidth = 3; // Increased from 2 to 3 to match static width
-                    const maxWidth = 6; // Increased from 4 to 6 for better prominence
-                    
+                    const stretchFactor = Math.max(
+                        1,
+                        distance / normalDistance
+                    );
+                    const baseWidth = 3;
+                    const maxWidth = 6;
+
                     return Math.min(baseWidth * stretchFactor, maxWidth);
                 })
                 .attr("stroke-opacity", (d: any) => {
-                    // Calculate distance between nodes
                     const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Make links more opaque when stretched
+
                     const normalDistance = FORCE_CONFIG.LINK_DISTANCE;
                     const stretchFactor = distance / normalDistance;
                     const baseOpacity = 0.6;
                     const maxOpacity = 0.9;
-                    
-                    return Math.min(baseOpacity + (stretchFactor - 1) * 0.3, maxOpacity);
+
+                    return Math.min(
+                        baseOpacity + (stretchFactor - 1) * 0.3,
+                        maxOpacity
+                    );
                 });
 
-            node.attr("cx", (d: any) => d.x).attr("cy", (d: any) => d.y);
+            node.attr("x", (d: any) => d.x - getNodeDims(d as D3Node).width / 2)
+                .attr(
+                    "y",
+                    (d: any) => d.y - getNodeDims(d as D3Node).height / 2
+                )
+                .attr("width", (d: any) => getNodeDims(d as D3Node).width)
+                .attr("height", (d: any) => getNodeDims(d as D3Node).height);
 
             labels.attr("x", (d: any) => d.x).attr("y", (d: any) => d.y);
         });
 
-        // Clean up simulation on unmount
         return () => {
             simulation.stop();
         };
     }, [mounted, data, width, height]);
 
-    // Handle container resize without recreating the entire network
+    useEffect(() => {
+        if (!mounted) return;
+        const nodesSel = nodesRef.current;
+        const labelsSel = labelsRef.current;
+        const linksSel = linksRef.current;
+        if (!nodesSel || !labelsSel) return;
+
+        if (!selectedNode) {
+            nodesSel.attr("opacity", 1).attr("stroke-width", 2.5);
+            labelsSel.attr("opacity", 1).attr("font-size", "15px");
+            if (linksSel) {
+                linksSel.attr("stroke-opacity", 0.8).attr("stroke-width", 3);
+            }
+            return;
+        }
+
+        nodesSel
+            .attr("opacity", (d: any) => (d.id === selectedNode.id ? 1 : 0.25))
+            .attr("stroke-width", (d: any) =>
+                d.id === selectedNode.id ? 4 : 2
+            );
+        labelsSel
+            .attr("opacity", (d: any) => (d.id === selectedNode.id ? 1 : 0.35))
+            .attr("font-size", (d: any) =>
+                d.id === selectedNode.id ? "18px" : "15px"
+            );
+
+        if (linksSel) {
+            linksSel
+                .attr("stroke-opacity", (d: any) => {
+                    const srcId =
+                        typeof d.source === "object" ? d.source.id : d.source;
+                    const tgtId =
+                        typeof d.target === "object" ? d.target.id : d.target;
+                    return srcId === selectedNode.id ||
+                        tgtId === selectedNode.id
+                        ? 0.9
+                        : 0.1;
+                })
+                .attr("stroke-width", (d: any) => {
+                    const srcId =
+                        typeof d.source === "object" ? d.source.id : d.source;
+                    const tgtId =
+                        typeof d.target === "object" ? d.target.id : d.target;
+                    return srcId === selectedNode.id ||
+                        tgtId === selectedNode.id
+                        ? 5
+                        : 2;
+                });
+        }
+    }, [mounted, selectedNode]);
+
     useEffect(() => {
         if (!mounted || !svgRef.current) return;
 
-        const numericWidth = typeof width === "number" ? width : (containerSize.width || 800);
-        const numericHeight = typeof height === "number" ? height : (containerSize.height || 400);
-        
-        d3.select(svgRef.current).attr("width", numericWidth).attr("height", numericHeight);
+        const numericWidth =
+            typeof width === "number" ? width : containerSize.width || 800;
+        const numericHeight =
+            typeof height === "number" ? height : containerSize.height || 400;
+
+        d3.select(svgRef.current)
+            .attr("width", numericWidth)
+            .attr("height", numericHeight);
     }, [mounted, containerSize.width, containerSize.height, width, height]);
 
-    // Zoom control functions
     const handleZoomIn = () => {
         if (svgRef.current && zoomRef.current) {
             d3.select(svgRef.current)
@@ -638,24 +739,34 @@ export default function D3Network({
     };
 
     const centerOnNode = (node: D3Node) => {
-        if (svgRef.current && zoomRef.current && node.x !== undefined && node.y !== undefined) {
-            const numericWidth = typeof width === "number" ? width : (containerSize.width || 800);
-            const numericHeight = typeof height === "number" ? height : (containerSize.height || 400);
-            
-            // Get current scale to maintain zoom level
+        if (
+            svgRef.current &&
+            zoomRef.current &&
+            node.x !== undefined &&
+            node.y !== undefined
+        ) {
+            const numericWidth =
+                typeof width === "number" ? width : containerSize.width || 800;
+            const numericHeight =
+                typeof height === "number"
+                    ? height
+                    : containerSize.height || 400;
+
             const currentTransform = d3.zoomTransform(svgRef.current);
             const currentScale = currentTransform.k;
-            
-            // Calculate the transform to center the node
-            // When centering from big border, use effective width for where the graph will be after side panel appears
-            const effectiveWidth = numericWidth * FORCE_CONFIG.SIDE_PANEL_WIDTH_RATIO; // Space when side panel is open
+
+            const effectiveWidth =
+                numericWidth * FORCE_CONFIG.SIDE_PANEL_WIDTH_RATIO;
             const x = effectiveWidth / 2 - node.x * currentScale;
             const y = numericHeight / 2 - node.y * currentScale;
-            
+
             d3.select(svgRef.current)
                 .transition()
                 .duration(ANIMATION_DURATIONS.CENTER)
-                .call(zoomRef.current.transform, d3.zoomIdentity.translate(x, y).scale(currentScale));
+                .call(
+                    zoomRef.current.transform,
+                    d3.zoomIdentity.translate(x, y).scale(currentScale)
+                );
         }
     };
 
@@ -687,23 +798,33 @@ export default function D3Network({
 
                     {/* Status Legend - positioned below reset button */}
                     <div className="mt-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600 shadow-lg">
-                        <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">Status Legend</div>
+                        <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Status Legend
+                        </div>
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span className="text-xs text-slate-600 dark:text-slate-400">Healthy</span>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">
+                                    Healthy
+                                </span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                <span className="text-xs text-slate-600 dark:text-slate-400">Error</span>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">
+                                    Error
+                                </span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                                <span className="text-xs text-slate-600 dark:text-slate-400">Warning</span>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">
+                                    Warning
+                                </span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                                <span className="text-xs text-slate-600 dark:text-slate-400">Cycle</span>
+                                <span className="text-xs text-slate-600 dark:text-slate-400">
+                                    Cycle
+                                </span>
                             </div>
                         </div>
                     </div>

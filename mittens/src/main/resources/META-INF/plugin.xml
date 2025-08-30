@@ -21,7 +21,6 @@
         <li>Interactive dependency graph visualization</li>
         <li>Detection of circular dependencies and ambiguous providers</li>
         <li>Issue highlighting and quick-fix suggestions</li>
-        <li>Export capabilities for CI/CD integration</li>
     </ul>
     <em>Supports Knit framework version 0.1.4+</em>
   ]]></description>
@@ -31,6 +30,9 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
     <depends>org.jetbrains.kotlin</depends>
+    <!-- Declare compatibility with both Kotlin plugin modes -->
+    <depends optional="true">org.jetbrains.kotlin.plugin.mode.k1</depends>
+    <depends optional="true">org.jetbrains.kotlin.plugin.mode.k2</depends>
     <depends>org.jetbrains.plugins.gradle</depends>
 
     <!-- Extension points defined by the plugin.
@@ -46,6 +48,7 @@
         <projectService serviceImplementation="com.example.mittens.services.GradleTaskRunner"/>
         <projectService serviceImplementation="com.example.mittens.services.IssueValidator"/>
         <applicationService serviceImplementation="com.example.mittens.services.StatisticalAccuracyService"/>
+        <projectService serviceImplementation="com.example.mittens.export.GraphExportService"/>
         
         <!-- Settings page -->
         <applicationConfigurable 
@@ -56,6 +59,9 @@
             
         <!-- Notification groups -->
         <notificationGroup id="Knit Analysis" displayType="BALLOON"/>
+        
+        <!-- File Editor Provider for Web View -->
+        <fileEditorProvider implementation="com.example.mittens.ui.KnitWebViewFileEditorProvider"/>
     </extensions>
     
     <actions>
@@ -69,6 +75,13 @@
                     text="Run Knit Analysis" 
                     description="Analyze Knit dependency injection in the current project">
                 <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt K"/>
+            </action>
+            
+            <action id="OpenKnitWebViewAction" 
+                    class="com.example.mittens.actions.OpenKnitWebViewAction" 
+                    text="Open Knit Dependency Graph" 
+                    description="Open the interactive dependency graph web view">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt G"/>
             </action>
         </group>
     </actions>
